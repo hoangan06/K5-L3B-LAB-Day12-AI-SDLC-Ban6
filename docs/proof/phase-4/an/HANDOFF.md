@@ -18,7 +18,7 @@ Các log trong thư mục này là kết quả chạy, không dùng số liệu 
 
 Lần đầu test CLI của AI đọc dòng đầu JSONL như snapshot, nhưng day có event khởi tạo trước snapshot; đã sửa test chọn đúng type=snapshot. Không đổi thứ tự output để phục vụ test.
 
-Test P3 cũ của Ân đòi file kho bằng tuyệt đối JSONL, trong khi fresh JSONL có dung sai ±0.01. Đã giữ ID/kind/thứ tự đúng tuyệt đối và so fresh theo dung sai; vẫn kiểm file kho giữ fresh dưới30, không nới luật crossing. Main mới của Trung sau đó đã bổ sung giữ precision fresh trong JSONL.
+Test P3 của Ân từng phát hiện JSONL khác file kho vì làm tròn fresh. Trong lúc review, đã thử phép so dung sai theo contract; sau khi Trung sửa precision ở main `04cd262`, giữ lại phép so bằng tuyệt đối gốc của test để bảo vệ bàn giao ID/kind/fresh. Không còn nới assertion này trong bản cuối.
 
 ## Bàn giao cho Duy
 

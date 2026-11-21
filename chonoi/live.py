@@ -24,6 +24,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from . import TICK_HZ
 from .contract import load_contract
+from .creative import CreativeLayer
 from .errors import BadInput
 from .inputs import LiveInputs
 from .inventory import inventory_kinds, read_inventory
@@ -41,10 +42,12 @@ RECENT_EVENTS = 40
 class LiveGame:
     """Một lượt chơi + luồng nền bước 60 tick/s. Mọi truy cập trạng thái đi qua khóa."""
 
-    def __init__(self, mode, tuning, scenario, seed, inventory=None, inventory_out=None, *, days=5):
+    def __init__(self, mode, tuning, scenario, seed, inventory=None, inventory_out=None, *, days=5, creative=False):
         self._args = (mode, tuning, scenario, seed, inventory)
         self.mode = mode
         self.days = days
+        self.creative_on = creative
+        self.creative = None
         self.tuning = tuning
         self.inventory_out = inventory_out
         self._lock = threading.Lock()
@@ -58,6 +61,7 @@ class LiveGame:
         self._day_stats = {}
         self._saved = False
         self.error = None
+        self.creative = CreativeLayer(self._args[3]) if self.creative_on else None
         self._present(None)
         if self.mode == "day":
             self.session = Session(*self._args, days=self.days)
@@ -117,7 +121,12 @@ class LiveGame:
         sim = session.sim
         old_phase = sim.phase
         old_day = sim.day if self.mode == "day" else None
-        rows = session.step(self.inputs.advance())
+        inp = self.inputs.advance()
+        if self.creative:
+            inp = self.creative.before(session, inp)
+        rows = session.step(inp)
+        if self.creative:
+            self.creative.after(session)
         self.events.extend(rows)
         del self.events[:-RECENT_EVENTS]
         if self.mode == "day":
@@ -157,8 +166,12 @@ class LiveGame:
         with self._lock:
             snap = self.session.snapshot()
             snap["meta"] = self.tuning[snap["phase"]]
+            if "freshness" in self.tuning:
+                snap["meta"] = {**snap["meta"], "freshness": self.tuning["freshness"]}
             if self.mode == "day":
                 snap["ui"] = {"screen": self._screen, "days": list(self._day_stats.values())}
+            if self.creative:
+                snap["creative"] = self.creative.snapshot(self.session)
             snap["events"] = list(self.events)
             snap["finished"] = self.session.done
             snap["reason"] = self.session.sim.reason if self.session.done else None
@@ -182,6 +195,8 @@ class LiveGame:
         if "buy" in body and (not isinstance(buy, str) or not buy):
             raise ValueError("buy phải là chuỗi khác rỗng")
         with self._lock:
+            if move is not None and self.creative:
+                self.creative.note_move(move)
             if buy is not None and self._screen is None and self.mode == "day":
                 buttons["buy"] = buy
             self.inputs.set(move, **buttons)
@@ -227,9 +242,15 @@ class _Handler(BaseHTTPRequestHandler):
         elif path in ("/", "/index.html"):
             try:
                 with open(os.path.join(WEB_DIR, "index.html"), "rb") as f:
-                    self._send(200, f.read(), "text/html; charset=utf-8")
+                    html = f.read()
+                if self.game.creative_on and b"creative.js" not in html:  # chỉ khi bật --creative
+                    html = html.replace(b"</body>", b'<script src="/creative.js"></script></body>')
+                self._send(200, html, "text/html; charset=utf-8")
             except OSError:
                 self._send(404, b'{"error":"thieu index.html"}')
+        elif path == "/creative.js" and self.game.creative_on:
+            with open(os.path.join(WEB_DIR, "creative.js"), "rb") as f:
+                self._send(200, f.read(), "application/javascript; charset=utf-8")
         else:
             self._send(404, b'{"error":"khong co"}')
 
@@ -302,6 +323,7 @@ def main(argv=None) -> int:
     p.add_argument("--port", type=int, default=8000, help="0 = cổng ngẫu nhiên")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--scenario")
+    p.add_argument("--creative", action="store_true", help="bật phần sáng tạo (đền, Mãng Xà); mặc định tắt")
     p.add_argument("--inventory", help="chỉ với quan: nạp kho từ file")
     p.add_argument("--inventory-out", dest="inventory_out", help="chỉ với gather: ghi kho khi kết thúc buổi")
     a = p.parse_args(argv)
@@ -319,7 +341,7 @@ def main(argv=None) -> int:
         inventory = read_inventory(a.inventory, inventory_kinds(tuning), items_mode="freshness" in tuning) if a.inventory else None
         if inventory is not None and "stock" in scenario:
             raise BadInput("vừa có quan.stock vừa có --inventory")
-        game = LiveGame(a.mode, tuning, scenario, a.seed, inventory, a.inventory_out, days=a.days or 5)
+        game = LiveGame(a.mode, tuning, scenario, a.seed, inventory, a.inventory_out, days=a.days or 5, creative=a.creative)
         server = LiveServer(game, a.host, a.port)
     except BadInput as e:
         sys.stderr.write(f"đầu vào sai: {e}\n")

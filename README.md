@@ -63,6 +63,8 @@ Script không ghi đè ZIP đã có. Gói có `BUILD-INFO.json` ghi commit ngu�
 
 Trạng thái ứng viên P4: module soak10ngày đang chờ Duy tích hợp; LICENSE và release notes chờ Trung bàn giao. Benchmark của Đức đang được kiểm lại mốc tải từ khởi chạy. Không coi các báo cáo của nhánh cũ là kết quả nghiệm thu bản1.3; xem `docs/proof/phase-4/an/HANDOFF.md` trước khi phát hành.
 
+Bật cả phần sáng tạo (đền Bà Thủy, Mãng Xà Vương, miếu Cá Ông; chỉ ở live, headless không đổi): `python3 -m chonoi.live --mode day --days 5 --creative`. Trên macOS có thể bấm đúp `tools/choi-game.command` (mở trình duyệt ở cổng 8800). Icon pixel cho launcher: `python3 tools/icon/make_icon.py`.
+
 Game cần chế độ **headless** theo Test Contract (`python3 -m chonoi.headless --mode gather|quan …`) để được chạy và chấm tự động. **Công nghệ không ràng buộc**: khung Python trong `chonoi/` chỉ là gợi ý, chi tiết ở [`docs/STARTER.md`](docs/STARTER.md).
 
 ## Tự do sáng tạo

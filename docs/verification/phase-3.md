@@ -16,5 +16,8 @@ Test phần quán (`test_p3_trung.py`) dùng `docs/contracts/phase-2-tuning.samp
 | Chung-P3-01 | Gather: hold cá thể, hao 0.5/s, `spoiled` location `hold`, `lost` LIFO | `tests/test_p3_integration.py` lớp `GatherFresh`; fixture của Ân `docs/contracts/phase-3-fixtures/gather-threshold.json` (spoiled I1 tick 1), `gather-lifo.json` (lost I7, I2, I10) chạy headless | Đạt test; test riêng của Ân (`test_p3_an.py`) chưa có |
 | Chung-P3-02 | Manifest `contract_version 1.2`, scenario/inventory/runner đọc kho cá thể, id I1… tăng qua pha và ngày | lớp `Manifest`, `FileHandoff` (kho đếm/schema sai → mã 2, ngưỡng qua file), `DayHandoff` (cùng tick không hao thêm, Ngày 2 id I3/I4); `gather-dock.json`+`dock-inputs.json` → quán tick 0 khớp; `tools/smoke_inventory.py` PASS; day 5 ngày headless ×2 giống từng byte | Đạt; live day trên trình duyệt với v1.2 chưa chạy (UNVERIFIED) |
 | Chung-P3-03 | HUD hiện độ tươi hoặc hàng ươn | — | Chưa kiểm chứng (đang làm giao diện) |
+| Duy-P3-01 | File kho, hold và stock từ chối schema sai, ID trùng/rỗng, kind/fresh sai trước output; chấp nhận kho rỗng và giữ precision | `tests/test_p3_duy.py`; `docs/proof/phase-3/duy/results.md` | Đã viết test; 4 test bỏ qua vì runtime còn 1.1, chưa xác nhận 1.2 |
+| Duy-P3-02 | Gather → file → quán tick 0 giữ ID/kind/fresh | `python3 tools/smoke_inventory.py --require-v12`; proof Duy | Chưa đạt: manifest hiện 1.1; smoke 1.1 đạt |
+| Duy-P3-03 | ID vật lý trùng giữa hold và stock | Cần fixture tích hợp với migration Day thực tế | Chưa kiểm chứng; scenario day không cho quan.stock riêng |
 
 Mutation (quán + migration v1.2): `python3 docs/proof/phase-3/trung/mutate.py` bắt 33/37; 4 mutant lọt là tương đương (`docs/proof/phase-3/trung/test-run.md`).

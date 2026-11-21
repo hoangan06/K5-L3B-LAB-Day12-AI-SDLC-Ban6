@@ -197,19 +197,11 @@ class GatherFreshnessAcceptance(unittest.TestCase):
             rows = self.cli(folder, scenario, 1, [{"tick": 0, "interact": True}], inventory=inventory)
             saved = json.loads(inventory.read_text(encoding="utf-8"))
             ended = next(r for r in rows if r.get("name") == "gather_end")
-            # Test Contract cho fresh xuất JSONL dung sai ±0.01; file kho giữ đủ precision.
-            ended_items = ended["data"]["inventory"]["items"]
-            self.assertEqual([(it["id"], it["kind"]) for it in saved["items"]],
-                             [(it["id"], it["kind"]) for it in ended_items])
-            for expected, actual in zip(saved["items"], ended_items):
-                self.assertAlmostEqual(expected["fresh"], actual["fresh"], delta=0.01)
+            self.assertEqual(saved, ended["data"]["inventory"])
             self.assertEqual([it["id"] for it in saved["items"]], ["I2", "I10"])
             self.assertLess(saved["items"][0]["fresh"], 30)
             quan = self.cli(folder, {}, 0, name="quan", inventory=inventory)
-            self.assertEqual([(it["id"], it["kind"]) for it in quan[0]["stock"]],
-                             [(it["id"], it["kind"]) for it in saved["items"]])
-            for expected, actual in zip(saved["items"], quan[0]["stock"]):
-                self.assertAlmostEqual(expected["fresh"], actual["fresh"], delta=0.01)
+            self.assertEqual(quan[0]["stock"], saved["items"])
 
     def test_cli_tick_limit_preserves_existing_destination(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -50,3 +50,8 @@
 - `Session(..., days=N, soak=True)` chỉ cho mode day, N nguyên dương; chỉ truyền soak=True tới DaySim ở đường soak. Luồng chuẩn vẫn1–5ngày. Duy giữ DaySim/soak; không dựng mock sim trong runtime hoặc ghép hai lượt5ngày.
 - Test Ân: `PYTHONPATH=tests:. python3 -m unittest discover -s tests -p test_p4_an.py -v`. Đóng gói: `python3 tools/package_release.py --out dist/chonoi-v1.0.0.zip`.
 - Bàn giao/gate phát hành: `docs/proof/phase-4/an/HANDOFF.md`. Gói ứng viên còn mục thiếu không phải Release; chỉ tag phase-4/v1.0.0 khi bản main có đủ bằng chứng thật.
+
+## Phase 3 — nghiệm thu gather/runner của Ân
+- Theo `docs/plan-p3-p4.md`, Trung giữ migration runtime; Ân giữ `tests/test_p3_an.py` và `docs/proof/phase-3/an/`.
+- Kiểm bắt buộc: `AN_REQUIRE_P3=1 PYTHONPATH=tests:. python3 -m unittest discover -s tests -p test_p3_an.py -v`. Khi manifest1.2, test tự chạy; skip trên manifest1.1 không chứng minh P3 đạt.
+- Giữ thứ tự nhặt của giỏ cho LIFO; sort bản sao khi xuất kho/phát spoiled. Không làm tròn fresh qua ngưỡng 30. Gate tag và kết quả thực tế: `docs/proof/phase-3/an/HANDOFF.md`.
