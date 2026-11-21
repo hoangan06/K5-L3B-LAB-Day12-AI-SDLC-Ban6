@@ -17,6 +17,15 @@
   .day-card button, .day-hud button { margin: 6px 10px 0 0; padding: 8px 14px; border: 1px solid #83b9ad; border-radius: 8px; background: #25483f; color: #fff; font: inherit; cursor: pointer; }
   .day-card button:focus-visible, .day-hud button:focus-visible { outline: 3px solid #ffe4a1; }
   .day-card button:disabled { opacity: .65; cursor: default; }
+  .warnings:empty { padding: 0; border: 0; }
+  #contrast-toggle { position: absolute; z-index: 2; right: 18px; bottom: 28px; padding: 8px 14px; border: 1px solid #83b9ad; border-radius: 8px; background: #25483f; color: #fff; font: inherit; cursor: pointer; }
+  #contrast-toggle:focus-visible { outline: 3px solid #ffe4a1; }
+  .warnings { white-space: pre-line; position: absolute; left: 18px; bottom: 64px; max-width: calc(100% - 36px); padding: 0 14px; border: 2px solid #f5de95; border-radius: 8px; background: #10161c; color: #fff; font-size: 16px; font-weight: 700; pointer-events: none; }
+  .high-contrast canvas { filter: contrast(1.45); }
+  .high-contrast :is(.day-hud, .day-card, .warnings, button) { background: #000; color: #fff; border-color: #fff; }
+  .high-contrast .day-overlay { background: #000c; }
+  .high-contrast .warnings { border-color: #ffef00; }
+  .high-contrast #contrast-toggle[aria-pressed="true"] { background: #ffef00; color: #000; }
   .day-hud p { margin: 0; }
   .day-hud button { flex: 0 0 auto; align-self: start; margin: 0; }
 </style>
@@ -27,7 +36,9 @@
   <div><p id="day-title"></p><p id="day-details"></p></div>
   <button id="day-pause" type="button">Tạm dừng</button>
 </header>
+<aside class="warnings" id="warnings" role="status" aria-atomic="true"></aside>
 <div class="day-overlay" id="day-overlay" hidden><section class="day-card" id="day-card"></section></div>
+<button id="contrast-toggle" type="button" aria-pressed="false">Tương phản cao</button>
 <script>
 "use strict";
 /*
@@ -38,6 +49,45 @@
 const cv = document.getElementById("c");
 const ctx = cv.getContext("2d");
 let snap = null, offline = false;
+const warnings = document.getElementById("warnings");
+const contrastToggle = document.getElementById("contrast-toggle");
+const LOW_RESOURCE_RATIO = 0.25;
+
+contrastToggle.addEventListener("click", () => {
+  const enabled = document.body.classList.toggle("high-contrast");
+  contrastToggle.setAttribute("aria-pressed", String(enabled));
+});
+
+function lowOxygen(player) {
+  return player?.oxygen_max_ticks > 0 && player.oxygen_ticks < player.oxygen_max_ticks * LOW_RESOURCE_RATIO;
+}
+
+function monsterNear(monster, player, species) {
+  const rule = species?.[monster.kind];
+  if (!rule || !player?.pos || player.pos[1] < rule.depths[0]) return false;
+  const radius = monster.state === "chase" ? rule.exit_radius : rule.detect_radius;
+  return Math.hypot(player.pos[0] - monster.pos[0], player.pos[1] - monster.pos[1]) <= radius;
+}
+
+function renderWarnings() {
+  const active = [];
+  if (!offline && !snap.finished && !snap.ui?.screen && snap.state !== "paused") {
+    const phase = snap.phase || snap.mode;
+    if (phase === "gather") {
+      if (snap.monsters?.some(monster => monsterNear(monster, snap.player, snap.meta?.monsters?.species))) {
+        active.push("⚠ Thủy quái ở gần");
+      }
+      if (lowOxygen(snap.player)) active.push("⚠ Oxy sắp hết");
+    } else if (phase === "quan") {
+      const threshold = snap.meta?.patience_s * 60 * LOW_RESOURCE_RATIO;
+      if (snap.customers?.some(customer => customer.state === "waiting" && customer.patience_ticks_left <= threshold)) {
+        active.push("⚠ Khách sắp giận");
+      }
+    }
+  }
+  const text = active.join("\n");
+  if (warnings.textContent !== text) warnings.textContent = text;
+}
 
 // ---------- vào: phím ----------
 const down = new Set();
@@ -229,7 +279,7 @@ function drawGather(w, h) {
   if (snap.mode !== "day") {
     text("⏱ " + fmtTime(snap.time_left_ticks), 14, 28, { size: 20 });
     if (p && p.oxygen_ticks !== undefined && p.oxygen_max_ticks) {
-      const low = p.oxygen_ticks < p.oxygen_max_ticks * 0.25;
+      const low = lowOxygen(p);
       bar(110, 12, 220, 18, p.oxygen_ticks / p.oxygen_max_ticks, low ? "#ef5350" : "#4fc3f7", "Oxy " + Math.ceil(p.oxygen_ticks / 60) + "s");
     }
     if (p && p.hp !== undefined && p.hp_max) {
@@ -459,6 +509,7 @@ function frame() {
     if (phase === "quan") drawQuan(w, h);
     else if (phase === "gather") drawGather(w, h);
     renderDayUI();
+    renderWarnings();
     if (snap.mode !== "day") eventLog(w, h);
     overlay(w, h);
   } else {
