@@ -8,7 +8,8 @@ import json
 import os
 import unittest
 
-from helpers import (Workdir, close, events, frames, read_jsonl, run_headless, snapshots, write_json)
+from helpers import (Workdir, close, counts, events, frames, hold_of, read_jsonl, run_headless, same_items, snapshots, v12,
+                     write_json)
 
 
 def last_pos(rows):
@@ -195,7 +196,7 @@ class Movement(unittest.TestCase):
 
     def test_time_ends_gather_and_keeps_hold(self):
         with Workdir() as w:
-            sc = write_json(w.path("sc.json"), {"gather": {"hold": ["ca_loc"], "time_left_ticks": 3,
+            sc = write_json(w.path("sc.json"), {"gather": {"hold": hold_of(["ca_loc"]), "time_left_ticks": 3,
                                                            "player": {"pos": [50, 10]}}})
             inv = w.path("inv.json")
             code, err = run_headless("--mode", "gather", "--seed", "1", "--ticks", "100", "--scenario", sc,
@@ -208,14 +209,19 @@ class Movement(unittest.TestCase):
             self.assertEqual(end_ev[0]["data"]["reason"], "time")
             self.assertEqual(rows[-1]["reason"], "time")
             with open(inv, encoding="utf-8") as f:
-                self.assertEqual(json.load(f), {"items": {"ca_loc": 1}})
+                saved = json.load(f)
+            if v12():  # v1.2: cá thể giữ id, hao 0.5/s × 3 tick
+                self.assertEqual([(i["id"], i["kind"]) for i in saved["items"]], [("I1", "ca_loc")])
+                self.assertAlmostEqual(saved["items"][0]["fresh"], 100 - 3 * 0.5 / 60, delta=0.01)
+            else:
+                self.assertEqual(saved, {"items": {"ca_loc": 1}})
 
 
 class Integration(unittest.TestCase):
     def test_inv_01_gather_writes_inventory_quan_reads_it(self):
         """Ví dụ smoke test trong PRD-0 mục G: cập bến ở tick 0, quán đọc kho đúng nội dung."""
         with Workdir() as w:
-            sc = write_json(w.path("sc.json"), {"gather": {"hold": ["ca_loc", "bong_sung", "bong_sung"]}})
+            sc = write_json(w.path("sc.json"), {"gather": {"hold": hold_of(["ca_loc", "bong_sung", "bong_sung"])}})
             inp = write_json(w.path("in.json"), frames({"tick": 0, "interact": True}))
             inv = w.path("inv.json")
             code, err = run_headless("--mode", "gather", "--seed", "42", "--ticks", "1", "--scenario", sc,
@@ -223,14 +229,26 @@ class Integration(unittest.TestCase):
             self.assertEqual(code, 0, err)
             with open(inv, encoding="utf-8") as f:
                 saved = json.load(f)
-            self.assertEqual(saved, {"items": {"bong_sung": 2, "ca_loc": 1}})
+            if v12():
+                self.assertEqual([i["id"] for i in saved["items"]], ["I1", "I2", "I3"])
+                self.assertEqual(counts(saved["items"]), {"bong_sung": 2, "ca_loc": 1})
+            else:
+                self.assertEqual(saved, {"items": {"bong_sung": 2, "ca_loc": 1}})
             end = events(read_jsonl(w.path("r.jsonl")), "gather_end")[0]["data"]
             self.assertEqual(end["reason"], "docked")
-            self.assertEqual(end["inventory"], saved)
+            if v12():  # JSONL làm tròn 3 chữ số, file kho giữ đủ chính xác
+                self.assertTrue(same_items(end["inventory"]["items"], saved["items"]))
+            else:
+                self.assertEqual(end["inventory"], saved)
             code, err = run_headless("--mode", "quan", "--seed", "42", "--ticks", "0", "--inventory", inv,
                                      "--out", w.path("q.jsonl"))
             self.assertEqual(code, 0, err)
-            self.assertEqual(snapshots(read_jsonl(w.path("q.jsonl")))[0]["stock"], {"bong_sung": 2, "ca_loc": 1})
+            stock = snapshots(read_jsonl(w.path("q.jsonl")))[0]["stock"]
+            # v1.2: quán nhận nguyên id, kind, fresh từ file (TICKET-03 smoke bàn giao)
+            if v12():
+                self.assertTrue(same_items(stock, saved["items"]), (stock, saved))
+            else:
+                self.assertEqual(stock, {"bong_sung": 2, "ca_loc": 1})
 
     def test_inv_01_not_written_when_tick_limit_first(self):
         with Workdir() as w:

@@ -31,10 +31,15 @@ def main(argv=None):
             command[0] = args.python
         with tempfile.TemporaryDirectory(prefix="chonoi-determinism-") as temp:
             folder = Path(temp)
+            v12 = contract["contract_version"] == "1.2"  # TICKET-03: kho cá thể
+            def items(kinds):
+                return [{"id": f"I{i}", "kind": k, "fresh": 100} for i, k in enumerate(kinds, 1)]
             scenarios = {
                 "gather": {"gather": {"player": {"pos": [50, 10], "oxygen_ticks": 1,
-                    "hp": 1}, "hold": ["ca_loc", "bong_sung"], "random_fish": False}},
-                "quan": {"quan": {"stock": {"ca_loc": 3, "bong_sung": 4}}},
+                    "hp": 1}, "hold": items(["ca_loc", "bong_sung"]) if v12 else ["ca_loc", "bong_sung"],
+                    "random_fish": False}},
+                "quan": {"quan": {"stock": items(["ca_loc"] * 3 + ["bong_sung"] * 4) if v12
+                                  else {"ca_loc": 3, "bong_sung": 4}}},
             }
             for mode, fixture in scenarios.items():
                 scenario = folder / f"{mode}-scenario.json"
@@ -58,7 +63,7 @@ def main(argv=None):
                         if rows[-1].get("reason") != "fainted":
                             raise ValueError("gather probe must finish by fainting")
                         saved = inventory.read_bytes()
-                        if json.loads(saved) != {"items": {}}:
+                        if json.loads(saved) != {"items": [] if v12 else {}}:
                             raise ValueError("faint inventory must be empty")
                     else:
                         saved = None

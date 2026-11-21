@@ -26,6 +26,7 @@ import math
 from ..errors import BadInput
 from ..ids import sort_by_id
 from ..inventory import hold_to_items
+from ..items import decay_items, dump_item, dump_sorted, item_mode, load_items, spoiled_below
 from .gather_actions import catch_fish, gather_node
 from .gather_fish import init_fish, snapshot_fish, update_fish
 from .gather_monsters import init_monsters, snapshot_monsters, update_monsters
@@ -62,7 +63,14 @@ class GatherSim:
         self.zero_oxy_ticks = p.get("zero_oxy_ticks", 0)
         self.invuln_ticks = p.get("invuln_ticks", 0)
         self.catch_cd_ticks = p.get("catch_cd_ticks", 0)
-        self.hold = list(scenario.get("hold", []))  # thứ tự nhặt, cuối mảng là mới nhất
+        self.fresh_cfg = tuning.get("freshness")  # v1.2: giỏ cá thể {id,kind,fresh}
+        if self.fresh_cfg is not None:
+            kinds = set(t["fish_yield"]) | {n["kind"] for n in t["nodes"]}
+            self.hold = load_items(scenario.get("hold", []), kinds, "gather.hold")
+            for it in self.hold:
+                ids.reserve(it["id"])
+        else:
+            self.hold = list(scenario.get("hold", []))  # thứ tự nhặt, cuối mảng là mới nhất
         self.time_left_ticks = scenario.get("time_left_ticks", int(round(t["duration_s"] * TICK)))
         # nút và đàn cá: scenario THAY THẾ danh sách mặc định; random_fish=false tắt cá mặc định
         src_nodes = scenario["nodes"] if "nodes" in scenario else t["nodes"]
@@ -90,8 +98,13 @@ class GatherSim:
         self.reason = None
 
     # --- giao diện cho runner -------------------------------------------------
-    def inventory_items(self) -> dict:
+    def inventory_items(self):
+        if self.fresh_cfg is not None:
+            return dump_sorted(self.hold)
         return hold_to_items(self.hold)
+
+    def _hold_out(self, items):
+        return items if self.fresh_cfg is None else [dump_item(it) for it in items]
 
     def snapshot(self) -> dict:
         snapshot = {
@@ -100,7 +113,7 @@ class GatherSim:
                        "hp": self.hp, "hp_max": self.hp_max, "zero_oxy_ticks": self.zero_oxy_ticks,
                        "invuln_ticks": self.invuln_ticks, "catch_cd_ticks": self.catch_cd_ticks,
                        "at_surface": self._at_surface()},
-            "hold": self.hold, "hold_count": len(self.hold),
+            "hold": self._hold_out(self.hold), "hold_count": len(self.hold),
             "hold_capacity": self.t["hold_capacity"],
             "nodes": [{"id": n["id"], "pos": n["pos"], "kind": n["kind"],
                        "ready": n["regrow_ticks"] == 0, "regrow_ticks": n["regrow_ticks"]}
@@ -129,6 +142,9 @@ class GatherSim:
                 n["regrow_ticks"] -= 1
                 if n["regrow_ticks"] == 0:
                     events.append(("node_regrown", {"node_id": n["id"]}))
+        if self.fresh_cfg is not None:  # hàng có sẵn đầu bước hao 0.5/s; hàng mới vào giỏ hao từ bước sau
+            decay_items(self.hold, self.fresh_cfg["gather_decay_per_s"], spoiled_below(self.fresh_cfg),
+                        "hold", events)
         # 2. bơi + chặn mép
         was_at_surface = self._at_surface()
         self._move(inp)
@@ -185,7 +201,7 @@ class GatherSim:
             self._faint("choke", events)
 
     def _faint(self, cause, events):
-        lost = list(reversed(self.hold))
+        lost = self._hold_out(list(reversed(self.hold)))
         self.hold.clear()
         events.append(("faint", {"cause": cause, "lost": lost, "hp": 0}))
         self._finish("fainted", events)

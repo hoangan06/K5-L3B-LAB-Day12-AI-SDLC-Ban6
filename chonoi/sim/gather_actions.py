@@ -5,6 +5,17 @@ import math
 from ..ids import id_key
 
 
+def _add(sim, kind, amount):
+    """Thêm vào giỏ theo thứ tự vào giỏ. v1.2: cá thể mới id I…, fresh = initial, hao từ bước sau."""
+    cfg = getattr(sim, "fresh_cfg", None)
+    if cfg is None:
+        sim.hold.extend([kind] * amount)
+        return
+    from ..items import exact
+    for _ in range(amount):
+        sim.hold.append({"id": sim.ids.new("I"), "kind": kind, "fresh": exact(cfg["initial"])})
+
+
 def _nearest(pos, entities, radius):
     candidates = [(math.dist(pos, e["pos"]), id_key(e["id"]), e)
                   for e in entities if math.dist(pos, e["pos"]) <= radius]
@@ -24,7 +35,7 @@ def gather_node(sim, events):
         events.append(("hold_full", {"action": "gather", "node_id": node["id"],
                                      "required": amount, "free": free}))
         return
-    sim.hold.extend([node["kind"]] * amount)
+    _add(sim, node["kind"], amount)
     node["regrow_ticks"] = int(round(sim.t["regrow_s"] * 60))
     events.append(("gather", {"node_id": node["id"], "kind": node["kind"], "amount": amount}))
 
@@ -41,7 +52,7 @@ def catch_fish(sim, events):
         events.append(("hold_full", {"action": "catch", "fish_id": fish["id"],
                                      "required": amount, "free": free}))
         return
-    sim.hold.extend([fish["kind"]] * amount)
+    _add(sim, fish["kind"], amount)
     sim.fish.remove(fish)
     sim.catch_cd_ticks = int(round(sim.t["catch_cooldown_s"] * 60))
     events.append(("fish_caught", {"fish_id": fish["id"], "kind": fish["kind"], "yield": amount}))

@@ -10,6 +10,7 @@ import math
 
 from .errors import BadInput
 from .inventory import inventory_kinds, validate_items
+from .items import item_mode, load_items
 
 GATHER_KEYS = {"player", "hold", "nodes", "fish", "random_fish", "time_left_ticks"}
 GATHER_PLAYER_KEYS = {"pos", "vel", "heading_deg", "hp", "oxygen_ticks", "zero_oxy_ticks",
@@ -108,7 +109,10 @@ def _validate_gather(b, tuning, *, day_mode=False):
             _check_ids(arr, b[arr])
     if "random_fish" in b and not isinstance(b["random_fish"], bool):
         raise BadInput("random_fish phải là boolean")
-    if "hold" in b:
+    if "hold" in b and item_mode(tuning):  # v1.2: mảng cá thể theo thứ tự vào giỏ
+        if len(load_items(b["hold"], kinds, "gather.hold")) > g["hold_capacity"]:
+            raise BadInput("hold vượt sức chứa")
+    elif "hold" in b:
         h = b["hold"]
         if not isinstance(h, list) or any(not isinstance(k, str) or k not in kinds for k in h):
             raise BadInput("hold phải là mảng id nguyên liệu hợp lệ")
@@ -174,7 +178,10 @@ def _validate_quan(b, tuning):
         if arr in b:
             _check_ids(arr, b[arr])
     if "stock" in b:
-        validate_items(b["stock"], inventory_kinds(tuning))
+        if item_mode(tuning):
+            load_items(b["stock"], inventory_kinds(tuning), "quan.stock")
+        else:
+            validate_items(b["stock"], inventory_kinds(tuning))
     p = b.get("player", {})
     if not isinstance(p, dict) or set(p) - QUAN_PLAYER_KEYS:
         raise BadInput("quan.player chỉ có pos và vel")

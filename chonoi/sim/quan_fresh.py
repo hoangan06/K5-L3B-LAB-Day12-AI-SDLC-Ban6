@@ -5,52 +5,24 @@ Kho quán: list cá thể {id, kind, fresh}; fresh lưu bằng Fraction để so
 Phần giữ của khách: list id cá thể (sort theo id).
 """
 
-import math
-from fractions import Fraction
 from math import floor
 
-from ..errors import BadInput
 from ..ids import id_key, sort_by_id
-
-
-def item_mode(tuning):
-    return "freshness" in tuning
-
-
-def _num(v):
-    return not isinstance(v, bool) and isinstance(v, (int, float)) and math.isfinite(v)
+from ..items import decay_items, dump_item, exact, item_mode  # noqa: F401 (quan.py import từ đây)
+from ..items import load_items as _load_items
 
 
 def load_items(raw, kinds, where):
-    """Kiểm mảng cá thể v1.2 → list mới {id, kind, fresh: Fraction}, sort theo id. Sai schema → mã 2."""
-    if not isinstance(raw, list):
-        raise BadInput(f"{where}: contract v1.2 cần mảng cá thể {{id,kind,fresh}} (kho đếm → mã 2)")
-    out, seen = [], set()
-    for it in raw:
-        if not isinstance(it, dict) or set(it) != {"id", "kind", "fresh"}:
-            raise BadInput(f"{where}: cá thể phải có đúng id, kind, fresh")
-        iid, kind, fresh = it["id"], it["kind"], it["fresh"]
-        if not isinstance(iid, str) or not iid or iid in seen:
-            raise BadInput(f"{where}: id cá thể rỗng hoặc trùng: {iid!r}")
-        if kind not in kinds:
-            raise BadInput(f"{where}: nguyên liệu lạ {kind!r}")
-        if not _num(fresh) or not 0 <= fresh <= 100:
-            raise BadInput(f"{where}: fresh của {iid} phải hữu hạn trong [0, 100]")
-        seen.add(iid)
-        out.append({"id": iid, "kind": kind, "fresh": Fraction(str(fresh))})
-    return sort_by_id(out)
+    """Kiểm mảng cá thể v1.2 (chonoi.items) → list sort theo id. Sai schema → mã 2."""
+    return sort_by_id(_load_items(raw, kinds, where))
 
 
 def spoiled_below(sim):
-    return Fraction(str(sim.fresh_cfg["spoiled_below"]))
+    return exact(sim.fresh_cfg["spoiled_below"])
 
 
 def is_spoiled(sim, item):
     return item["fresh"] < spoiled_below(sim)
-
-
-def dump_item(item):
-    return {"id": item["id"], "kind": item["kind"], "fresh": float(item["fresh"])}
 
 
 def reserved_ids(sim, skip=None):
@@ -82,15 +54,7 @@ def available_counts(sim):
 
 def decay(sim, events):
     """Hao tươi kho quán (kể cả hàng đang giữ), phát spoiled theo id, rồi giữ lại cho đơn bị ảnh hưởng."""
-    rate = Fraction(str(sim.fresh_cfg["quan_decay_per_s"])) / 60
-    limit = spoiled_below(sim)
-    newly = set()
-    for it in sim.stock:  # stock luôn sort theo id
-        was_ok = it["fresh"] >= limit
-        it["fresh"] = max(Fraction(0), it["fresh"] - rate)
-        if was_ok and it["fresh"] < limit:
-            newly.add(it["id"])
-            events.append(("spoiled", {"item_id": it["id"], "kind": it["kind"], "location": "stock"}))
+    newly = decay_items(sim.stock, sim.fresh_cfg["quan_decay_per_s"], spoiled_below(sim), "stock", events)
     if not newly:
         return
     hit = [c for c in sim.customers if c["order_status"] == "reserved" and newly & set(c["reserved"])]

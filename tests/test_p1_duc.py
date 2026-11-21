@@ -4,6 +4,9 @@ from types import SimpleNamespace
 
 from chonoi import TICK_HZ
 from chonoi.contract import load_contract
+
+# Unit test P1 (kho đếm). Từ v1.2 (TICKET-03) runtime dùng kho cá thể, nên test này giữ manifest P1 cố định.
+FIXTURE_CONTRACT = Path(__file__).resolve().parent / "fixtures/phase-1/game.contract.json"
 from chonoi.inputs import InputPlayer
 from chonoi.runner import Session
 from chonoi.scenario import load_scenario
@@ -17,7 +20,7 @@ FIXTURES = Path(__file__).resolve().parents[1] / "docs" / "contracts" / "phase-1
 
 class PaymentTests(unittest.TestCase):
     def setUp(self):
-        self.tuning = load_contract()["tuning"]["quan"]
+        self.tuning = load_contract(FIXTURE_CONTRACT)["tuning"]["quan"]
         self.customer = {
             "id": "C1",
             "table_id": "T1",
@@ -121,7 +124,7 @@ class DiscardTests(unittest.TestCase):
 
 class KitchenTests(unittest.TestCase):
     def setUp(self):
-        self.tuning = load_contract()["tuning"]
+        self.tuning = load_contract(FIXTURE_CONTRACT)["tuning"]
 
     def fixture(self, name):
         scenario = load_scenario(FIXTURES / f"quan-{name}.json", "quan", self.tuning)
@@ -247,7 +250,7 @@ class KitchenTests(unittest.TestCase):
 
 class QuanIntegrationTests(unittest.TestCase):
     def setUp(self):
-        self.tuning = load_contract()["tuning"]
+        self.tuning = load_contract(FIXTURE_CONTRACT)["tuning"]
 
     def scenario(self, name):
         return load_scenario(FIXTURES / f"quan-{name}.json", "quan", self.tuning)

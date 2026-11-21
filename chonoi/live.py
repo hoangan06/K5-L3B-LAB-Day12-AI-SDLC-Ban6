@@ -316,7 +316,7 @@ def main(argv=None) -> int:
         if a.mode == "day" and "shop" not in tuning:
             raise BadInput("mode day cần manifest Phase 2 đã tích hợp")
         scenario = load_scenario(a.scenario, a.mode, tuning)
-        inventory = read_inventory(a.inventory, inventory_kinds(tuning)) if a.inventory else None
+        inventory = read_inventory(a.inventory, inventory_kinds(tuning), items_mode="freshness" in tuning) if a.inventory else None
         if inventory is not None and "stock" in scenario:
             raise BadInput("vừa có quan.stock vừa có --inventory")
         game = LiveGame(a.mode, tuning, scenario, a.seed, inventory, a.inventory_out, days=a.days or 5)

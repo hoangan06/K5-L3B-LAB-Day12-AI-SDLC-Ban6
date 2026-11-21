@@ -9,6 +9,7 @@ import os
 import tempfile
 
 from .errors import BadInput
+from .items import dump_sorted, load_items
 
 KINDS_P1 = ("ca_loc", "ca_linh", "bong_dien_dien", "bong_sung")
 KINDS_P2 = KINDS_P1 + ("ca_keo", "keo_neo")  # mặc định khi không biết tuning (test Duy); có tuning thì dùng inventory_kinds
@@ -33,7 +34,7 @@ def validate_items(items, kinds=KINDS_P2):
     return out
 
 
-def read_inventory(path: str, kinds=KINDS_P2) -> dict:
+def read_inventory(path: str, kinds=KINDS_P2, *, items_mode=False):
     try:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
@@ -41,6 +42,11 @@ def read_inventory(path: str, kinds=KINDS_P2) -> dict:
         raise BadInput(f"không đọc được file kho {path}: {e}")
     if not isinstance(data, dict) or set(data.keys()) != {"items"}:
         raise BadInput("file kho chỉ được có khóa gốc 'items'")
+    if items_mode:  # v1.2: mảng cá thể; file kho đếm -> mã 2
+        load_items(data["items"], kinds, "file kho")
+        return [dict(it) for it in data["items"]]
+    if isinstance(data["items"], list):
+        raise BadInput("file kho cá thể chỉ hợp lệ với contract v1.2")
     return validate_items(data["items"], kinds)
 
 
@@ -52,8 +58,11 @@ def hold_to_items(hold: list) -> dict:
     return {k: counts[k] for k in sorted(counts)}
 
 
-def write_inventory(path: str, items: dict):
-    items = {k: items[k] for k in sorted(items) if items[k] > 0}
+def write_inventory(path: str, items):
+    if isinstance(items, list):  # v1.2: cá thể sắp theo id, fresh float đủ chính xác để đọc lại
+        items = dump_sorted(items)
+    else:
+        items = {k: items[k] for k in sorted(items) if items[k] > 0}
     d = os.path.dirname(os.path.abspath(path))
     fd, tmp = tempfile.mkstemp(prefix=".inv-", suffix=".tmp", dir=d)
     try:

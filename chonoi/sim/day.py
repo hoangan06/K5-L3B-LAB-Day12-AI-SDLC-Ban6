@@ -84,7 +84,7 @@ class DaySim:
         if child.phase == "gather":
             self.current_sim = QuanSim(
                 self.tuning, deepcopy(self._quan), self.streams, self.ids,
-                inventory=child.inventory_items(), context=self._context(),
+                inventory=self._handoff(child), context=self._context(),
             )
             events.append(self._event("phase_start", {}))
         elif child.phase == "quan":
@@ -113,11 +113,21 @@ class DaySim:
             "active_upgrades": self.active_upgrades.copy(),
         }
 
+    def _handoff(self, gather):
+        """Bàn giao cùng tick chuyển pha. v1.2: chuyển nguyên cá thể (fresh chính xác), không hao thêm."""
+        if "freshness" in self.tuning:
+            return [dict(it) for it in gather.hold]
+        return gather.inventory_items()
+
     def _start_day(self):
         self.day_plan = self._plans[self.day - 1]
         self.active_upgrades = self._upgrades.copy()
+        gather = deepcopy(self._gather)
+        if "freshness" in self.tuning and self.day > 1 and "hold" in gather:
+            # TICKET-03: Ngày kế cấp id mới theo thứ tự mảng mẫu, giữ kind/fresh ban đầu.
+            gather["hold"] = [dict(it, id=self.ids.new("I")) for it in gather["hold"]]
         self.current_sim = GatherSim(
-            self.tuning, deepcopy(self._gather), self.streams, self.ids, context=self._context(),
+            self.tuning, gather, self.streams, self.ids, context=self._context(),
         )
 
     def _context(self):

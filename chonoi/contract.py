@@ -26,9 +26,14 @@ def load_contract(path=DEFAULT_PATH) -> dict:
             c = json.load(f)
     except (OSError, ValueError) as e:
         raise BadInput(f"không đọc được {path}: {e}")
-    if not isinstance(c, dict) or c.get("contract_version") not in ("1.0", "1.1"):
-        raise BadInput("contract_version phải là 1.0 hoặc 1.1")
-    validate_tuning(c.get("tuning"), phase_two=c["contract_version"] == "1.1")
+    if not isinstance(c, dict) or c.get("contract_version") not in ("1.0", "1.1", "1.2"):
+        raise BadInput("contract_version phải là 1.0, 1.1 hoặc 1.2")
+    v = c["contract_version"]
+    validate_tuning(c.get("tuning"), phase_two=v in ("1.1", "1.2"))
+    if (v == "1.2") != ("freshness" in c["tuning"]):
+        raise BadInput("khối tuning.freshness có đúng khi contract_version 1.2")
+    if v == "1.2":
+        _validate_freshness(c["tuning"]["freshness"])
     return c
 
 
@@ -158,6 +163,16 @@ def validate_tuning(t, *, phase_two=None):
             raise BadInput(f"menu.{dish_id}: price (nguyên) và cook_s phải > 0")
     if phase_two:
         _validate_phase_two(t)
+
+
+def _validate_freshness(f):
+    """TICKET-03: freshness {initial, gather_decay_per_s, quan_decay_per_s, spoiled_below}."""
+    if not isinstance(f, dict) or set(f) != {"initial", "gather_decay_per_s", "quan_decay_per_s", "spoiled_below"}:
+        raise BadInput("tuning.freshness phải có đúng initial, gather_decay_per_s, quan_decay_per_s, spoiled_below")
+    _between("freshness.initial", f["initial"], 0, 100)
+    _between("freshness.spoiled_below", f["spoiled_below"], 0, 100)
+    for key in ("gather_decay_per_s", "quan_decay_per_s"):
+        _between(f"freshness.{key}", f[key], 0, 100)
 
 
 def _positive(name, value, *, integer=False, minimum=1):

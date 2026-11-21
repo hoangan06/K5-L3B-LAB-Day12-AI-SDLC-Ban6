@@ -9,6 +9,10 @@ import tempfile
 import unittest
 
 from chonoi.contract import load_contract
+from helpers import hold_of, v12
+
+# Unit test P1 (kho đếm). Từ v1.2 (TICKET-03) runtime dùng kho cá thể, nên test này giữ manifest P1 cố định.
+FIXTURE_CONTRACT = Path(__file__).resolve().parent / "fixtures/phase-1/game.contract.json"
 from chonoi.inputs import InputState
 from chonoi.runner import Session
 
@@ -18,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class GatherAn(unittest.TestCase):
     def session(self, player=None, **scenario):
-        tuning = copy.deepcopy(load_contract()["tuning"])
+        tuning = copy.deepcopy(load_contract(FIXTURE_CONTRACT)["tuning"])
         scenario["player"] = {"pos": [50, 10], **(player or {})}
         return Session("gather", tuning, scenario, 7)
 
@@ -143,13 +147,14 @@ class GatherAn(unittest.TestCase):
             folder = Path(temp)
             scenario = folder / "scenario.json"
             scenario.write_text(json.dumps({"gather": {"player": {"pos": [50, 10],
-                "oxygen_ticks": 0, "zero_oxy_ticks": 59, "hp": 1}, "hold": ["ca_loc"]}}), encoding="utf-8")
+                "oxygen_ticks": 0, "zero_oxy_ticks": 59, "hp": 1}, "hold": hold_of(["ca_loc"])}}), encoding="utf-8")
             output, inventory = folder / "out.jsonl", folder / "inventory.json"
             result = subprocess.run([sys.executable, "-m", "chonoi.headless", "--mode", "gather",
                 "--seed", "7", "--ticks", "100", "--scenario", str(scenario),
                 "--out", str(output), "--inventory-out", str(inventory)], cwd=ROOT, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(json.loads(inventory.read_text(encoding="utf-8")), {"items": {}})
+            # Ngất ghi kho rỗng; v1.2 là {"items": []} (TICKET-03)
+            self.assertEqual(json.loads(inventory.read_text(encoding="utf-8")), {"items": [] if v12() else {}})
             rows = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()]
             self.assertEqual(rows[-1]["reason"], "fainted")
             self.assertEqual(rows[-1]["ticks"], 1)

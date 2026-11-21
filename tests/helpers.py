@@ -65,3 +65,33 @@ class Workdir:
 
     def path(self, name):
         return os.path.join(self._d.name, name)
+
+
+def contract_version():
+    with open(os.path.join(ROOT, "game.contract.json"), encoding="utf-8") as f:
+        return json.load(f)["contract_version"]
+
+
+def v12():
+    """TICKET-03: từ v1.2 giỏ/kho là mảng cá thể {id,kind,fresh} thay kho đếm."""
+    return contract_version() == "1.2"
+
+
+def hold_of(kinds):
+    """Giỏ mẫu theo đúng schema của manifest đang chạy: v1.2 cá thể I1.. fresh 100, trước đó mảng kind."""
+    kinds = list(kinds)
+    return [{"id": f"I{i}", "kind": k, "fresh": 100} for i, k in enumerate(kinds, 1)] if v12() else kinds
+
+
+def counts(items):
+    """Đếm theo kind từ kho cá thể (để so nội dung với kỳ vọng kiểu cũ)."""
+    out = {}
+    for it in items:
+        out[it["kind"]] = out.get(it["kind"], 0) + 1
+    return {k: out[k] for k in sorted(out)}
+
+
+def same_items(a, b, tol=0.01):
+    """So kho cá thể: id/kind đúng thứ tự, fresh trong dung sai ±0.01 (JSONL làm tròn 3 chữ số)."""
+    return (len(a) == len(b) and all(x["id"] == y["id"] and x["kind"] == y["kind"]
+                                     and abs(x["fresh"] - y["fresh"]) <= tol for x, y in zip(a, b)))

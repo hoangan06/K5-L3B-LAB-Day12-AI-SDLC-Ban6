@@ -120,6 +120,8 @@ def update_monsters(sim, events):
     sim.invuln_ticks = tuning["invuln_ticks"]
     sim.hp -= 1
     lost = [sim.hold.pop() for _ in range(floor(len(sim.hold) * tuning["loss_ratio"]))]
+    lost = [x if isinstance(x, str) else {"id": x["id"], "kind": x["kind"], "fresh": float(x["fresh"])}
+            for x in lost]  # v1.2: mảng cá thể theo thứ tự bỏ LIFO
     events.append(("monster_hit", {"monster_id": monster["id"], "hp": sim.hp, "lost": lost, "pos": list(sim.pos)}))
     if sim.hp == 0:
         sim._faint("monster", events)

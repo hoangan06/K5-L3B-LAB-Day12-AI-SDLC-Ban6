@@ -8,16 +8,21 @@ from chonoi.rng import Streams
 from chonoi.runner import Session
 from chonoi.sim.gather import GatherSim
 
-from helpers import Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
+from pathlib import Path
+
+from helpers import Workdir, counts, same_items, events, frames, hold_of, read_jsonl, run_headless, snapshots, v12, write_json
+
+# Unit test P2 gọi sim trực tiếp với kho đếm: giữ manifest 1.1 cố định (từ v1.2 runtime dùng kho cá thể, TICKET-03).
+FIXTURE_CONTRACT = Path(__file__).resolve().parent / "fixtures/phase-2/game.contract.json"
 
 
 class PhaseTwoIntegration(unittest.TestCase):
     def setUp(self):
-        self.tuning = load_contract()["tuning"]
+        self.tuning = load_contract(FIXTURE_CONTRACT)["tuning"]
 
     def test_headless_five_days_preserves_tick_provenance_and_upgrade_timing(self):
         scenario = {"day": {"money": 200, "earned": 250},
-                    "gather": {"time_left_ticks": 1, "random_fish": False, "monsters": [], "hold": ["bong_sung"]},
+                    "gather": {"time_left_ticks": 1, "random_fish": False, "monsters": [], "hold": hold_of(["bong_sung"])},
                     "quan": {"time_left_ticks": 1, "random_customers": False}}
         inputs = [{"tick": 2, "pause": True, "buy": "oxygen", "shop_done": True},
                   {"tick": 3, "pause": False, "shop_done": False},
@@ -75,17 +80,22 @@ class PhaseTwoIntegration(unittest.TestCase):
         kinds = sorted(inventory_kinds(self.tuning))
         self.assertEqual(len(kinds), 6)
         with Workdir() as work:
-            scenario = write_json(work.path("gather.json"), {"gather": {"hold": kinds, "random_fish": False, "monsters": []}})
+            scenario = write_json(work.path("gather.json"), {"gather": {"hold": hold_of(kinds), "random_fish": False, "monsters": []}})
             command = write_json(work.path("input.json"), frames({"tick": 0, "interact": True}))
             inventory = work.path("stock.json")
             code, error = run_headless("--mode", "gather", "--seed", "1", "--ticks", "1", "--scenario", scenario,
                                        "--inputs", command, "--inventory-out", inventory, "--out", work.path("g.jsonl"))
             self.assertEqual(code, 0, error)
-            self.assertEqual(read_inventory(inventory, kinds), dict.fromkeys(kinds, 1))
+            saved = read_inventory(inventory, kinds, items_mode=v12())
+            self.assertEqual(counts(saved) if v12() else saved, dict.fromkeys(kinds, 1))
             output = work.path("q.jsonl")
             code, error = run_headless("--mode", "quan", "--seed", "1", "--ticks", "0", "--inventory", inventory, "--out", output)
             self.assertEqual(code, 0, error)
-            self.assertEqual(read_jsonl(output)[0]["stock"], dict.fromkeys(kinds, 1))
+            stock = read_jsonl(output)[0]["stock"]
+            if v12():
+                self.assertTrue(same_items(stock, saved), (stock, saved))
+            else:
+                self.assertEqual(stock, dict.fromkeys(kinds, 1))
 
     def test_fish_reflects_and_spawns_without_moving_on_birth_tick(self):
         scenario = {"monsters": [], "fish": [{"id": "F10", "kind": "ca_loc", "pos": [96, 10], "heading_deg": 0}]}

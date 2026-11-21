@@ -66,7 +66,7 @@ def main(argv=None) -> int:
         tuning = contract["tuning"]
         scenario = load_scenario(a.scenario, a.mode, tuning)
         frames = load_frames(a.inputs, BUTTONS_V11 if "shop" in tuning else BUTTONS_V10)
-        inventory = read_inventory(a.inventory, inventory_kinds(tuning)) if a.inventory else None
+        inventory = read_inventory(a.inventory, inventory_kinds(tuning), items_mode="freshness" in tuning) if a.inventory else None
         if inventory is not None and "stock" in scenario:
             raise BadInput("vừa có quan.stock vừa có --inventory")
     except BadInput as e:

@@ -22,7 +22,8 @@ class ShopSim:
 
     def __init__(self, tuning, scenario, streams, ids, *, context):
         self.t = tuning["shop"]
-        self.stock = dict(scenario.get("stock", {}))
+        raw = scenario.get("stock", {})
+        self.stock = list(raw) if isinstance(raw, list) else dict(raw)  # v1.2: cá thể, không hao ở Shop
         self.upgrades = initial_upgrades(tuning, context["upgrades"])
         self.money = context["money"]
         self.earned = context["earned"]
@@ -33,6 +34,9 @@ class ShopSim:
         self.reason = None
 
     def snapshot(self):
+        if isinstance(self.stock, list):
+            from ..items import dump_sorted
+            return {"stock": dump_sorted(self.stock)}
         return {"stock": {kind: amount for kind, amount in self.stock.items() if amount > 0}}
 
     def step(self, inp):

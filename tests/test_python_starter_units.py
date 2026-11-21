@@ -2,10 +2,14 @@
 (và viết unit test tương đương bằng ngôn ngữ của nhóm); test hộp đen test_smoke_p1.py vẫn dùng nguyên."""
 
 import unittest
+from pathlib import Path
 
 from chonoi.errors import BadInput
 from chonoi.ids import IdAllocator, id_key, sort_by_id
 from chonoi.contract import load_contract
+
+# Unit test P1 (kho đếm). Từ v1.2 (TICKET-03) runtime dùng kho cá thể, nên test này giữ manifest P1 cố định.
+FIXTURE_CONTRACT = Path(__file__).resolve().parent / "fixtures/phase-1/game.contract.json"
 from chonoi.inputs import InputPlayer, LiveInputs, load_frames
 from chonoi.runner import Session
 
@@ -61,7 +65,7 @@ class Units(unittest.TestCase):
         self.assertAlmostEqual(st.move[0] ** 2 + st.move[1] ** 2, 1.0)
 
     def test_session_steps_gather_and_dock(self):
-        tuning = load_contract()["tuning"]
+        tuning = load_contract(FIXTURE_CONTRACT)["tuning"]
         s = Session("gather", tuning, {"hold": ["ca_loc"]}, 1)
         self.assertEqual(s.snapshot()["tick"], 0)
         li = LiveInputs()
