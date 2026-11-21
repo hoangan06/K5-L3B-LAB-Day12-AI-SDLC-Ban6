@@ -7,7 +7,7 @@
 | Nguyễn Hoàng Ân | hoangan06 | `sim/gather` | | |
 | Trung | trungnb | `sim/quan` (khách, giữ chỗ, validation: `quan_customers.py`, `quan_validation.py`) | PO | Đức |
 | Lại Trọng Đức | laitrongduc | `sim/quan`, `client/ui` (bếp, phục vụ, thanh toán, HUD) | Điều phối quán / sản phẩm | Trung |
-| Duy | duydang2k4 | `sim/gather_fish`, `sim/gather_actions`, dữ liệu và validation kho/scenario | QA lead | Ân (gather) |
+| Đặng Quang Duy | duydang2k4 | `sim/gather_fish`, `sim/gather_actions`, dữ liệu và validation kho/scenario | QA lead | Ân (gather) |
 
 **Vai quy trình:** PO (đầu mối hỏi giảng viên, giữ `docs/clarify.md`) · Integrator (giữ `docs/contracts/`, gắn tag) · QA lead · Scrum/Release. Có thể kiêm.
 
