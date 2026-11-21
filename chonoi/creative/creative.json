@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "_note": "Số liệu tuning của phần sáng tạo (chỉ live, cờ --creative). Mọi giá trị là giả định của agent, chờ PO duyệt.",
+  "shrines": {
+    "ba_thuy": {"name": "Đền Bà Thủy", "x": 36, "radius": 2.5, "stand_ticks": 180},
+    "ca_ong": {"name": "Miếu Cá Ông", "x": 68, "radius": 2.5, "stand_ticks": 180}
+  },
+  "ba_thuy_buff": {
+    "duration_ticks": 5400,
+    "swim_speed_mult": 1.25,
+    "serpent_spawn_mult": 0.5,
+    "chain_reduction": 1,
+    "crocodile_skip_chance": 0.5,
+    "crocodile_skip_invuln_ticks": 60,
+    "crocodile_approach_margin": 1.0,
+    "crocodile_rearm_margin": 3.0
+  },
+  "ca_ong": {"dice_sides": 6, "success_roll": 6, "max_revives_per_phase": 1, "revive_invuln_ticks": 120, "revive_oxygen_fraction": 0.5},
+  "serpent": {
+    "check_interval_ticks": 600,
+    "spawn_chance": 0.35,
+    "max_per_phase": 2,
+    "x": [15, 95],
+    "depth": [8, 20],
+    "min_distance_from_player": 12,
+    "ttl_ticks": 2400,
+    "coil_radius": 2.0,
+    "chain_length": 6,
+    "chain_min": 3,
+    "chain_time_ticks": 480,
+    "squeeze_oxygen_ticks": 120,
+    "immunity_ticks": 120
+  },
+  "message_keep": 6
+}
