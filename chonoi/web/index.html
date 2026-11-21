@@ -19,6 +19,12 @@
   .day-card button:disabled { opacity: .65; cursor: default; }
   .day-hud p { margin: 0; }
   .day-hud button { flex: 0 0 auto; align-self: start; margin: 0; }
+  .freshness-hud { position: absolute; right: 1rem; bottom: 2rem; width: min(22rem, calc(100% - 2rem)); max-height: 40vh; overflow: auto; box-sizing: border-box; padding: 12px 16px; background: #101d26f5; border: 1px solid #6c8792; border-radius: 8px; font-size: 18px; }
+  .freshness-hud h2 { margin: 0 0 6px; font-size: inherit; }
+  .freshness-hud ul { margin: 0; padding: 0; list-style: none; }
+  .freshness-hud li { padding: 3px 0; }
+  .freshness-hud .reserved { color: #ffd88e; }
+  .freshness-hud .spoiled { color: #ffaba6; }
 </style>
 </head>
 <body>
@@ -27,6 +33,10 @@
   <div><p id="day-title"></p><p id="day-details"></p></div>
   <button id="day-pause" type="button">Tạm dừng</button>
 </header>
+<section class="freshness-hud" id="freshness-hud" aria-labelledby="freshness-title" hidden>
+  <h2 id="freshness-title"></h2>
+  <ul id="freshness-items"></ul>
+</section>
 <div class="day-overlay" id="day-overlay" hidden><section class="day-card" id="day-card"></section></div>
 <script>
 "use strict";
@@ -246,25 +256,87 @@ function drawGather(w, h) {
     for (let i = 0; i < cap; i++) {
       const x0 = 14 + i * (sz + 4);
       ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(x0, y0, sz, sz);
-      if (snap.hold[i]) { ctx.fillStyle = kc(snap.hold[i]); ctx.fillRect(x0 + 3, y0 + 3, sz - 6, sz - 6); }
+      if (snap.hold[i]) { ctx.fillStyle = kc(itemKind(snap.hold[i])); ctx.fillRect(x0 + 3, y0 + 3, sz - 6, sz - 6); }
     }
-    const names = {}; snap.hold.forEach((k) => (names[k] = (names[k] || 0) + 1));
-    text("Giỏ " + snap.hold.length + "/" + cap + "  " + Object.keys(names).map((k) => (KIND_NAME[k] || k) + "×" + names[k]).join(", "), 14, y0 + sz + 16, { size: 12, color: "#cfd8dc" });
+    text(`Giỏ ${snap.hold.length}/${cap} · ${stockLabel(snap.hold)}`, 14, y0 + sz + 16, { size: 12, color: "#cfd8dc" });
   }
   text("WASD/mũi tên bơi · E hái / cập bến · Space bắt cá · R chơi lại", w - 10, h - 14, { size: 12, align: "right", color: "#9fb3c0" });
 }
 
+function itemKind(item) {
+  return typeof item === "string" ? item : item.kind;
+}
+
+function countItems(items) {
+  const counts = Object.create(null);
+  for (const item of items) {
+    const kind = itemKind(item);
+    counts[kind] = (counts[kind] || 0) + 1;
+  }
+  return counts;
+}
+
+function isSpoiled(item, snapshot) {
+  const threshold = snapshot.meta?.freshness?.spoiled_below;
+  return Number.isFinite(item?.fresh) && Number.isFinite(threshold) && item.fresh < threshold;
+}
+
+function reservedIds(snapshot) {
+  const ids = new Set();
+  for (const customer of snapshot.customers || []) {
+    if (Array.isArray(customer.reserved)) {
+      for (const id of customer.reserved) ids.add(id);
+    }
+  }
+  return ids;
+}
+
 function availableStock(snapshot) {
+  if (Array.isArray(snapshot.stock)) {
+    const reserved = reservedIds(snapshot);
+    return stockLabel(snapshot.stock.filter(item => !reserved.has(item.id) && !isSpoiled(item, snapshot)));
+  }
   const stock = { ...snapshot.stock };
   for (const customer of snapshot.customers || []) {
     for (const [kind, amount] of Object.entries(customer.reserved || {})) {
       stock[kind] = (stock[kind] ?? 0) - amount;
     }
   }
-  return Object.entries(stock)
-    .filter(([, amount]) => amount !== 0)
-    .map(([kind, amount]) => `${KIND_NAME[kind] || kind} ×${amount}`)
-    .join(", ");
+  return stockLabel(stock);
+}
+
+const freshnessHud = document.getElementById("freshness-hud");
+const freshnessTitle = document.getElementById("freshness-title");
+const freshnessItems = document.getElementById("freshness-items");
+let freshnessKey = "";
+
+function renderFreshness(snapshot) {
+  const phase = snapshot.phase || snapshot.mode;
+  const items = phase === "gather" ? snapshot.hold : snapshot.stock;
+  const isIndividual = Array.isArray(items) && (items.length
+    ? items.every(item => Number.isFinite(item?.fresh)) : Boolean(snapshot.meta?.freshness));
+  freshnessHud.hidden = !isIndividual || phase === "shop" || Boolean(snapshot.ui?.screen) || snapshot.state === "paused";
+  if (freshnessHud.hidden) return;
+
+  const reserved = reservedIds(snapshot);
+  const rows = items.map(item => {
+    const spoiled = isSpoiled(item, snapshot);
+    const held = reserved.has(item.id);
+    const status = [spoiled ? "Ươn" : "", held ? "Đã giữ" : ""].filter(Boolean).join(" · ");
+    const fresh = Math.floor(item.fresh * 10) / 10;
+    return [`${item.id} · ${KIND_NAME[item.kind] || item.kind} · ${fresh}%${status ? " · " + status : ""}`,
+      spoiled ? "spoiled" : held ? "reserved" : ""];
+  });
+  const title = phase === "gather" ? "Độ tươi trong giỏ" : "Độ tươi trong kho";
+  const key = JSON.stringify([title, rows]);
+  if (key === freshnessKey) return;
+  freshnessKey = key;
+  freshnessTitle.textContent = title;
+  freshnessItems.replaceChildren(...(rows.length ? rows : [["Trống", ""]]).map(([label, className]) => {
+    const item = uiText("li", label);
+    item.className = className;
+    return item;
+  }));
 }
 
 // ----- cảnh QUÁN: nhìn từ trên xuống, x sang phải, z lên (bắc) -----
@@ -352,7 +424,9 @@ function uiButton(label, action, disabled = false) {
 }
 
 function stockLabel(stock = {}) {
-  return Object.entries(stock).map(([kind, amount]) => `${KIND_NAME[kind] || kind} ×${amount}`).join(", ") || "trống";
+  const counts = Array.isArray(stock) ? countItems(stock) : (stock || {});
+  return Object.entries(counts).filter(([, amount]) => amount > 0)
+    .map(([kind, amount]) => `${KIND_NAME[kind] || kind} ×${amount}`).join(", ") || "trống";
 }
 
 function planLabel() {
@@ -361,8 +435,7 @@ function planLabel() {
 
 function gatherDetails() {
   const player = snap.player || {};
-  const held = {};
-  for (const kind of snap.hold || []) held[kind] = (held[kind] || 0) + 1;
+  const held = countItems((snap.hold || []).filter(item => !isSpoiled(item, snap)));
   const targets = Object.entries(snap.day_plan?.ingredients || {}).map(([kind, count]) =>
     `${KIND_NAME[kind] || kind} ${held[kind] || 0}/${count}`);
   const inventory = targets.join(" · ");
@@ -459,6 +532,7 @@ function frame() {
     if (phase === "quan") drawQuan(w, h);
     else if (phase === "gather") drawGather(w, h);
     renderDayUI();
+    renderFreshness(snap);
     if (snap.mode !== "day") eventLog(w, h);
     overlay(w, h);
   } else {
