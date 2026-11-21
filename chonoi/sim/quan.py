@@ -3,9 +3,10 @@
 from .. import TICK_HZ
 from ..errors import BadInput
 from ..ids import sort_by_id
+from .quan_fresh import decay, dump_item, item_mode, load_items
 from .quan_customers import advance_timers, init_customers, resolve_departures, spawn_customer
 from .quan_kitchen import finish_cooking, interact
-from .quan_validation import validate_quan_fixture, validate_quan_state
+from .quan_validation import menu_kinds, validate_quan_fixture, validate_quan_state
 from .ramp import ramp_velocity
 
 
@@ -33,7 +34,17 @@ class QuanSim:
         self._tgt = None
         self._ramp_left = 0
         # kho: --inventory HOẶC scenario.stock (cả hai -> cli đã báo mã 2)
-        self.stock = dict(inventory if inventory is not None else scenario.get("stock", {}))
+        self.fresh_cfg = tuning.get("freshness")  # có khối này = contract v1.2, kho cá thể (TICKET-03)
+        self.items_mode = item_mode(tuning)
+        if self.items_mode:
+            raw = inventory if inventory is not None else scenario.get("stock", [])
+            self.stock = load_items(raw, menu_kinds(self.menu), "kho quán")
+            for it in self.stock:
+                ids.reserve(it["id"])
+        else:
+            if isinstance(inventory, list) or isinstance(scenario.get("stock"), list):
+                raise BadInput("kho cá thể chỉ hợp lệ khi contract v1.2 (có khối freshness)")
+            self.stock = dict(inventory if inventory is not None else scenario.get("stock", {}))
         self.hand = scenario.get("hand")
         self.time_left_ticks = scenario.get("time_left_ticks", round(t["duration_s"] * TICK_HZ))
         self.reputation = scenario.get("reputation", t["reputation_initial"])
@@ -76,7 +87,8 @@ class QuanSim:
             customers.append(entry)
         return {
             "player": {"pos": self.pos},
-            "stock": {k: self.stock[k] for k in sorted(self.stock) if self.stock[k] > 0},
+            "stock": ([dump_item(it) for it in self.stock] if self.items_mode
+                      else {k: self.stock[k] for k in sorted(self.stock) if self.stock[k] > 0}),
             "hand": self.hand,
             "stoves": [{k: s.get(k) for k in ("id", "pos", "state", "dish", "cook_ticks_left", "ready_ticks")}
                        for s in self.stoves],
@@ -88,6 +100,8 @@ class QuanSim:
         events = []
         self.phase_tick += 1
         advance_timers(self)
+        if self.items_mode:
+            decay(self, events)
         finish_cooking(self, events)
         self._move(inp)
         if inp.pressed("interact"):

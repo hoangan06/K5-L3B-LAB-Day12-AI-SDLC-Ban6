@@ -7,6 +7,8 @@ Các điểm còn chờ coach xác nhận ghi ở docs/clarify.md (Q1–Q8).
 import copy
 
 from ..ids import id_key, sort_by_id
+from ..errors import BadInput
+from .quan_fresh import available_counts, pick, reserved_ids
 from .quan_validation import menu_kinds, ticks
 
 
@@ -25,6 +27,8 @@ def init_customers(sim, scenario):
         out.append(c)
     # Thiếu reserved ở đơn reserved: cấp đúng công thức. Kho không đủ -> validate_quan_state báo quá tồn
     # (mã 2). TẠM theo Q4: nếu coach nói thiếu kho thì chuyển unfulfillable, mới cần thứ tự (order_tick, id bàn).
+    if getattr(sim, "items_mode", False):
+        _init_reserved_items(sim, out)
     for c in out:
         if "reserved" not in c:
             c["reserved"] = dict(sim.menu[c["dish_id"]]["recipe"]) if c["order_status"] == "reserved" else {}
@@ -33,8 +37,27 @@ def init_customers(sim, scenario):
     sim.customers = sort_by_id(out)
 
 
+def _init_reserved_items(sim, out):
+    """v1.2: phần giữ là mảng id. Đơn reserved bỏ trống thì cấp theo (order_tick, id bàn), sau phần đã khai."""
+    sim.customers = [c for c in out if "reserved" in c]
+    for c in out:
+        if "reserved" in c:
+            c["reserved"] = sorted(c["reserved"], key=id_key)
+        elif c["order_status"] != "reserved":
+            c["reserved"] = []
+    for c in sorted((c for c in out if "reserved" not in c), key=lambda c: (c["order_tick"], id_key(c["table_id"]))):
+        got = pick(sim, sim.menu[c["dish_id"]]["recipe"], reserved_ids(sim))
+        if got is None:
+            raise BadInput(f"customers.{c['id']}: kho không đủ cá thể chưa ươn để giữ cho đơn (mã 2)")
+        c["reserved"] = got
+        sim.customers.append(c)
+    sim.customers = []
+
+
 def available_stock(sim):
     """Tồn vật lý trừ tổng phần giữ, đủ mọi kind của thực đơn (kể cả 0). Trả map mới, không sửa sim.stock."""
+    if getattr(sim, "items_mode", False):
+        return available_counts(sim)
     avail = {k: sim.stock.get(k, 0) for k in menu_kinds(sim.menu) | set(sim.stock)}
     for c in sim.customers:
         for k, n in c["reserved"].items():
@@ -104,10 +127,12 @@ def spawn_customer(sim, events):
     free = [tb["id"] for tb in sort_by_id(sim.tables) if tb["id"] not in taken]
     if not free:
         return  # không còn bàn: bỏ lượt
-    avail = available_stock(sim)
+    items = getattr(sim, "items_mode", False)
+    avail = None if items else available_stock(sim)
     allowed = getattr(sim, "allowed_dishes", None)  # None: toàn menu; day: id món của kế hoạch (P2 §5)
     dishes = [d for d in sorted(sim.menu) if (allowed is None or d in allowed)
-              and all(avail.get(k, 0) >= n for k, n in sim.menu[d]["recipe"].items())]
+              and (pick(sim, sim.menu[d]["recipe"], reserved_ids(sim)) is not None if items
+                   else all(avail.get(k, 0) >= n for k, n in sim.menu[d]["recipe"].items()))]
     if not dishes:
         events.append(("no_dish", {}))
         return
@@ -116,5 +141,6 @@ def spawn_customer(sim, events):
     sim.customers = sort_by_id(sim.customers + [{
         "id": cid, "table_id": free[0], "dish_id": dish, "order_tick": sim.phase_tick, "state": "waiting",
         "patience_ticks_left": ticks(t["patience_s"]), "eat_ticks_left": 0, "order_status": "reserved",
-        "reserved": dict(sim.menu[dish]["recipe"])}])
+        "reserved": (pick(sim, sim.menu[dish]["recipe"], reserved_ids(sim)) if items
+                     else dict(sim.menu[dish]["recipe"]))}])
     events.append(("customer_arrived", {"order_id": cid, "table_id": free[0], "dish_id": dish}))
