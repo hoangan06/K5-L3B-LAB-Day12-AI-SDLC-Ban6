@@ -103,7 +103,12 @@ def validate_quan_fixture(scenario, tuning):
             if key in c:
                 _int(f"{name}.{key}", c[key])
         if "reserved" in c:
-            validate_items(c["reserved"], menu_kinds(menu))
+            if "freshness" in tuning:  # v1.2: mảng id cá thể
+                r = c["reserved"]
+                if not isinstance(r, list) or not all(isinstance(i, str) and i for i in r):
+                    raise BadInput(f"{name}: reserved phải là mảng id cá thể (contract v1.2)")
+            else:
+                validate_items(c["reserved"], menu_kinds(menu))
 
 
 def validate_quan_state(sim):
@@ -140,11 +145,24 @@ def validate_quan_state(sim):
         holds("hand", sim.hand)
 
     allowed = getattr(sim, "allowed_dishes", None)  # day: chỉ món trong kế hoạch (giao diện P2 §5)
+    items_mode = getattr(sim, "items_mode", False)
+    by_item = {it["id"]: it for it in sim.stock} if items_mode else {}
+    owner = {}
     reserved_total = {}
     for c in sim.customers:
         name, st, res = f"customers.{c['id']}", c["order_status"], c["reserved"]
         if allowed is not None and c["dish_id"] not in allowed:
             raise BadInput(f"{name}: món {c['dish_id']} không thuộc kế hoạch ngày")
+        if items_mode:
+            from .quan_fresh import is_spoiled
+            kinds = {}
+            for iid in res:
+                it = by_item.get(iid)
+                if it is None or is_spoiled(sim, it) or iid in owner:
+                    raise BadInput(f"{name}: id giữ {iid!r} không có trong kho, đã ươn hoặc bị giữ trùng")
+                owner[iid] = c["id"]
+                kinds[it["kind"]] = kinds.get(it["kind"], 0) + 1
+            res = kinds
         if st == "reserved":
             if res != sim.menu[c["dish_id"]]["recipe"]:
                 raise BadInput(f"{name}: phần giữ khác công thức món {c['dish_id']}")
@@ -163,6 +181,6 @@ def validate_quan_state(sim):
                 raise BadInput(f"{name}: khách eating cần served, eat_ticks_left > 0, base_price và tip")
         elif c["eat_ticks_left"]:
             raise BadInput(f"{name}: eat_ticks_left chỉ dương khi khách đang ăn")
-    for k, n in reserved_total.items():
+    for k, n in ({} if items_mode else reserved_total).items():
         if n > sim.stock.get(k, 0):
             raise BadInput(f"tổng giữ chỗ {k} = {n} vượt tồn kho {sim.stock.get(k, 0)}")

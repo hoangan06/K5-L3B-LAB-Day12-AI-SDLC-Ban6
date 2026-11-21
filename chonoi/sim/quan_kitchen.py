@@ -2,6 +2,7 @@ from math import dist, floor
 
 from .. import TICK_HZ
 from ..ids import id_key, sort_by_id
+from .quan_fresh import consume, dump_item, locked_price
 
 
 def finish_cooking(sim, events: list) -> None:
@@ -81,6 +82,14 @@ def _start_cooking(sim, stove, events):
 
     dish_id = customer["dish_id"]
     menu_item = sim.menu[dish_id]
+    if getattr(sim, "items_mode", False):  # v1.2: tiêu đúng id đang giữ, chốt giá theo độ tươi trung bình
+        used, mean = consume(sim, customer["reserved"])
+        dish = {"order_id": customer["id"], "dish_id": dish_id, "base_price": locked_price(menu_item["price"], mean)}
+        items = [dump_item(it) for it in used]
+        customer.update(order_status="assigned", reserved=[])
+        stove.update(state="cooking", dish=dish, cook_ticks_left=round(menu_item["cook_s"] * TICK_HZ), ready_ticks=0)
+        events.append(("cook_started", {"stove_id": stove["id"], **dish, "items": items}))
+        return
     dish = {"order_id": customer["id"], "dish_id": dish_id, "base_price": menu_item["price"]}
     items = []
     for kind, count in sorted(customer["reserved"].items()):
