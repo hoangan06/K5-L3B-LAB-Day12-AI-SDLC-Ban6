@@ -20,6 +20,17 @@
 | **Ông Năm Chèo** | Hiện ngẫu nhiên ở vùng sâu, tạo **nước xoáy** kéo Út Sen xuống và làm oxy tụt nhanh. | Thủy quái sông Vàm Nao (An Giang), tương truyền là con sấu đỏ 5 chân. Vàm Nao nối sông Tiền với sông Hậu nên nước xoáy dễ làm chìm ghe; dân gian cho rằng dòng xiết là do ông thở mạnh. Ghe đi ngang thường thắp hương khấn vái [1][2][3] |
 | **Mãng Xà Vương** (tên game do nhóm đặt) | Quấn người chơi vài giây, không bơi được, oxy vẫn giảm; bấm E liên tục để thoát. | Lấy cảm hứng từ chuyện rắn khổng lồ ở Thất Sơn: người sóc Tà Đéc (xã An Hảo, Tịnh Biên) kể có cặp rắn bò từ núi Bà Đội Om sang núi Cấm [4][5] |
 
+**Thoát khi bị quái bắt: chuỗi mũi tên** (ý của Trung, chỉ live)
+
+- Bị bắt: Út Sen đứng yên, oxy **vẫn giảm như thường**, nghĩa là luật ngạt của lõi chạy nguyên. Trên đầu nhân vật hiện một chuỗi mũi tên ↑↓←→.
+- Bấm đúng thứ tự thì thoát, kèm 2 giây miễn bắt để không bị tóm lại ngay. Bấm sai thì chuỗi làm lại từ đầu. Hết giờ chuỗi thì bị kéo sâu thêm (Năm Chèo) hoặc siết thêm một lượt (Mãng Xà), rồi chuỗi mới hiện ra.
+- Độ khó: Năm Chèo 4 phím, Mãng Xà 6 phím. Luck của đền Bà Thủy bớt 1 phím.
+- Kỹ thuật:
+  - Chuỗi sinh từ luồng `creative_monster`.
+  - Đọc phím bằng **cạnh lên của hướng `move`** (đổi hướng mới tính là một lần bấm), vì phím mũi tên đã map vào `move` và lúc bị bắt thì không di chuyển.
+  - Không thêm nút mới vào file inputs, vì Test Contract báo mã 2 với nút lạ.
+- Hình ảnh và nhịp tự thiết kế theo chủ đề sông nước (ví dụ mũi tên vẽ như mái chèo hoặc vảy cá). Không sao chép giao diện của game nhịp điệu nào.
+
 **Bảng "ngạt vì…"** (ý của Trung): khi ngất, cửa sổ live hiện 2–3 câu về truyền thuyết của quái gây ra, kèm nguồn. Headless vẫn phát `faint` với `cause: "choke"` đúng contract.
 
 ## 2. Đền thờ (thắp hương: đứng ở đền vài giây → luck tăng)
