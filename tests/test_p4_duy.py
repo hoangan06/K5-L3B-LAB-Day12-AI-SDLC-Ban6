@@ -10,6 +10,7 @@ from chonoi.inputs import InputState
 from chonoi.rng import Streams
 from chonoi.runner import Session
 from chonoi.sim.day import DaySim
+from chonoi.sim.quan import QuanSim
 from chonoi.soak import Bot, run_soak
 
 
@@ -98,3 +99,32 @@ class SoakDay(unittest.TestCase):
         inp = Bot().input(SimpleNamespace(phase="shop", current_sim=shop))
         self.assertEqual(inp.buy, "oxygen")
         self.assertTrue(inp.pressed("shop_done"))
+
+    def test_bot_serves_each_menu_dish_from_real_stock(self):
+        """Exercise each recipe through the real reservation/cooking/serving pipeline."""
+        for dish_id, recipe_data in self.tuning["menu"].items():
+            with self.subTest(dish=dish_id):
+                stock = []
+                for kind, amount in recipe_data["recipe"].items():
+                    for _ in range(amount):
+                        stock.append({"id": f"I{len(stock) + 1}", "kind": kind, "fresh": 100})
+                scenario = {"random_customers": False,
+                            "customers": [{"id": "C1", "table_id": "T1", "dish_id": dish_id}]}
+                quan = QuanSim(self.tuning, scenario, Streams(7), IdAllocator(), inventory=stock)
+                bot = Bot()
+                state = SimpleNamespace(phase="quan", current_sim=quan)
+                seen = []
+                for _ in range(6000):
+                    seen.extend(quan.step(bot.input(state)))
+                    if any(name == "paid" for name, _ in seen):
+                        break
+                names = [name for name, _ in seen]
+                for event in ("cook_started", "dish_ready", "dish_picked", "served", "paid"):
+                    self.assertIn(event, names, (dish_id, names))
+                started = next(data for name, data in seen if name == "cook_started")
+                self.assertEqual(started["dish_id"], dish_id)
+                used = {}
+                for item in started["items"]:
+                    used[item["kind"]] = used.get(item["kind"], 0) + 1
+                self.assertEqual(used, recipe_data["recipe"])
+                self.assertGreater(quan.earned, 0)
