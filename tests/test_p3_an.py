@@ -20,7 +20,7 @@ from chonoi.runner import Session
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = json.loads((ROOT / "game.contract.json").read_text(encoding="utf-8-sig"))
-ENABLED = MANIFEST.get("contract_version") == "1.2" or os.environ.get("AN_REQUIRE_P3") == "1"
+ENABLED = MANIFEST.get("contract_version") in ("1.2", "1.3") or os.environ.get("AN_REQUIRE_P3") == "1"
 FRESHNESS = {"initial": 100, "gather_decay_per_s": 0.5, "quan_decay_per_s": 0.25, "spoiled_below": 30}
 
 

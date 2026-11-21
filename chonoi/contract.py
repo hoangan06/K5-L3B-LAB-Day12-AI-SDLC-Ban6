@@ -26,14 +26,18 @@ def load_contract(path=DEFAULT_PATH) -> dict:
             c = json.load(f)
     except (OSError, ValueError) as e:
         raise BadInput(f"không đọc được {path}: {e}")
-    if not isinstance(c, dict) or c.get("contract_version") not in ("1.0", "1.1", "1.2"):
-        raise BadInput("contract_version phải là 1.0, 1.1 hoặc 1.2")
+    if not isinstance(c, dict) or c.get("contract_version") not in ("1.0", "1.1", "1.2", "1.3"):
+        raise BadInput("contract_version phải là 1.0, 1.1, 1.2 hoặc 1.3")
     v = c["contract_version"]
-    validate_tuning(c.get("tuning"), phase_two=v in ("1.1", "1.2"))
-    if (v == "1.2") != ("freshness" in c["tuning"]):
-        raise BadInput("khối tuning.freshness có đúng khi contract_version 1.2")
-    if v == "1.2":
+    validate_tuning(c.get("tuning"), phase_two=v in ("1.1", "1.2", "1.3"))
+    if (v in ("1.2", "1.3")) != ("freshness" in c["tuning"]):
+        raise BadInput("khối tuning.freshness có đúng khi contract_version 1.2 hoặc 1.3")
+    if v in ("1.2", "1.3"):
         _validate_freshness(c["tuning"]["freshness"])
+    if v == "1.3":
+        for key in ("bench_cmd", "soak_cmd"):
+            if not isinstance(c.get(key), str) or not c[key].strip():
+                raise BadInput(f"contract v1.3 cần {key} là chuỗi lệnh khác rỗng")
     return c
 
 

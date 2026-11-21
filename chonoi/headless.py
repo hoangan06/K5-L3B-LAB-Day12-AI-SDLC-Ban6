@@ -61,8 +61,8 @@ def main(argv=None) -> int:
         if len(set(paths)) != len(paths):
             raise BadInput("các đường dẫn đầu vào/đầu ra phải khác nhau")
         contract = load_contract()
-        if a.mode == "day" and contract.get("contract_version") not in ("1.1", "1.2"):
-            raise BadInput("--mode day cần contract_version 1.1 hoặc 1.2")
+        if a.mode == "day" and contract.get("contract_version") not in ("1.1", "1.2", "1.3"):
+            raise BadInput("--mode day cần contract_version 1.1, 1.2 hoặc 1.3")
         tuning = contract["tuning"]
         scenario = load_scenario(a.scenario, a.mode, tuning)
         frames = load_frames(a.inputs, BUTTONS_V11 if "shop" in tuning else BUTTONS_V10)

@@ -10,7 +10,7 @@ with open("game.contract.json", encoding="utf-8") as f:
     VERSION = json.load(f).get("contract_version")
 
 
-@unittest.skipUnless(VERSION == "1.2", "requires integrated runtime and manifest 1.2")
+@unittest.skipUnless(VERSION in ("1.2", "1.3"), "requires integrated runtime and manifest 1.2/1.3")
 class InventoryContractV12(unittest.TestCase):
     def test_reject_bad_file_before_output(self):
         item = {"id": "I1", "kind": "ca_linh", "fresh": 100}

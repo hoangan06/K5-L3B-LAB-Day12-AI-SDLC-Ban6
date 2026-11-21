@@ -15,21 +15,53 @@ Cách làm việc kỹ thuật là **tự do** (push thẳng, nhánh + PR, pair,
 
 ## Chơi trên macOS hoặc Linux
 
-Cần Python 3. Mở địa chỉ localhost in ra trong terminal.
+Cần **Python 3.10+**, Git để clone và một trình duyệt hiện đại. Game chỉ dùng thư viện chuẩn Python; không cần pip/npm để chơi. Từ repo sạch, chạy đúng ba lệnh sau rồi mở địa chỉ localhost in trong terminal:
 
 ```bash
 git clone https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6.git
 cd K5-L3B-LAB-Day12-AI-SDLC-Ban6
-python3 -m chonoi.live --mode gather --inventory-out kho.json
+python3 -m chonoi.live --mode day --days 5
 ```
 
-Khi buổi sáng kết thúc, dừng server bằng `Ctrl+C` rồi chạy `python3 -m chonoi.live --mode quan --inventory kho.json`. Để mở quán với kho mẫu, dùng `--inventory docs/contracts/inventory.sample.json`.
+Luồng chơi liên tục: mở đầu ngày → lặn/hái → mở quán → kết quả ngày → Shop → ngày tiếp, đến hết Ngày5. Dừng server bằng `Ctrl+C`. Với bản ZIP, giải nén, vào thư mục `chonoi-v1.0.0` rồi chạy cùng lệnh Python ở trên; không cần Git để chơi.
 
 - **WASD hoặc phím mũi tên** để di chuyển. **E** để hái, cập bến hoặc tương tác với bếp và bàn. **Space** để bắt cá dưới nước. **R** để chơi lại chế độ hiện tại.
+- **P/Esc** tạm dừng; **Enter** bỏ qua giới thiệu. Bấm nút trong Shop để mua nâng cấp/kết thúc Shop. Bật **Tương phản cao** bằng nút trên giao diện; các cảnh báo có chữ/biểu tượng.
+- Giỏ và kho dùng cá thể `{id,kind,fresh}`; dưới30 là hàng ươn, vẫn chiếm chỗ nhưng không dùng nấu. Hàng hao độ tươi trong sáng/quán, dừng hao khi pause hoặc ở Shop.
 - **Điểm** bằng tiền kiếm được cộng `100 × floor(uy tín)` theo preset của dự án. Tiền kiếm được bao gồm boa.
 - **Chạy test** bằng `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`.
 
-Sau khi gói Phase 2 đã tích hợp, mở một lượt năm ngày bằng `python3 -m chonoi.live --mode day --days 5`. Chọn **Chơi** để lần lượt qua buổi sáng, quán và cửa hàng. Dùng **P** hoặc **Esc** để tạm dừng, **Enter** để bỏ qua màn giới thiệu, và dùng các nút trong cửa hàng để nâng cấp hoặc sang ngày tiếp theo.
+## Test, headless và đo đạc
+
+Từ gốc repo/gói, trên macOS/Linux:
+
+```bash
+PYTHONPATH=tests:. python3 -m unittest discover -s tests -v
+python3 -m chonoi.headless --mode day --days 5 --seed 7 --ticks 111000 --out day.jsonl
+python3 tools/smoke_inventory.py
+python3 tools/check_determinism.py
+```
+
+Headless chạy theo tick, không cần browser; `--ticks` là giới hạn bước, chưa đủ để hết lượt thì kết quả là `tick_limit`. Để kết thúc Shop cần input `shop_done` hoặc chờ thời gian của Shop theo tuning. CLI chuẩn giữ giới hạn1–5ngày; soak dùng lệnh riêng.
+
+Benchmark cần thêm **Node.js22+ và Google Chrome**. Trên Linux cần môi trường hỗ trợ Chrome; trên macOS mặc định dùng Chrome trong Applications. Đặt `CHONOI_CHROME` nếu binary ở nơi khác; đặt `PYTHON` nếu Python không có tên `python3`:
+
+```bash
+node tools/bench.mjs --seed 42 --duration 30 --out bench.json
+python3 -m chonoi.soak --seed 7 --days 10 --out soak.json
+```
+
+Bench render gather1280×720, làm nóng3giây rồi đo30giây. Báo cáo gồm `avg_fps`, `p1_low_fps`, `frames`, `measured_s`, `load_ms`; FPS thực tế tùy máy. Soak là một tiến trình qua10ngày, lặp kế hoạch D1–D5 và giữ trạng thái/ID liên tục. Kết quả soak cần `days_completed == days`, `crashes == 0`.
+
+## Đóng gói
+
+```bash
+python3 tools/package_release.py --out dist/chonoi-v1.0.0.zip
+```
+
+Script không ghi đè ZIP đã có. Gói có `BUILD-INFO.json` ghi commit nguồn và hash từng file; chỉ lấy source/docs, bỏ cache và môi trường cục bộ. Nếu còn thiếu đầu vào phát hành, script ghi rõ và gói chỉ là **ứng viên**, chưa phải Release hoàn chỉnh.
+
+Trạng thái ứng viên P4: soak10ngày đã được tích hợp và kiểm hai lần cùng seed; LICENSE còn chờ nhóm chốt. Benchmark của Đức cần đo lại trên giao diện cuối và kiểm mốc tải từ khởi chạy. Không coi các báo cáo của nhánh cũ là kết quả nghiệm thu bản1.3; xem `docs/proof/phase-4/an/HANDOFF.md` trước khi phát hành.
 
 Bật cả phần sáng tạo (đền Bà Thủy, Mãng Xà Vương, miếu Cá Ông; chỉ ở live, headless không đổi): `python3 -m chonoi.live --mode day --days 5 --creative`. Trên macOS có thể bấm đúp `tools/choi-game.command` (mở trình duyệt ở cổng 8800). Icon pixel cho launcher: `python3 tools/icon/make_icon.py`.
 
@@ -41,13 +73,15 @@ Ngoài phần đề yêu cầu, nhóm được **thêm** nhân vật, loài cá/
 
 ## Sáng tạo của nhóm
 
-Trạng thái: **đề xuất, chưa cài vào game**. Bản đang chạy chỉ có phần lõi theo đề; headless không có phần thêm nào.
+Phần sáng tạo đã được nhóm nối vào live với cờ `--creative`, mặc định tắt; headless giữ phần lõi. Trạng thái kiểm và giới hạn: `docs/ideas/creative-impl-notes.md`. Các ý tưởng chưa triển khai vẫn là đề xuất.
 
 - Ý tưởng và nguồn tham khảo: [`docs/ideas/sang-tao-trung.md`](docs/ideas/sang-tao-trung.md).
   - Thẻ truyền thuyết: dấu **?** trên vật, món, quái; bấm để đọc chuyện kể kèm nguồn; mở thẻ dùng nút `pause` lõi.
   - Bảng "ngất vì…" theo nguyên nhân (ngạt hoặc Cá Sấu).
   - Đền Bà Thủy, Cá Ông; quái sáng tạo Mãng Xà Vương với chuỗi mũi tên để thoát. Chỉ ở bản chơi live.
-- Điều kiện khi cài: tắt ở headless, luồng RNG riêng, không đổi số liệu và sự kiện của Test Contract. Bằng chứng "lõi vẫn đúng" sẽ ghi ở đây khi có.
+- Điều kiện khi cài: tắt ở headless, luồng RNG riêng, không đổi số liệu và sự kiện của Test Contract.
+- Bằng chứng lõi vẫn đúng (main `59319e9`): `tests/test_creative_trung.py::test_headless_does_not_load_creative` (headless không import `chonoi.creative`); `python3 tools/check_determinism.py` PASS; toàn bộ 266 test OK; JSONL headless gather/quan/day 5 ngày giống từng byte với bản không có phần sáng tạo (ghi trong commit `651d5ba`).
+- Giao diện pixel miền Tây, đồng hồ trong ngày, mặt trăng đổi pha: chỉ ở lớp hình (`chonoi/web/`), không đổi snapshot.
 
 ## Lịch 3 giờ
 

@@ -45,6 +45,12 @@
 - Cá Sấu: `gather_monsters.py` đã nối vào GatherSim sau oxy/ngạt, trước interact/catch. Config P1 không có monsters thì không tự thêm quái. Test `python3 -m unittest discover -s tests -p test_p2_an_monsters.py -v`.
 - GatherSim nhận keyword context, hp_max/oxygen_max_ticks/ngày/tiền theo giao diện P2; `_faint(cause, events)` dùng chung choke/monster. Đã nối init/update/snapshot_fish với fish_initial số8 của Duy, giữ nhánh list P1 khi chạy cấu hình cũ.
 
+## Phase 4 — phần Ân
+- Manifest1.3 kế thừa tuning/kho/freshness của1.2, bắt buộc bench_cmd/soak_cmd là chuỗi khác rỗng. Không dùng so sánh version==1.2 để tắt test hoặc smoke trên1.3.
+- `Session(..., days=N, soak=True)` chỉ cho mode day, N nguyên dương; chỉ truyền soak=True tới DaySim ở đường soak. Luồng chuẩn vẫn1–5ngày. Duy giữ DaySim/soak; không dựng mock sim trong runtime hoặc ghép hai lượt5ngày.
+- Test Ân: `PYTHONPATH=tests:. python3 -m unittest discover -s tests -p test_p4_an.py -v`. Đóng gói: `python3 tools/package_release.py --out dist/chonoi-v1.0.0.zip`.
+- Bàn giao/gate phát hành: `docs/proof/phase-4/an/HANDOFF.md`. Gói ứng viên còn mục thiếu không phải Release; chỉ tag phase-4/v1.0.0 khi bản main có đủ bằng chứng thật.
+
 ## Phase 3 — nghiệm thu gather/runner của Ân
 - Theo `docs/plan-p3-p4.md`, Trung giữ migration runtime; Ân giữ `tests/test_p3_an.py` và `docs/proof/phase-3/an/`.
 - Kiểm bắt buộc: `AN_REQUIRE_P3=1 PYTHONPATH=tests:. python3 -m unittest discover -s tests -p test_p3_an.py -v`. Khi manifest1.2, test tự chạy; skip trên manifest1.1 không chứng minh P3 đạt.

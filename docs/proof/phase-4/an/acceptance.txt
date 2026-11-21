@@ -1,0 +1,14 @@
+test_cli_standard_still_rejects_ten_days_before_output (test_p4_an.P4Contract.test_cli_standard_still_rejects_ten_days_before_output) ... ok
+test_cli_v13_day_and_item_inventory_real (test_p4_an.P4Contract.test_cli_v13_day_and_item_inventory_real) ... ok
+test_manifest_keeps_p3_tuning (test_p4_an.P4Contract.test_manifest_keeps_p3_tuning) ... ok
+test_v12_remains_compatible_without_bench_soak (test_p4_an.P4Contract.test_v12_remains_compatible_without_bench_soak) ... ok
+test_v13_rejects_missing_commands_and_missing_freshness (test_p4_an.P4Contract.test_v13_rejects_missing_commands_and_missing_freshness) ... ok
+test_archive_excludes_local_state_and_is_self_contained (test_p4_an.P4Package.test_archive_excludes_local_state_and_is_self_contained) ... ok
+test_adapter_forwards_ten_days_and_soak_to_day_constructor (test_p4_an.P4SessionAdapter.test_adapter_forwards_ten_days_and_soak_to_day_constructor) ... ok
+test_invalid_soak_and_days_fail_before_factory (test_p4_an.P4SessionAdapter.test_invalid_soak_and_days_fail_before_factory) ... ok
+test_standard_uses_real_day_without_soak_keyword (test_p4_an.P4SessionAdapter.test_standard_uses_real_day_without_soak_keyword) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.039s
+
+OK

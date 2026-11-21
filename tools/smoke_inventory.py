@@ -17,9 +17,9 @@ def main():
         args = parser.parse_args()
         contract = json.loads((ROOT / "game.contract.json").read_text(encoding="utf-8"))
         version = contract.get("contract_version")
-        if args.require_v12 and version != "1.2":
-            raise ValueError(f"contract 1.2 required; current version is {version!r}")
-        individual = version == "1.2"
+        if args.require_v12 and version not in ("1.2", "1.3"):
+            raise ValueError(f"contract 1.2/1.3 required; current version is {version!r}")
+        individual = version in ("1.2", "1.3")
         command = shlex.split(contract["headless_cmd"])
         with tempfile.TemporaryDirectory() as tmp:
             p = Path(tmp)

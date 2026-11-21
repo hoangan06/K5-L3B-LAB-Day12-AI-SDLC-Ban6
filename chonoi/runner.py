@@ -21,7 +21,19 @@ from .sim.gather import GatherSim
 from .sim.quan import QuanSim
 
 
-def build_sim(mode, tuning, scenario, seed, inventory, *, days=1):
+def _validate_days(mode, days, soak):
+    if type(soak) is not bool:
+        raise BadInput("soak phải là boolean")
+    if soak and mode != "day":
+        raise BadInput("soak chỉ dùng với day")
+    if type(days) is not int or days < 1 or (not soak and days > 5):
+        raise BadInput("days phải là số nguyên dương" if soak else "days phải là số nguyên 1..5")
+    if mode != "day" and days != 1:
+        raise BadInput("days chỉ dùng với day")
+
+
+def build_sim(mode, tuning, scenario, seed, inventory, *, days=1, soak=False):
+    _validate_days(mode, days, soak)
     streams, ids = Streams(seed), IdAllocator()
     if mode == "gather":
         return GatherSim(tuning, scenario, streams, ids)
@@ -34,6 +46,9 @@ def build_sim(mode, tuning, scenario, seed, inventory, *, days=1):
             if exc.name != "chonoi.sim.day":
                 raise
             raise BadInput("DaySim chưa được tích hợp; cần chonoi/sim/day.py của Đức") from exc
+        # Giữ tương thích DaySim P2/P3 cho lượt chuẩn; soak cần API P4 của Duy.
+        if soak:
+            return DaySim(tuning, scenario, streams, ids, days=days, soak=True)
         return DaySim(tuning, scenario, streams, ids, days=days)
     raise BadInput(f"mode không hỗ trợ: {mode}")
 
@@ -51,16 +66,13 @@ def _common(sim, tick, sim_tick, phase_tick, tuning, state):
 class Session:
     """Một lượt chơi: dựng sim, bước từng tick, lấy snapshot / dòng end."""
 
-    def __init__(self, mode, tuning, scenario, seed, inventory=None, *, days=1):
-        if isinstance(days, bool) or not isinstance(days, int) or not 1 <= days <= 5:
-            raise BadInput("days phải là số nguyên 1..5")
-        if mode != "day" and days != 1:
-            raise BadInput("days chỉ dùng với day")
+    def __init__(self, mode, tuning, scenario, seed, inventory=None, *, days=1, soak=False):
+        _validate_days(mode, days, soak)
         if inventory is not None and mode != "quan":
             raise BadInput("inventory chỉ dùng với quan")
         self.mode = mode
         self.tuning = tuning
-        self.sim = build_sim(mode, tuning, scenario, seed, inventory, days=days)
+        self.sim = build_sim(mode, tuning, scenario, seed, inventory, days=days, soak=soak)
         self.tick = 0
         self.sim_tick = 0
         self.paused = False

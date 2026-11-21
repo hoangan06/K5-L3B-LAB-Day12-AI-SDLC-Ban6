@@ -1,0 +1,1 @@
+PASS: contract 1.2, gather inventory matches quan stock at tick 0

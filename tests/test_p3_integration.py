@@ -33,7 +33,8 @@ class Manifest(unittest.TestCase):
     def test_runtime_is_v12_with_ticket_values(self):
         with open("game.contract.json", encoding="utf-8") as f:
             c = json.load(f)
-        self.assertEqual(c["contract_version"], "1.2")
+        # TICKET-04 giữ gameplay/kho v1.2 khi nâng manifest lên v1.3.
+        self.assertIn(c["contract_version"], ("1.2", "1.3"))
         self.assertEqual(c["tuning"]["freshness"], {"initial": 100, "gather_decay_per_s": 0.5,
                                                     "quan_decay_per_s": 0.25, "spoiled_below": 30})
 

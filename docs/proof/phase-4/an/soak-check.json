@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "seed": 7,
+  "days": 10,
+  "days_completed": 10,
+  "crashes": 0,
+  "results_count": 10,
+  "gameplay_equal": true,
+  "measured_seconds": [
+    1.648810336000679,
+    1.644376962998649
+  ]
+}
