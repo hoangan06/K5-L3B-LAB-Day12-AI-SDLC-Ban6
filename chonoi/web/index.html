@@ -65,6 +65,9 @@
   .freshness-hud li { padding: 2px 0; }
   .freshness-hud .reserved { color: #ffd88e; }
   .freshness-hud .spoiled { color: #ffaba6; }
+  .freshness-hud .fish-tank { margin-top: 8px; padding: 8px; border: 3px solid #72d9e8; border-radius: 9px; background: #103b4e; }
+  .freshness-hud .fish-tank h3 { color: #b4f5ff; font-size: inherit; margin: 0 0 4px; }
+  .high-contrast .freshness-hud .fish-tank { background: #000; border-color: #fff; }
   /* P4 của Đức (p4/duc): ba cảnh báo + chế độ tương phản cao, đặt lại vị trí cho khớp HUD pixel */
   .warnings { white-space: pre-line; position: absolute; z-index: 3; left: 14px; top: 76px; max-width: calc(100% - 28px); padding: 4px 14px; border: 3px solid #f5de95; border-radius: 8px; background: #10161cee; color: #fff; font-size: 18px; font-weight: 700; pointer-events: none; }
   .warnings:empty { padding: 0; border: 0; }
@@ -112,6 +115,7 @@
 <section class="freshness-hud" id="freshness-hud" aria-labelledby="freshness-title" hidden>
   <h2 id="freshness-title"></h2>
   <ul id="freshness-items"></ul>
+  <div class="fish-tank" id="fish-tank" hidden><h3>Bể cá · giữ nguyên độ tươi</h3><ul id="fish-tank-items"></ul></div>
 </section>
 <div class="banner" id="banner" hidden></div>
 <div class="end" id="end" hidden></div>
@@ -1564,6 +1568,7 @@ function renderDayUI() {
 const freshnessHud = document.getElementById("freshness-hud");
 const freshnessTitle = document.getElementById("freshness-title");
 const freshnessItems = document.getElementById("freshness-items");
+const fishTank = document.getElementById("fish-tank"), fishTankItems = document.getElementById("fish-tank-items");
 let freshnessKey = "";
 function renderFreshness() {
   const phase = snap.phase || snap.mode;
@@ -1573,17 +1578,23 @@ function renderFreshness() {
   if (freshnessHud.hidden) return;
   freshnessHud.style.bottom = ((footEl.hidden ? 0 : footEl.offsetHeight) + 10) + "px";
   const res = reservedIds(snap);
-  const rows = items.map((it) => {
+  const fishKinds = phase === "quan" ? (snap.meta?.freshness?.tank_fish_kinds || []) : [];
+  const tankItems = items.filter((it) => fishKinds.includes(it.kind));
+  const rowsFor = (list) => list.map((it) => {
     const sp = isStaleVal(it.fresh), held = res.has(it.id);
     const st = [sp ? "Ươn" : "", held ? "Đã giữ" : ""].filter(Boolean).join(" · ");
     return [`${it.id} · ${KIND_NAME[it.kind] || it.kind} · ${Math.floor(it.fresh * 10) / 10}%${st ? " · " + st : ""}`, sp ? "spoiled" : held ? "reserved" : ""];
   });
+  const rows = rowsFor(items.filter((it) => !fishKinds.includes(it.kind)));
+  const tankRows = rowsFor(tankItems);
+  fishTank.hidden = !fishKinds.length;
   const title = phase === "gather" ? "Độ tươi trong giỏ" : "Độ tươi trong kho";
-  const key = JSON.stringify([title, rows]);
+  const key = JSON.stringify([title, rows, tankRows, fishTank.hidden]);
   if (key === freshnessKey) return;
   freshnessKey = key;
   freshnessTitle.textContent = title;
   freshnessItems.replaceChildren(...(rows.length ? rows : [["Trống", ""]]).map(([label, cls]) => { const li = uiText("li", label); li.className = cls; return li; }));
+  fishTankItems.replaceChildren(...(tankRows.length ? tankRows : [["Chưa có cá", ""]]).map(([label, cls]) => { const li = uiText("li", label); li.className = cls; return li; }));
 }
 
 // ---------- khung "Cần lấy" (đề: HUD sáng có danh sách cần lấy, đã lấy/cần; không tính hàng ươn) ----------

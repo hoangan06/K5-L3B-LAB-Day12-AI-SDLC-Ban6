@@ -26,6 +26,7 @@ python3 -m chonoi.live --mode day --days 5
 Luồng chơi liên tục: mở đầu ngày → lặn/hái → mở quán → kết quả ngày → Shop → ngày tiếp, đến hết Ngày5. Dừng server bằng `Ctrl+C`. Với bản ZIP, giải nén, vào thư mục `chonoi-v1.0.0` rồi chạy cùng lệnh Python ở trên; không cần Git để chơi.
 
 - **WASD hoặc phím mũi tên** để di chuyển. **E** để hái, cập bến hoặc tương tác với bếp và bàn. **Space** để bắt cá dưới nước. **R** để chơi lại chế độ hiện tại.
+- Bản chơi trên trình duyệt giảm độ tươi với nửa tốc độ mặc định: giỏ giảm 0,25 điểm/giây, rau trong kho giảm 0,125 điểm/giây. Cá trong kho quán tự ở **bể cá** và giữ nguyên độ tươi khi vào bể; cá đã ươn không tự tươi lại. Cá vẫn có thể được giữ cho đơn và đem nấu như bình thường.
 - **P/Esc** tạm dừng; **Enter** bỏ qua giới thiệu. Bấm nút trong Shop để mua nâng cấp/kết thúc Shop. Bật **Tương phản cao** bằng nút trên giao diện; các cảnh báo có chữ/biểu tượng.
 - Giỏ và kho dùng cá thể `{id,kind,fresh}`; dưới30 là hàng ươn, vẫn chiếm chỗ nhưng không dùng nấu. Hàng hao độ tươi trong sáng/quán, dừng hao khi pause hoặc ở Shop.
 - **Điểm** bằng tiền kiếm được cộng `100 × floor(uy tín)` theo preset của dự án. Tiền kiếm được bao gồm boa.

@@ -20,6 +20,7 @@ import sys
 import threading
 import time
 import traceback
+from copy import deepcopy
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from . import TICK_HZ
@@ -32,6 +33,7 @@ from .runner import Session
 from .scenario import load_scenario
 
 WEB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
+LIVE_RULES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "live_rules.json")
 TICK_S = 1.0 / TICK_HZ
 PRESENTATION_SECONDS = 4
 LIVE_BUTTONS = ("interact", "catch", "pause", "shop_done")
@@ -43,6 +45,14 @@ class LiveGame:
     """Một lượt chơi + luồng nền bước 60 tick/s. Mọi truy cập trạng thái đi qua khóa."""
 
     def __init__(self, mode, tuning, scenario, seed, inventory=None, inventory_out=None, *, days=5, creative=False):
+        tuning = deepcopy(tuning)
+        with open(LIVE_RULES, encoding="utf-8") as f:
+            rules = json.load(f)
+        if "freshness" in tuning:
+            fresh = tuning["freshness"]
+            for key in ("gather_decay_per_s", "quan_decay_per_s"):
+                fresh[key] *= rules["freshness_rate_multiplier"]
+            fresh["tank_fish_kinds"] = list(tuning["gather"]["fish_yield"]) if rules["fish_tank_enabled"] else []
         self._args = (mode, tuning, scenario, seed, inventory)
         self.mode = mode
         self.days = days
