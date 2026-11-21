@@ -15,9 +15,13 @@ def last_pos(rows):
     return snapshots(rows)[-1]["player"]["pos"]
 
 
-def tuning_gather():
+def current_contract():
     with open("game.contract.json", encoding="utf-8") as f:
-        return json.load(f)["tuning"]["gather"]
+        return json.load(f)
+
+
+def tuning_gather():
+    return current_contract()["tuning"]["gather"]
 
 
 class Contract(unittest.TestCase):
@@ -42,7 +46,8 @@ class Contract(unittest.TestCase):
             for key in ("oxygen_ticks", "hp", "oxygen_max_ticks", "hp_max", "at_surface"):
                 self.assertIn(key, s["player"])
             self.assertEqual(s["hold_capacity"], tuning_gather()["hold_capacity"])
-            self.assertEqual(len(s["fish"]), 6)
+            fish = tuning_gather()["fish_initial"]
+            self.assertEqual(len(s["fish"]), len(fish) if isinstance(fish, list) else fish)
             self.assertTrue(all(n["pos"][1] == 0 for n in s["nodes"]))
 
     def test_con_02_deterministic_bytes(self):
@@ -62,19 +67,28 @@ class Contract(unittest.TestCase):
             self.assertEqual(run_headless("--mode", "gather", "--seed", "1", "--ticks", "10", "--inputs", bad, "--out", out)[0], 2)
             self.assertFalse(os.path.exists(out), "lỗi đầu vào phải thoát TRƯỚC khi ghi đầu ra")
             self.assertEqual(run_headless("--mode", "gather", "--seed", "1", "--ticks", "-1", "--out", out)[0], 2)
-            for button in ("jump", "attack"):  # nút lạ / của phase sau
-                unk = write_json(w.path("unk.json"), frames({"tick": 0, button: True}))
+            attack = True if current_contract()["contract_version"] == "1.0" else "sai kiểu"
+            for button, value in (("jump", True), ("attack", attack)):
+                unk = write_json(w.path("unk.json"), frames({"tick": 0, button: value}))
                 self.assertEqual(run_headless("--mode", "gather", "--seed", "1", "--ticks", "10", "--inputs", unk, "--out", out)[0], 2, button)
             self.assertFalse(os.path.exists(out))
 
-    def test_con_03_old_and_future_modes_rejected(self):
+    def test_con_03_versioned_modes_and_old_scenario(self):
         with Workdir() as w:
             out = w.path("o.jsonl")
-            for mode in ("river", "day"):
-                self.assertEqual(run_headless("--mode", mode, "--seed", "1", "--ticks", "0", "--out", out)[0], 2, mode)
+            self.assertEqual(run_headless("--mode", "river", "--seed", "1", "--ticks", "0", "--out", out)[0], 2)
             self.assertFalse(os.path.exists(out))
             old = write_json(w.path("old.json"), {"river": {"hold": []}})
             self.assertEqual(run_headless("--mode", "gather", "--seed", "1", "--ticks", "0", "--scenario", old, "--out", out)[0], 2)
+            code, error = run_headless("--mode", "day", "--seed", "1", "--ticks", "0", "--out", out)
+            if current_contract()["contract_version"] == "1.0":
+                self.assertEqual(code, 2)
+                self.assertFalse(os.path.exists(out))
+            else:
+                self.assertEqual(code, 0, error)
+                rows = read_jsonl(out)
+                self.assertEqual([row["name"] for row in events(rows)], ["day_start", "day_plan", "phase_start"])
+                self.assertEqual(rows[-1]["days_completed"], 0)
 
     def test_scenario_out_of_domain_exit_2(self):
         with Workdir() as w:

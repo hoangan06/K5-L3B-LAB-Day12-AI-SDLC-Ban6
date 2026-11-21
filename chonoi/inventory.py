@@ -13,6 +13,11 @@ from .errors import BadInput
 KINDS_P1 = ("ca_loc", "ca_linh", "bong_dien_dien", "bong_sung")
 
 
+def inventory_kinds(tuning):
+    gather = tuning["gather"]
+    return set(gather["fish_yield"]) | {node["kind"] for node in gather["nodes"]}
+
+
 def validate_items(items, kinds=KINDS_P1):
     if not isinstance(items, dict):
         raise BadInput("items phải là object")
