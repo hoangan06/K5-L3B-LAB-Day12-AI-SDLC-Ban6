@@ -155,6 +155,37 @@ class GatherAn(unittest.TestCase):
             self.assertEqual(rows[-1]["ticks"], 1)
             self.assertEqual(sum(r["type"] == "end" for r in rows), 1)
 
+    def test_integrated_regrow_then_gather_on_last_tick(self):
+        session = self.session({"pos": [50, 0]}, time_left_ticks=1,
+            nodes=[{"id": "N1", "kind": "bong_sung", "pos": [50, 0], "regrow_ticks": 1}])
+        rows = self.advance(session, edges=("interact",))
+        self.assertEqual([r["name"] for r in rows], ["node_regrown", "gather", "gather_end"])
+        self.assertEqual(rows[-1]["data"]["inventory"], {"items": {"bong_sung": 1}})
+
+    def test_integrated_catch_on_last_tick_keeps_yield(self):
+        session = self.session(time_left_ticks=1,
+            fish=[{"id": "F1", "kind": "ca_linh", "pos": [50, 10]}])
+        rows = self.advance(session, edges=("catch",))
+        self.assertEqual([r["name"] for r in rows], ["fish_caught", "gather_end"])
+        self.assertEqual(session.sim.inventory_items(), {"ca_linh": 3})
+
+    def test_integrated_dock_precedes_nearby_node(self):
+        session = self.session({"pos": [2, 0]},
+            nodes=[{"id": "N1", "kind": "bong_sung", "pos": [2, 0]}])
+        rows = self.advance(session, edges=("interact",))
+        self.assertEqual([r["name"] for r in rows], ["gather_end"])
+        self.assertEqual(session.sim.hold, [])
+
+    def test_integrated_held_interact_does_not_gather_twice(self):
+        from chonoi.inputs import InputPlayer
+        session = self.session({"pos": [50, 0]},
+            nodes=[{"id": "N1", "kind": "bong_sung", "pos": [50, 0]},
+                   {"id": "N2", "kind": "bong_sung", "pos": [50, 0]}])
+        inputs = InputPlayer([{"tick": 0, "interact": True}])
+        rows = session.step(inputs.advance(0)) + session.step(inputs.advance(1))
+        self.assertEqual([r["name"] for r in rows], ["gather"])
+        self.assertEqual(session.sim.hold, ["bong_sung"])
+
 
 if __name__ == "__main__":
     unittest.main()

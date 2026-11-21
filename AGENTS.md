@@ -27,9 +27,9 @@
 
 ## Skills / hooks của nhóm
 - `python3 tools/check_determinism.py`: trước bàn giao, chạy lại headless gather/quan và so từng byte JSONL + kho ngất. Hướng dẫn: `docs/proof/phase-1/an/HANDOFF.md`. Chỉ kết luận tất định, không thay test đúng luật.
-- Command smoke kho do Duy phụ trách, chưa có trong nhánh Ân; không tính là đã hoàn thành command thứ hai.
+- `python3 tools/smoke_inventory.py`: kiểm hai tiến trình gather ghi kho → quan đọc đúng stock tick 0. Hướng dẫn: `docs/smoke-inventory.md`.
 
 ## Tích hợp Phase 1 — phần Ân
-- `gather.py` đã có oxy/ngạt/ngất. Duy giữ `gather_actions.py`; chỉ nối `gather_node` và `catch_fish` khi helper thật đã được bàn giao theo `docs/contracts/phase-1-interfaces.md`.
+- `gather.py` đã có oxy/ngạt/ngất và đã nối helper thật `gather_node`/`catch_fish` từ module Duy. Giữ thứ tự ngất → bến/hái → bắt → hết giờ.
 - Test riêng Ân: `python3 -m unittest discover -s tests -p test_p1_an.py -v`.
 - Giữ thông tin TEAM/GitHub để thành viên tự điền; không tự đoán handle.
