@@ -780,6 +780,7 @@ function drawGather(w, h, topCss, botCss) {
   const s = Math.max(1, Math.min((w - 24) / (X + 4), (h - botCss - 130) / D));
   const U = s / PX, oxB = (w - s * X) / 2 / PX, oyB = (h - botCss - D * s) / PX;
   const bx = (x) => oxB + x * U, by = (d) => oyB + d * U, byD = by(D);
+  window.gatherView = { sx: (x) => bx(x) * PX, sy: (d) => by(d) * PX, s };  // cho lớp phủ sáng tạo (--creative) dùng chung toạ độ
   drawBackdrop(Math.round(oyB), Math.round(oyB) - 2, Math.max(Math.ceil(topCss / PX) + 14, 24), byD, false);
   // đáy sông phù sa
   R(0, byD, bw, bh - byD, "#2e2118");

@@ -72,9 +72,11 @@
     const meta = snap.meta || {}, b = meta.bounds || { x: [0, 100], d: [0, 30] };
     const X = b.x[1], D = b.d[1], SKY = 6;
     const top = snap.mode === "day" ? 112 : 64, bottom = 68;
-    const s = Math.max(1, Math.min((w - 20) / (X + 4), (h - top - bottom) / (D + SKY + 1)));
+    let s = Math.max(1, Math.min((w - 20) / (X + 4), (h - top - bottom) / (D + SKY + 1)));
     const ox = (w - s * (X + 4)) / 2 + 2 * s, oy = top + SKY * s;
-    const sx = (x) => ox + x * s, sy = (d) => oy + d * s;
+    let sx = (x) => ox + x * s, sy = (d) => oy + d * s;
+    const gv = window.gatherView;  // lớp pixel công bố toạ độ thì dùng chung, tránh vẽ lệch
+    if (gv) { sx = gv.sx; sy = gv.sy; s = gv.s; }
     cr.shrines.forEach((sh) => shrine(sx, sy, s, sh, sh.id === "ca_ong"));
     cr.serpents.forEach((m) => serpent(sx, sy, s, m, snap.tick));
     const p = snap.player;
@@ -88,7 +90,7 @@
     }
     // biểu tượng buff + thời gian còn lại (trái, dưới HUD)
     cr.buffs.forEach((bf, i) => {
-      const x = 14 + i * 142, y = top + 8;
+      const x = 14 + i * 142, y = top + 56;  // dưới dòng cảnh báo
       c.fillStyle = "rgba(8,20,30,.72)"; c.fillRect(x, y, 134, 34);
       c.strokeStyle = bf.id === "ba_thuy" ? "#4fc3f7" : "#ffd54f"; c.lineWidth = 2; c.strokeRect(x + 1, y + 1, 132, 32);
       if (bf.id === "ba_thuy") {  // sóng nước + mũi tên tăng tốc
