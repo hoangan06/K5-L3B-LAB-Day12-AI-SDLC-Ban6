@@ -1,0 +1,45 @@
+{
+  "method": "Real engine scenarios + browser input; no snapshot replacement",
+  "checks": [
+    {
+      "name": "gather-warnings",
+      "expected": [
+        "Thủy quái ở gần",
+        "Oxy sắp hết"
+      ],
+      "observed": {
+        "text": "⚠ Thủy quái ở gần\n⚠ Oxy sắp hết",
+        "high_contrast": true,
+        "tick": 19,
+        "phase": "gather",
+        "player": [
+          60.50000000000002,
+          10
+        ],
+        "pressed": "true"
+      },
+      "screenshot": "gather-warnings.png",
+      "console_errors": 0
+    },
+    {
+      "name": "customer-warning",
+      "expected": [
+        "Khách sắp giận"
+      ],
+      "observed": {
+        "text": "⚠ Khách sắp giận",
+        "high_contrast": true,
+        "tick": 13,
+        "phase": "quan",
+        "player": [
+          8.366666666666665,
+          5
+        ],
+        "pressed": "true"
+      },
+      "screenshot": "customer-warning.png",
+      "console_errors": 0
+    }
+  ],
+  "status": "PASS"
+}

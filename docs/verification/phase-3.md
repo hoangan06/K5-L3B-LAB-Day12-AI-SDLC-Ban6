@@ -1,5 +1,14 @@
 # Ma trận kiểm chứng Phase 3
 
+## Bổ sung rà cuối của Ân (sau v1.0.0)
+
+- Tag P3 tại04cd262 có tests/test_p3_an.py và chạy232test đạt, không phải thiếu test Ân hoặc còn manifest1.1. Log: docs/proof/phase-3/an/tag-regression.txt và tag-smoke.txt.
+- Có bằng chứng HUD của Đức ở docs/proof/phase-3/duc/hud-freshness.md; ghi rõ giỏ dùng snapshot mẫu, quán dùng fixture engine, không nhận là chơi tay.
+- Rà cuối bổ sung các ca kind sai kiểu, trường lạ, waypoint/ID, snapshot và điểm. Các lỗi đã sửa trên nhánhfix/final-an; 288test và replay CLI đạt. [Log mới](../proof/final-an/README.md).
+- Các dòng ma trận dưới đây được giữ làm lịch sử trước/đang tích hợp P3. Trạng thái “chưa có/chưa kiểm” trong đó là lúc ghi, không phản ánh toàn bộ bản cuối; tag/ZIP đã công bố không bị đổi bởi lần sửa này.
+
+## Ma trận lịch sử P3
+
 Các ID dưới đây do nhóm đặt, không phải mã chính thức của đề. Nguồn yêu cầu: TICKET-03 §1, Test Contract v1.2.
 Test phần quán (`test_p3_trung.py`) dùng `docs/contracts/phase-2-tuning.sample.json` + `freshness`; test tích hợp (`test_p3_integration.py`) dùng manifest runtime v1.2.
 

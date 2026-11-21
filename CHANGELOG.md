@@ -1,4 +1,12 @@
 # Changelog
+## v1.0.0 — cập nhật bản nộp cuối của Ân
+
+- Sửa uy tín cộng/trừ thập phân để10lần boa từ0 đạt2.0, không làm mất100điểm vì floor sai số float; giữ fixture sát số nguyên, kẹp giới hạn theo tuning.
+- Snapshot quán bổ sung player.vel. Sai kiểu kind được trả mã2 trước output; từ chối trường node lạ, quái khác2waypoint/target_idx0–1; parser ID chỉ nhận hậu tố chữ số ASCII.
+- HUD/nút tương phản dùng sans-serif tối thiểu18px, giữ đồ họa pixel. Thêm9test hồi quy và bằng chứng docs/proof/final-an/.
+- TEAM cập nhật Ban6/4người/trao đổi trực tiếp tại lớp/không phát sinh bất đồng hoặc trễ, Nguyễn Bảo Trung; phản tư Ân nêu việc cả4phase, dưới200từ.
+- Bản cập nhật thay thế ZIP v1.0.0 ban đầu; tag phase-4/v1.0.0 được đồng bộ với commit tích hợp. Đối chiếu SHA nguồn trong BUILD-INFO.json và package-check.json trên Release.
+
 ## v1.0.0 — 2026-11-21
 
 ### Phase 4 — phát hành

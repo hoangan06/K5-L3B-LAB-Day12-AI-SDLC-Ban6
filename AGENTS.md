@@ -1,5 +1,11 @@
 # AGENTS.md — hướng dẫn chung cho mọi agent AI của nhóm
 
+## Rà bản nộp cuối — Ân
+- Test hồi quy mới: `PYTHONPATH=tests:. python3 -m unittest discover -s tests -p test_final_an.py -v`.
+- Uy tín đổi qua `chonoi.reputation.adjust_reputation`; không round gần số nguyên để sửa điểm vì có thể làm sai fixture hợp lệ.
+- ID chỉ tách hậu tốASCII[0-9], node chỉ nhận khóa schema, Cá Sấu đúng2waypoint/target_idx0–1; sai đầu vào phải mã2 trước output. Quán snapshot có cảpos/vel.
+- Bản v1.0.0 ban đầu ở dbe6d20 được thay bằng bản nộp cuối. Đối chiếu tag với SHA trong BUILD-INFO.json và package-check.json của asset hiện hành. Trạng thái và log mới: `docs/proof/final-an/README.md`.
+
 > Cập nhật file này qua các phase (lịch sử git phải cho thấy điều đó). Ngắn gọn, có lệnh chạy thật.
 
 ## Lệnh

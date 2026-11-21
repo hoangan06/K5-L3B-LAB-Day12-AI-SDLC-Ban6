@@ -2,7 +2,7 @@
 
 import re
 
-_TAIL = re.compile(r"^(.*?)(\d+)$")
+_TAIL = re.compile(r"^(.*?)([0-9]+)\Z", re.DOTALL)
 
 
 def id_key(ident: str):

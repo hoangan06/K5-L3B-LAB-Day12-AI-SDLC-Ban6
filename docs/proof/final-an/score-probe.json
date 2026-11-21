@@ -1,0 +1,11 @@
+{
+  "scope": "Real CLI replay of ordinary Bot input, 26 flowers, reputation0, seed7",
+  "return_code": 0,
+  "quan_player_fields": [
+    "pos",
+    "vel"
+  ],
+  "required_player_vel_present": true,
+  "score_mismatch_count": 0,
+  "first_mismatches": []
+}

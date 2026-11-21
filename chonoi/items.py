@@ -43,7 +43,7 @@ def load_items(raw, kinds, where):
         iid, kind, fresh = it["id"], it["kind"], it["fresh"]
         if not isinstance(iid, str) or not iid or iid in seen:
             raise BadInput(f"{where}: id cá thể rỗng hoặc trùng: {iid!r}")
-        if kind not in kinds:
+        if not isinstance(kind, str) or kind not in kinds:
             raise BadInput(f"{where}: nguyên liệu lạ {kind!r}")
         if not _num(fresh) or not 0 <= fresh <= 100:
             raise BadInput(f"{where}: fresh của {iid} phải hữu hạn trong [0, 100]")

@@ -1,0 +1,14 @@
+test_inventory_sort_uses_ascii_suffixes (test_final_an.FinalCLI.test_inventory_sort_uses_ascii_suffixes) ... ok
+test_manifest_rejects_three_monster_waypoints (test_final_an.FinalCLI.test_manifest_rejects_three_monster_waypoints) ... ok
+test_monster_requires_two_waypoints_and_index_zero_or_one (test_final_an.FinalCLI.test_monster_requires_two_waypoints_and_index_zero_or_one) ... ok
+test_node_unknown_field_is_rejected (test_final_an.FinalCLI.test_node_unknown_field_is_rejected) ... ok
+test_quan_snapshot_includes_velocity_at_zero_and_after_clamping (test_final_an.FinalCLI.test_quan_snapshot_includes_velocity_at_zero_and_after_clamping) ... ok
+test_wrong_item_kind_type_returns_two_before_output (test_final_an.FinalCLI.test_wrong_item_kind_type_returns_two_before_output) ... ok
+test_unicode_digits_and_linebreaks_follow_literal_ascii_suffix_rule (test_final_an.NaturalIds.test_unicode_digits_and_linebreaks_follow_literal_ascii_suffix_rule) ... ok
+test_add_loss_and_caps_without_rounding_legitimate_fixture (test_final_an.ReputationScore.test_add_loss_and_caps_without_rounding_legitimate_fixture) ... ok
+test_ten_tips_from_zero_score_exactly_two_reputation (test_final_an.ReputationScore.test_ten_tips_from_zero_score_exactly_two_reputation) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.824s
+
+OK

@@ -242,8 +242,8 @@ def _validate_monster_data(g):
         seen.add(spawn["id"])
         _int_between("gather.monsters.spawns.from_day", spawn.get("from_day"), 1, 5)
         waypoints = spawn.get("waypoints")
-        if not isinstance(waypoints, list) or len(waypoints) < 2:
-            raise BadInput("gather.monsters.spawns cần ít nhất hai waypoint")
+        if not isinstance(waypoints, list) or len(waypoints) != 2:
+            raise BadInput("gather.monsters.spawns cần đúng hai waypoint")
         domain = {"x": g["bounds"]["x"], "d": ca_sau["depths"]}
         for pos in [spawn.get("pos"), *waypoints]:
             _pos_in("gather.monsters.spawns", pos, domain, ("x", "d"))

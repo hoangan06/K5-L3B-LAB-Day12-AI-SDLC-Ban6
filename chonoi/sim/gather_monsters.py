@@ -31,14 +31,14 @@ def init_monsters(sim, scenario):
             raise BadInput(f"{ident}: loài quái không được hỗ trợ")
         species = tuning["species"][kind]
         waypoints = monster.get("waypoints")
-        if not isinstance(waypoints, list) or len(waypoints) < 2:
-            raise BadInput(f"{ident}: cần ít nhất hai waypoint")
+        if not isinstance(waypoints, list) or len(waypoints) != 2:
+            raise BadInput(f"{ident}: cần đúng hai waypoint")
         points = [_position(point, sim.t["bounds"]["x"], species["depths"], ident) for point in waypoints]
         position = _position(monster.get("pos", points[0]), sim.t["bounds"]["x"], species["depths"], ident)
         index = monster.get("target_idx", 1)
         state = monster.get("state", "patrol")
         timer = monster.get("state_ticks_left", 0)
-        if type(index) is not int or not 0 <= index < len(points):
+        if type(index) is not int or index not in (0, 1):
             raise BadInput(f"{ident}: target_idx không hợp lệ")
         if (state not in ("patrol", "chase", "recoil") or type(timer) is not int
                 or not 0 <= timer <= species["recoil_ticks"] or (state == "recoil") != (timer > 0)):

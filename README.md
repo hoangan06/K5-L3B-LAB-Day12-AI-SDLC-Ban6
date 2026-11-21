@@ -1,5 +1,7 @@
 # Day 12 — AI SDLC: Quán Ăn Chợ Nổi
 
+Rà cuối sau phát hành: [thay đổi và kiểm chứng của Ân](docs/proof/final-an/README.md). Bản trên nhánh sửa có288test đạt; tag/ZIP v1.0.0 đang công bố vẫn là bản trước các sửa này, không tự được cập nhật theo working tree.
+
 > **Làm theo nhóm 4–6 người** · Dùng AI để xây game 2D qua **4 phase** trong **3 giờ**: Út Sen lặn bắt cá, hái rau trên mặt nước rồi tối mở quán phục vụ khách.
 > **Yêu cầu từng phase mở đúng mốc giờ tại lab board:** **[Chợ Nổi Lab](https://claude.ai/artifact/E35v787wSx2wDgPTNhMVDg)** (cần đăng nhập claude.ai; có trợ giảng AI cho từng phase).
 
@@ -62,7 +64,7 @@ python3 tools/package_release.py --out dist/chonoi-v1.0.0.zip
 
 Script không ghi đè ZIP đã có. Gói có `BUILD-INFO.json` ghi commit nguồn và hash từng file; chỉ lấy source/docs, bỏ cache và môi trường cục bộ. Nếu còn thiếu đầu vào phát hành, script ghi rõ và gói chỉ là **ứng viên**, chưa phải Release hoàn chỉnh.
 
-Kiểm chứng phát hành v1.0.0: `docs/verification/phase-4.md` và `docs/proof/phase-4/release/`. Bench đo lại trên giao diện cuối; `load_ms` tính từ khởi chạy đến frame gather đầu tiên. **Chưa công bố giấy phép**, theo xác nhận của chủ repo; xem `docs/licensing-status.md` và `CREDITS.md`.
+Kiểm bản nộp cuối (288 test, sửa điểm/schema/HUD): `docs/proof/final-an/`. SHA của gói hiện hành nằm trong `BUILD-INFO.json` và asset `package-check.json`; asset `archive-*` là bản cũ. Kiểm chứng phát hành v1.0.0: `docs/verification/phase-4.md` và `docs/proof/phase-4/release/`. Bench đo lại trên giao diện cuối; `load_ms` tính từ khởi chạy đến frame gather đầu tiên. **Chưa công bố giấy phép**, theo xác nhận của chủ repo; xem `docs/licensing-status.md` và `CREDITS.md`.
 
 Bật cả phần sáng tạo (đền Bà Thủy, Mãng Xà Vương, miếu Cá Ông; chỉ ở live, headless không đổi): `python3 -m chonoi.live --mode day --days 5 --creative`. Trên macOS có thể bấm đúp `tools/choi-game.command` (mở trình duyệt ở cổng 8800). Icon pixel cho launcher: `python3 tools/icon/make_icon.py`.
 

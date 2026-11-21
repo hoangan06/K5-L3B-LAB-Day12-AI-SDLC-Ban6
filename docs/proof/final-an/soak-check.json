@@ -1,0 +1,8 @@
+{
+  "days_completed": 10,
+  "crashes": 0,
+  "gameplay_equal": true,
+  "excluded_fields": [
+    "duration_s"
+  ]
+}

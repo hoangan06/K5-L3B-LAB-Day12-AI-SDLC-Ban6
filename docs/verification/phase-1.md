@@ -1,5 +1,7 @@
 # Ma trận truy vết Phase 1
 
+Ghi chú rà cuối của Ân: bảng dưới giữ trạng thái lịch sử ở P1, không phải trạng thái hồ sơ hiện tại. TEAM/phản tư Ân và các lỗi snapshot/điểm/đầu vào đã được sửa sau v1.0.0; xem [bằng chứng mới](../proof/final-an/README.md). Không suy ra tag P1 đã được thay đổi theo các sửa sau này.
+
 | AC | Cách kiểm chứng | Bằng chứng (link `docs/proof/phase-1/...`) | Kết quả (đạt / chưa đạt — ghi trung thực) |
 |---|---|---|---|
 | Nội bộ DUY-01: hái/bắt và các biên | `tests/test_p1_duy.py`; test tích hợp sau khi nối helper | `docs/proof/phase-1/duy/results.md` | Test helper đạt; tích hợp chưa kiểm chứng |

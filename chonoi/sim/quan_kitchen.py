@@ -2,6 +2,7 @@ from math import dist, floor
 
 from .. import TICK_HZ
 from ..ids import id_key, sort_by_id
+from ..reputation import adjust_reputation
 from .quan_fresh import consume, dump_item, locked_price
 
 
@@ -45,8 +46,8 @@ def pay_customer(sim, customer: dict, reason: str, events: list) -> None:
     sim.shift_earned += amount
 
     if tip > 0:
-        reputation = sim.reputation + sim.t["tip_reputation"]
-        sim.reputation = min(sim.t["reputation_max"], max(sim.t["reputation_min"], reputation))
+        sim.reputation = adjust_reputation(sim.reputation, sim.t["tip_reputation"],
+                                           sim.t["reputation_min"], sim.t["reputation_max"])
 
     events.append((
         "paid",

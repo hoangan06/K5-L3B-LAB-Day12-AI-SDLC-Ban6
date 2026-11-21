@@ -1,0 +1,45 @@
+[
+  {
+    "case": "inventory_kind_list",
+    "expected_code": 2,
+    "actual_code": 2,
+    "output_exists": false,
+    "stderr": "đầu vào sai: file kho: nguyên liệu lạ []\n"
+  },
+  {
+    "case": "hold_kind_object",
+    "expected_code": 2,
+    "actual_code": 2,
+    "output_exists": false,
+    "stderr": "đầu vào sai: gather.hold: nguyên liệu lạ {}\n"
+  },
+  {
+    "case": "unknown_node_field",
+    "expected_code": 2,
+    "actual_code": 2,
+    "output_exists": false,
+    "stderr": "đầu vào sai: nodes.N1: có trường lạ/chưa hỗ trợ\n"
+  },
+  {
+    "case": "monster_three_waypoints",
+    "expected_code": 2,
+    "actual_code": 2,
+    "output_exists": false,
+    "stderr": "đầu vào sai: M1: cần đúng hai waypoint\n"
+  },
+  {
+    "case": "unicode_item_sort",
+    "expected_code": 0,
+    "actual_code": 0,
+    "output_exists": true,
+    "stderr": "",
+    "expected_ids": [
+      "I10",
+      "I２"
+    ],
+    "actual_ids": [
+      "I10",
+      "I２"
+    ]
+  }
+]

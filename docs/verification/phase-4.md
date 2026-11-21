@@ -1,5 +1,7 @@
 # Ma trận kiểm chứng Phase 4
 
+Cập nhật rà cuối của Ân: [docs/proof/final-an](../proof/final-an/README.md) có288test đạt, replay sai điểm đã hết, schema/ID/HUD và TEAM/phản tư Ân được sửa. Bảng dưới giữ bằng chứng lịch sử bản dbe6d20; bản nộp cuối thay thế được kiểm lại tại docs/proof/final-an/. Bench đo lại sau đổi HUD, soak chạy hai lần cho gameplay giống nhau. Gói mới có package-check.json riêng trên Release với SHA nguồn sạch trùng tag. Phản tư/AI log của thành viên khác vẫn do từng người bổ sung.
+
 AC-P4-xx là mã nội bộ của nhóm. Nền gameplay kiểm: main `965de6f`; kiểm chốt trên clone GitHub sạch `9d4b639` (279test). Thay đổi sau đó chỉ tài liệu/bằng chứng, không sửa code. Bằng chứng mới ở `docs/proof/phase-4/release/`, thay cho báo cáo nhánh cũ. Asset cuối dựng lại từ SHA gắn tag, kèm package-check.json riêng trên Release.
 
 | Mã | Bằng chứng / cách kiểm | Kết quả |

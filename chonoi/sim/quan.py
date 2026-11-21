@@ -86,7 +86,7 @@ class QuanSim:
                 entry.pop("tip", None)
             customers.append(entry)
         return {
-            "player": {"pos": self.pos},
+            "player": {"pos": self.pos, "vel": self.vel},
             "stock": ([dump_item(it) for it in self.stock] if self.items_mode
                       else {k: self.stock[k] for k in sorted(self.stock) if self.stock[k] > 0}),
             "hand": self.hand,

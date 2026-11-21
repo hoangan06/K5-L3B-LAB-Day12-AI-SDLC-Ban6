@@ -147,6 +147,8 @@ def _validate_gather(b, tuning, *, day_mode=False):
         if p["zero_oxy_ticks"] > 0 and not (oxy == 0 and pos[1] > g["surface_depth"]):
             raise BadInput("player.zero_oxy_ticks > 0 chỉ khi oxy = 0 và đang dưới nước")
     for n in b.get("nodes", []):
+        if set(n) - {"id", "kind", "pos", "regrow_ticks"}:
+            raise BadInput(f"nodes.{n['id']}: có trường lạ/chưa hỗ trợ")
         if not isinstance(n.get("kind"), str) or n["kind"] not in node_kinds:
             raise BadInput(f"nodes.{n['id']}: loại cây không hợp lệ")
         _pos(f"nodes.{n['id']}.pos", n.get("pos"), bounds)

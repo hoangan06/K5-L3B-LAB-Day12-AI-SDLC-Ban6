@@ -8,6 +8,7 @@ import copy
 
 from ..ids import id_key, sort_by_id
 from ..errors import BadInput
+from ..reputation import adjust_reputation
 from .quan_fresh import available_counts, pick, reserved_ids
 from .quan_validation import menu_kinds, ticks
 
@@ -88,8 +89,8 @@ def _remove(sim, c, discard_order):
 def _leave(sim, c, reason, events, discard_order):
     if reason == "patience":
         t = sim.t
-        sim.reputation = min(t["reputation_max"], max(t["reputation_min"],
-                                                      sim.reputation + t["left_reputation_delta"]))
+        sim.reputation = adjust_reputation(sim.reputation, t["left_reputation_delta"],
+                                           t["reputation_min"], t["reputation_max"])
     events.append(("customer_left", {"order_id": c["id"], "table_id": c["table_id"], "reason": reason,
                                      "reputation": sim.reputation}))
     _remove(sim, c, discard_order)
