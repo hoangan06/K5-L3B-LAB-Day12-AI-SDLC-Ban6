@@ -3,8 +3,8 @@
   "tick_hz": 60,
   "_note": "Số liệu tuning của phần sáng tạo (chỉ live, cờ --creative). Mọi giá trị là giả định của agent, chờ PO duyệt.",
   "shrines": {
-    "ba_thuy": {"name": "Đền Bà Thủy", "x": 36, "radius": 2.5, "stand_ticks": 180},
-    "ca_ong": {"name": "Miếu Cá Ông", "x": 68, "radius": 2.5, "stand_ticks": 180}
+    "ba_thuy": {"name": "Đền Bà Thủy", "x": 20, "radius": 2.5, "stand_ticks": 180},
+    "ca_ong": {"name": "Miếu Cá Ông", "x": 53, "radius": 2.5, "stand_ticks": 180}
   },
   "ba_thuy_buff": {
     "duration_ticks": 5400,

@@ -56,7 +56,7 @@ class MoveDirsTest(unittest.TestCase):
 
 class ShrineAndBuffTest(unittest.TestCase):
     def setUp(self):
-        self.scn = {"player": {"pos": [36.0, 0.0]}}
+        self.scn = {"player": {"pos": [20.0, 0.0]}}
 
     def test_standing_lights_incense_and_costs_time_not_money(self):
         s, layer, inp = make(self.scn)
@@ -265,7 +265,7 @@ class CaOngTest(unittest.TestCase):
         self.assertEqual(layer.revives, 1)
 
     def test_hold_as_dicts_is_tolerated(self):
-        s, layer, inp = make({"player": {"pos": [36.0, 0.0]}, "hold": [{"id": "I1", "kind": "ca_loc", "fresh": 90}]})
+        s, layer, inp = make({"player": {"pos": [20.0, 0.0]}, "hold": [{"id": "I1", "kind": "ca_loc", "fresh": 90}]})
         drive(s, layer, inp, 5, move=(0.0, 0.0))
         json.dumps(layer.snapshot(s))  # layer không đọc/ghi hold, nên hợp mọi dạng
 

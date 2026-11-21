@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><title>Quán Ăn Chợ Nổi — Bàn 6</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1600px; height: 1000px; overflow: hidden; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+         background: linear-gradient(180deg, #ffb36b 0%, #f4c58a 22%, #1f5f5a 22.1%, #143f3c 100%); color: #fff; }
+  header { height: 220px; display: flex; align-items: center; gap: 28px; padding: 0 64px; }
+  header img { width: 120px; height: 120px; image-rendering: pixelated; border-radius: 22px; box-shadow: 0 6px 18px #0005; }
+  h1 { font-size: 72px; color: #3b1d0b; letter-spacing: -1px; }
+  .sub { font-size: 28px; color: #5a2e12; margin-top: 4px; }
+  .team { margin-left: auto; background: #3b1d0b; color: #ffd27a; font-size: 40px; font-weight: 800; padding: 14px 30px; border-radius: 999px; }
+  main { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 26px 64px 0; }
+  figure { position: relative; }
+  figure img { width: 100%; border-radius: 16px; box-shadow: 0 10px 30px #0007; display: block; }
+  figcaption { font-size: 30px; font-weight: 800; margin: 0 0 12px 4px; color: #ffe3a8; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .chip { background: #ffffff1f; border: 2px solid #ffffff40; border-radius: 999px; padding: 8px 18px; font-size: 23px; font-weight: 600; }
+  footer { position: absolute; left: 64px; right: 64px; bottom: 34px; display: flex; align-items: center; gap: 18px; }
+  code { background: #0b2422; border-radius: 12px; padding: 12px 20px; font: 600 24px Menlo, monospace; color: #c9f2e6; }
+  .note { font-size: 20px; color: #9ccfc4; }
+</style></head>
+<body>
+<header>
+  <img src="../../tools/icon/choinoi.png" alt="">
+  <div><h1>Quán Ăn Chợ Nổi</h1><div class="sub">Sáng lặn sông bắt cá · Tối mở quán trên chợ nổi</div></div>
+  <div class="team">Bàn 6</div>
+</header>
+<main>
+  <figure>
+    <figcaption>☀ Buổi sáng trên sông</figcaption>
+    <img src="shots/gather.png" alt="">
+    <div class="chips"><span class="chip">Hái bông súng, bắt cá</span><span class="chip">Oxy · Máu</span><span class="chip">Cá Sấu Năm Chèo</span><span class="chip">Mãng Xà Vương</span><span class="chip">Đền Bà Thủy · Miếu Cá Ông</span></div>
+  </figure>
+  <figure>
+    <figcaption>☾ Buổi tối ở quán</figcaption>
+    <img src="shots/quan.png" alt="">
+    <div class="chips"><span class="chip">Khách gọi món, chờ có hạn</span><span class="chip">Độ tươi từng con cá</span><span class="chip">Trăng đổi theo ngày</span><span class="chip">Thẻ truyền thuyết “?”</span></div>
+  </figure>
+</main>
+<footer>
+  <code>python3 -m chonoi.live --mode day --days 5 --creative</code>
+  <span class="note">5 ngày · Shop nâng cấp · Tương phản cao · Ảnh chụp từ bản chạy thật</span>
+</footer>
+</body></html>

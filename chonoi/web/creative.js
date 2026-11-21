@@ -56,53 +56,8 @@
     c.closePath(); c.fill(); c.stroke(); c.restore();
   }
   const lerp = (a, b, k) => a + (b - a) * k;
-  function shrine(sx, sy, s, sh, ongFish, tick) {
+  function shrine(sx, sy, s, sh, ongFish, tick) {   // thân đền/miếu vẽ pixel ở index.html (lớp cảnh); ở đây chỉ còn vòng tiến độ thắp hương
     const x = sx(sh.x), y = sy(0);
-    // tỉ lệ: người cao ~1,7 đơn vị; thân miếu 2,4, mái lên tới 4,0 (cao hơn người)
-    const bw = 3.6 * s, bh = 2.4 * s, roofTop = 4.0 * s;
-    c.fillStyle = "#3b2a1a"; c.fillRect(x - bw / 2 - 0.3 * s, y - 0.25 * s, bw + 0.6 * s, 0.25 * s);  // bệ
-    c.fillStyle = "#6b4a2f"; c.fillRect(x - bw / 2, y - bh, bw, bh - 0.25 * s);
-    c.fillStyle = "#8a6240"; c.fillRect(x - bw / 2, y - bh, 0.3 * s, bh - 0.25 * s); c.fillRect(x + bw / 2 - 0.3 * s, y - bh, 0.3 * s, bh - 0.25 * s);
-    c.fillStyle = ongFish ? "#2b6f8f" : "#a63a2f";
-    c.beginPath(); c.moveTo(x - bw / 2 - 0.7 * s, y - bh); c.lineTo(x - 0.5 * s, y - roofTop); c.lineTo(x + 0.5 * s, y - roofTop); c.lineTo(x + bw / 2 + 0.7 * s, y - bh); c.closePath(); c.fill();
-    c.strokeStyle = "#f5de95"; c.lineWidth = 2; c.stroke();
-    const dw = 1.2 * s, dh = 1.45 * s, dx = x - dw / 2, dy = y - 0.25 * s - dh;
-    if (sh.lit) {  // đã thắp: ánh nến vàng ấm trong cửa, quầng sáng, ngọn nến lung linh theo tick
-      const fl = 0.85 + 0.15 * Math.sin(tick / 7) + 0.05 * Math.sin(tick / 3);
-      const g = c.createRadialGradient(x, y - 0.9 * s, 0.1 * s, x, y - 0.9 * s, 2.6 * s * fl);
-      g.addColorStop(0, "rgba(255,200,90,.55)"); g.addColorStop(1, "rgba(255,170,60,0)");
-      c.fillStyle = g; c.fillRect(x - 2.8 * s, y - 3.5 * s, 5.6 * s, 3.5 * s);
-      c.fillStyle = "#ffcf6b"; c.fillRect(dx, dy, dw, dh);
-      c.fillStyle = "#ff9d3c"; c.fillRect(dx + 0.15 * s, dy + 0.45 * s, dw - 0.3 * s, dh - 0.45 * s);
-      c.fillStyle = "#fff4c4"; c.fillRect(x - 0.08 * s, y - 0.25 * s - 0.55 * s, 0.16 * s, 0.4 * s);  // thân nến
-      c.beginPath(); c.ellipse(x, y - 0.25 * s - 0.72 * s, 0.1 * s * fl, 0.22 * s * fl, 0, 0, 7); c.fillStyle = "#ffe36b"; c.fill();
-      c.strokeStyle = "#5a2a10"; c.lineWidth = 2; c.strokeRect(dx, dy, dw, dh);
-    } else { c.fillStyle = "#1c1209"; c.fillRect(dx, dy, dw, dh); }
-    // bát hương bên phải: chưa thắp = ba nén nâu không khói; đã thắp = ba nén đỏ đầu cháy + khói uốn lượn
-    const hx = x + bw / 2 + 0.9 * s, bt = y - 0.45 * s;
-    c.fillStyle = "#7a5a32"; c.beginPath(); c.moveTo(hx - 0.55 * s, bt); c.lineTo(hx + 0.55 * s, bt); c.lineTo(hx + 0.4 * s, y); c.lineTo(hx - 0.4 * s, y); c.closePath(); c.fill();
-    c.strokeStyle = "#f5de95"; c.lineWidth = 2; c.stroke();
-    const tops = [];
-    [-0.28, 0, 0.28].forEach((o, n) => {
-      const sx0 = hx + o * s, tp = bt - (1.5 + (n === 1 ? 0.2 : 0)) * s;
-      c.strokeStyle = sh.lit ? "#c8301f" : "#8a5a2b"; c.lineWidth = 3; c.lineCap = "round";
-      c.beginPath(); c.moveTo(sx0, bt); c.lineTo(sx0, tp); c.stroke(); c.lineCap = "butt";
-      tops.push([sx0, tp]);
-    });
-    if (sh.lit) {
-      tops.forEach(([tx, ty], n) => {  // đầu nén cháy đỏ
-        c.fillStyle = "#ff7a3c"; c.beginPath(); c.arc(tx, ty, 4.5, 0, 7); c.fill();
-        c.fillStyle = "#fff0a0"; c.beginPath(); c.arc(tx, ty, 2, 0, 7); c.fill();
-        // vài cuộn khói xám trắng: mỗi cuộn bay lên rồi mờ dần, uốn lượn theo sin
-        for (let k = 0; k < 4; k++) {
-          const ph = ((tick / 150 + k / 4 + n * 0.31) % 1), H = 4.5 * s;
-          const px = tx + Math.sin(ph * 9 + n * 2) * (0.25 + ph * 0.5) * s, py = ty - 6 - ph * H, r = 7 + ph * 16;
-          c.fillStyle = "rgba(236,238,240," + (0.8 * (1 - ph)).toFixed(3) + ")";
-          c.beginPath(); c.arc(px, py, r, 0, 7); c.fill();
-        }
-      });
-    }
-    txt(sh.name, x, y - roofTop - 8, { align: "center", color: ongFish ? "#bfe6ff" : "#ffe9b0" });
     if (!sh.lit && sh.progress > 0) {  // vòng tiến độ thắp hương + chữ
       const k = Math.min(1, sh.progress / sh.stand_ticks), cy = y - 1.2 * s, r = 2.8 * s;
       c.strokeStyle = "rgba(255,255,255,.3)"; c.lineWidth = 6; c.beginPath(); c.arc(x, cy, r, 0, 7); c.stroke();
@@ -125,37 +80,30 @@
       c.beginPath(); c.ellipse(x, y0, (1.2 + q * 3.5) * s, (0.35 + q * 0.9) * s, 0, 0, 7); c.stroke();
     }
     c.globalAlpha = Math.max(0, Math.min(1, k));
-    // thân dài ~7 m, thân dày dần về phía đầu; uốn sin chạy dọc thân theo tick; đầu quay theo hướng bơi (m.dir)
-    const N = 34, L = 7 * s, chase = m.state === "chase", dir = m.dir || 1;
-    const amp = (chase ? 0.55 : 0.4) * s, spd = chase ? 9 : 16, ph = tick / spd;
-    const seg = [];
-    for (let i = 0; i < N; i++) {  // i = 0 là đuôi, N-1 là đầu
-      const u = i / (N - 1), px = (u - 1) * L, py = Math.sin(u * 9 - ph) * amp * (0.35 + 0.65 * (1 - u));
-      seg.push([px, py, (0.12 + 0.88 * Math.pow(Math.sin(Math.min(1, u * 1.15) * Math.PI / 2), 0.7)) * 0.5 * s]);
+    // Vẽ kiểu pixel như cá sấu của lớp lõi: lưới ô vuông 1 px thấp (= s / 8.5, cùng tỉ lệ 1 m ≈ 8.5 px), từng cột thân.
+    // Thân dài ~7 m (60 cột), dày dần về phía đầu; uốn sin chạy dọc thân theo tick; đầu quay theo hướng bơi (m.dir).
+    const chase = m.state === "chase", dir = m.dir || 1, p = s / 8.5, n = 60;
+    const P = (ix, iy, w, h, col) => { c.fillStyle = col; c.fillRect(Math.round(x + dir * ix * p - (dir < 0 ? w * p : 0)), Math.round(y + iy * p), Math.ceil(w * p), Math.ceil(h * p)); };
+    const body = chase ? "#7a8f2e" : "#4f8a45", dark = chase ? "#3d4a14" : "#2a4f2a", belly = "#e9d58a", gold = "#d9a72a";
+    const ph = tick / (chase ? 5 : 9), amp = chase ? 4 : 3;
+    let hy = 0;
+    for (let i = 0; i < n; i++) {   // i = 0 đuôi, n-1 cổ
+      const u = i / (n - 1), ix = i - n, th = 2 + Math.round(7 * Math.pow(u, 0.6));
+      const yo = Math.round(Math.sin(u * 8 - ph) * amp * (0.4 + 0.6 * (1 - u))), top = yo - Math.floor(th / 2);
+      P(ix, top - 1, 1, th + 2, "#14240f");                    // viền tối cho nổi trên nền nước
+      P(ix, top, 1, th, i % 6 < 3 ? body : dark);
+      if (th > 2 && i % 3 === 0) P(ix, top, 1, 1, gold);        // vảy vàng trên lưng
+      if (th > 2) P(ix, top + th - 1, 1, 1, belly);              // bụng sáng
+      if (i === n - 1) hy = yo;
     }
-    c.save(); c.translate(x, y); c.scale(dir, 1);
-    c.fillStyle = "rgba(190,235,150,.45)"; seg.forEach(([px, py, r]) => { c.beginPath(); c.arc(px, py, r + 3, 0, 7); c.fill(); });  // viền sáng cho nổi trên nền nước tối
-    seg.forEach(([px, py, r], i) => {
-      c.fillStyle = i % 4 < 2 ? "#4f8a45" : "#6aa24f"; c.beginPath(); c.arc(px, py, r, 0, 7); c.fill();
-      c.fillStyle = "#c9a24a"; c.beginPath(); c.ellipse(px, py - r * 0.35, r * 0.28, r * 0.5, 0, 0, 7); c.fill();  // vảy vàng đồng trên lưng
-      if (i % 4 === 0) { c.fillStyle = "#e9d58a"; c.beginPath(); c.arc(px, py + r * 0.45, r * 0.3, 0, 7); c.fill(); }  // bụng sáng
-    });
-    c.strokeStyle = "#1f3a22"; c.lineWidth = 2; c.beginPath(); seg.forEach(([px, py, r]) => c.lineTo(px, py - r)); c.stroke();
-    const [hx, hy, hr] = seg[N - 1];
-    c.fillStyle = "#5f9a4a"; c.beginPath(); c.ellipse(hx + 0.5 * s, hy, 0.95 * s, 0.62 * s, 0, 0, 7); c.fill();  // đầu
-    c.strokeStyle = "#1f3a22"; c.lineWidth = 2; c.stroke();
-    c.fillStyle = "#f2c94c";  // mào/vương miện nhỏ
-    c.beginPath();
-    c.moveTo(hx - 0.2 * s, hy - 0.5 * s);
-    [[-0.3, -1.25], [0.15, -0.95], [0.55, -1.4], [0.95, -0.9], [1.1, -0.45]].forEach(([qx, qy]) => c.lineTo(hx + qx * s, hy + qy * s * 0.9));
-    c.lineTo(hx + 0.9 * s, hy - 0.3 * s); c.closePath(); c.fill(); c.strokeStyle = "#8a6a10"; c.lineWidth = 1.5; c.stroke();
-    c.fillStyle = "#ff2a2a"; c.beginPath(); c.arc(hx + 0.75 * s, hy - 0.17 * s, 0.17 * s, 0, 7); c.fill();  // mắt đỏ
-    c.fillStyle = "#000"; c.beginPath(); c.arc(hx + 0.8 * s, hy - 0.17 * s, 0.07 * s, 0, 7); c.fill();
-    const fl = Math.sin(tick / (chase ? 3 : 8)) > 0 ? 1 : 0.35, tx0 = hx + 1.4 * s;  // lưỡi chẻ thè ra
-    c.strokeStyle = "#e0324a"; c.lineWidth = 2.5; c.beginPath(); c.moveTo(tx0, hy + 0.1 * s); c.lineTo(tx0 + 0.7 * s * fl, hy + 0.1 * s);
-    c.moveTo(tx0 + 0.7 * s * fl, hy + 0.1 * s); c.lineTo(tx0 + 1.0 * s * fl, hy - 0.05 * s);
-    c.moveTo(tx0 + 0.7 * s * fl, hy + 0.1 * s); c.lineTo(tx0 + 1.0 * s * fl, hy + 0.25 * s); c.stroke();
-    c.restore();
+    // đầu 9×6 ô, mắt đỏ, vương miện vàng 3 chóp, lưỡi chẻ thè ra
+    P(0, hy - 6, 13, 11, "#14240f"); P(0, hy - 5, 12, 9, body); P(1, hy - 5, 10, 2, dark); P(0, hy + 2, 12, 2, belly);
+    P(7, hy - 3, 3, 3, "#ff2a2a"); P(9, hy - 3, 1, 1, "#000");
+    for (const [cx, hh] of [[1, 3], [4, 5], [7, 3]]) P(cx, hy - 6 - hh, 2, hh, gold);
+    P(1, hy - 6, 8, 1, gold);
+    const fl = Math.sin(tick / (chase ? 3 : 8)) > 0 ? 4 : 1;
+    P(12, hy, fl, 1, "#e0324a"); if (fl > 1) { P(12 + fl, hy - 1, 1, 1, "#e0324a"); P(12 + fl, hy + 1, 1, 1, "#e0324a"); }
+    c.restore(); c.save(); c.globalAlpha = Math.max(0, Math.min(1, k));
     txt(chase ? "Mãng Xà Vương đang đuổi!" : "Mãng Xà Vương", x + dir * 0.4 * s, y - 2.0 * s, { align: "center", color: chase ? "#ffb4a8" : "#fff" });
     c.restore();
   }
@@ -183,7 +131,14 @@
     requestAnimationFrame(frame);
     const [w, h] = fit();
     const cr = typeof snap !== "undefined" && snap ? snap.creative : null;
-    if (!cr || !cr.active || (snap.phase || snap.mode) !== "gather" || snap.ui?.screen) return;
+    if (cr && cr.enabled && !(cr.active && (snap.phase || snap.mode) === "gather" && !snap.ui?.screen)) {
+      // vừa ngất -> sim sang quán ngay: vẫn cho thấy kết quả xúc xắc cá Ông thêm ~8 giây (trước đây bị mất)
+      const dice = cr.messages.filter((m) => m.text.startsWith("Xúc xắc") && snap.tick - m.tick < 480).slice(-1);
+      dice.forEach((m) => { c.font = "700 20px " + FONT; const pw = c.measureText(m.text).width + 40;
+        panel(w / 2 - pw / 2, 74, pw, 44, "#ffd54f"); txt(m.text, w / 2, 103, { align: "center", color: "#fff3b0", plain: true }); });
+      return;
+    }
+    if (!cr) return;
     const meta = snap.meta || {}, b = meta.bounds || { x: [0, 100], d: [0, 30] };
     const X = b.x[1], D = b.d[1], SKY = 6;
     const top = snap.mode === "day" ? 112 : 64, bottom = 68;

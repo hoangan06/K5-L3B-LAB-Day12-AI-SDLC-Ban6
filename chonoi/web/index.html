@@ -59,7 +59,7 @@
   @media (max-width: 900px) { .intro-cols { grid-template-columns: 1fr; } }
   canvas.hot { cursor: pointer; }
   /* HUD độ tươi của Đức (p3/duc), khoác giao diện pixel */
-  .freshness-hud { position: absolute; right: 14px; bottom: 14px; width: min(24rem, calc(100% - 28px)); max-height: 38vh; overflow: auto; box-sizing: border-box; padding: 8px 14px; background: #2a1a0cf2; border: 4px solid #8a5a2e; font-size: 18px; z-index: 2; }
+  .freshness-hud { position: absolute; right: 14px; bottom: 14px; width: min(21rem, calc(100% - 28px)); max-height: 24vh; overflow: auto; box-sizing: border-box; padding: 8px 14px; background: #2a1a0cf2; border: 4px solid #8a5a2e; font-size: 18px; z-index: 2; }
   .freshness-hud h2 { margin: 0 0 6px; font-size: inherit; color: #ffe4a1; }
   .freshness-hud ul { margin: 0; padding: 0; list-style: none; }
   .freshness-hud li { padding: 2px 0; }
@@ -289,6 +289,12 @@ const SRC = {
   1: ["VTC News — Thủy quái Vàm Nao", "https://vtcnews.vn/thuy-quai-vam-nao-va-giai-thoai-thu-vi-ve-ca-sau-5-chan-thanh-tinh-ar400798.html"],
   2: ["Tuổi Trẻ — Huyền thoại đánh bắt quái ngư Vàm Nao", "https://tuoitre.vn/huyen-thoai-danh-bat-quai-ngu-vam-nao-20180530140302313.htm"],
   3: ["Báo Cần Thơ — Truyện Ông Năm Chèo", "https://baocantho.com.vn/truyen-ong-nam-cheo-trong-doi-song-dan-gian-nam-bo-a99831.html"],
+  4: ["Báo Bắc Ninh — Chuyện ly kỳ về rắn khổng lồ ở núi Cấm", "https://baobacninhtv.vn/chuyen-ly-ky-ve-ran-khong-lo-nang-300-400-kg-o-nui-cam-postid291595.bbg"],
+  5: ["Tiền Phong — Chuyện ly kỳ về rắn khổng lồ nặng 300–400 kg", "https://tienphong.vn/xa-hoi/517620/Chuyen-ly-ky-ve-ran-khong-lo-nang-300---400-kg.html"],
+  6: ["Wikipedia — Thủy Long Thánh Mẫu", "https://vi.wikipedia.org/wiki/Th%E1%BB%A7y_Long_Th%C3%A1nh_M%E1%BA%ABu"],
+  7: ["Hội An Heritage — Tín ngưỡng thờ bà Thủy Long", "https://hoianheritage.net/vi/trao-doi-chuyen-nganh/chuyen-de-nghien-cuu-trao-doi/tin-nguong-tho-ba-thuy-long-o-hoi-an-1277.html"],
+  8: ["Wikipedia — Tục thờ cá Ông", "https://vi.wikipedia.org/wiki/T%E1%BB%A5c_th%E1%BB%9D_c%C3%A1_%C3%94ng"],
+  9: ["Thư viện Cần Thơ — Tục thờ cá Ông ở miền Tây Nam Bộ", "http://www.cantholib.org.vn:84/View.aspx?p=16A6074627B95A75553716A6E73647C92A95554737E6B64648C92A956677"],
   13: ["SGGP — Nhớ cá lóc đồng nướng trui", "https://www.sggp.org.vn/nho-ca-loc-dong-nuong-trui-post702292.html"],
   16: ["VnExpress — Lẩu mắm, bản hòa tấu của rau", "https://vnexpress.net/lau-mam-ban-hoa-tau-cua-rau-2342858.html"],
   18: ["mia.vn — Tìm hiểu cây bẹo miền Tây", "https://mia.vn/cam-nang-du-lich/tim-hieu-cay-beo-mien-tay-21138"],
@@ -308,6 +314,9 @@ const LORE = {
   kieng_ky: { title: "Kiêng kỵ của thương hồ", paras: [["phong tục", "Kiêng nói \"úp, lật, rớt\"; mong \"người mở hàng có duyên\" vào buổi sáng."]], src: [20] },
   ca_rang: { title: "Lò cà ràng và tên Cái Răng", paras: [["giả thuyết", "Một giả thuyết (Vương Hồng Sển, ĐH Cần Thơ dẫn): tên Cái Răng bắt nguồn từ \"karan\", lò cà ràng của người Khmer chở ghe xuống bán."]], src: [21] },
   ca_linh: { title: "Cá linh", paras: [["truyền thuyết", "Có nhiều chuyện kể về tên cá: điềm báo cho Nguyễn Ánh, hoặc cá \"có tánh linh\". Đây là truyện truyền miệng."]], src: [22, 23] },
+  mang_xa: { title: "Mãng Xà Vương", paras: [["sáng tạo của nhóm", "Quái do nhóm đặt tên, lấy cảm hứng từ chuyện rắn khổng lồ ở Thất Sơn: người sóc Tà Đéc (xã An Hảo, Tịnh Biên) kể có cặp rắn bò từ núi Bà Đội Om sang núi Cấm. Đây là chuyện kể, không phải ghi chép khoa học."]], src: [4, 5] },
+  ba_thuy: { title: "Bà Thủy", paras: [["tín ngưỡng", "Thủy Long Thánh Mẫu (\"Bà Thủy\"), nữ thần sông nước, thường được thờ ở ngã ba sông, phù hộ dân chài."]], src: [6, 7] },
+  ca_ong: { title: "Cá Ông", paras: [["tín ngưỡng", "Cá Ông là cá voi; ngư dân xem là thần Nam Hải cứu người gặp nạn trên biển. Miền Tây Nam Bộ cúng giỗ vào ngày cá Ông lụy."]], src: [8, 9] },
   ok_om_bok: { title: "Ok Om Bok và đèn nước", paras: [["phong tục", "Lễ cúng trăng của người Khmer vào rằm tháng 10 âm lịch, di sản phi vật thể quốc gia năm 2014; có thả đèn nước và đua ghe ngo."]], src: [26] },
 };
 const DISH_LORE = { ca_loc_nuong_trui: "ca_loc", lau_mam: "lau_mam" };
@@ -464,7 +473,7 @@ function mix(a, b, t) { const A = hex(a), B = hex(b); return "#" + A.map((v, i) 
 // ---------- thời gian trong ngày, mặt trời, mặt trăng ----------
 // KHUNG GIỜ HIỂN THỊ (chỉ trang trí, không đổi thời lượng sim; chạy theo tiến độ pha = phase_tick / (phase_tick + time_left_ticks)):
 //   gather (sáng) 05:30 -> 11:00: ĐẦU NGÀY = BÌNH MINH (mặt trời vừa nhô khỏi chân trời lúc 05:30, trời hồng/cam).
-//   quán 13:00 -> 18:30: CUỐI CA QUÁN = HOÀNG HÔN (mặt trời chạm chân trời lúc 18:30, trời cam/tím).
+//   quán 18:54 -> 21:00 (tối, đã lặn mặt trời; trước đây 13:00 -> 18:30): CUỐI CA QUÁN = HOÀNG HÔN (mặt trời chạm chân trời lúc 18:30, trời cam/tím).
 //   shop (sau ca quán, không có đồng hồ riêng) giữ 18:30. Thứ tự pha của sim: gather -> quan -> shop.
 // Mặt trời đi cung từ SUNRISE (05:30) đến SUNSET (18:30). Mặt trăng chỉ hiện từ ~17:30 (chạng vạng) mọc dần ở phía đông.
 const SUNRISE = 5.5, SUNSET = 18.5, MOON_RISE = 17.5;
@@ -474,7 +483,7 @@ function clockInfo() {
   const done = snap.phase_tick ?? snap.tick ?? 0;
   const total = done + left;
   let prog = total > 0 ? clamp01(done / total) : 0;
-  let from = 13, to = 18.5;
+  let from = 18.9, to = 21;   // ca quán là buổi tối: sau hoàng hôn, không còn mặt trời, trăng và sao lên
   if (ph === "gather") { from = 5.5; to = 11; }
   else if (ph === "shop") { prog = 1; }
   let hour = lerp(from, to, prog);
@@ -578,7 +587,8 @@ function drawCelestial(c, horizon, yPeak) {
   const xl = Math.round(bw * 0.31), xr = Math.round(bw * 0.69), sd = clamp01((c.hour - SUNRISE) / (SUNSET - SUNRISE)), yLow = horizon + 3;
   // Mặt trời: cung từ trái (mọc, 05:30) sang phải (lặn, 18:30); ở hai đầu tâm nằm dưới chân trời 3 px nên chỉ ló nửa đĩa.
   if (c.hour >= SUNRISE - 0.3 && c.hour <= SUNSET + 0.3) {
-    const x = lerp(xl, xr, sd), y = yLow - (yLow - yPeak) * Math.sin(Math.PI * sd), low = 1 - Math.sin(Math.PI * sd);
+    const alt = c.hour < 12 ? Math.max(0.65, Math.sin(Math.PI * sd)) : Math.sin(Math.PI * sd);   // buổi sáng: mặt trời đứng cao hẳn trên hàng cây (PO yêu cầu)
+    const x = lerp(xl, xr, sd), y = yLow - (yLow - yPeak) * alt, low = 1 - alt;
     const col = mix("#ffd23f", "#ff7a3a", low), glow = mix("#ffe27a", "#ff9a5a", low);
     A(0.18 + 0.14 * low, () => disc(x, y, 13, glow)); A(0.25, () => disc(x, y, 9, glow)); A(0.4, () => disc(x, y, 7, glow));
     disc(x, y, 5, col); disc(x, y, 4, mix("#ffe680", "#ffb060", low));
@@ -651,6 +661,27 @@ function xuongBaLa(x, y, o = {}) {   // xuồng ba lá: thân dài, hai đầu c
   }
   if (o.vendor) personQ(x - 5, y, { dir: "f", step: -1, shirt: o.vendor, shirt2: "#00000033", hat: "non", scarf: ["#8c6a3a", "#efe6cf"], seated: true });
   if (o.goods) { disc(x - 7, y - 2, 2, "#4f9a3c"); disc(x - 3, y - 2, 2, "#e8a02a"); R(x + 4, y - 3, 5, 3, "#c8452c"); }
+}
+function mieu(x, y, lit, ong) {   // đền/miếu pixel nhỏ (chỉ khi --creative), cùng cỡ người: thân 12 px, mái tới 20 px
+  const roof = ong ? "#2b6f8f" : "#a63a2f", roof2 = ong ? "#4f9ac0" : "#d0563f";
+  R(x - 10, y - 1, 20, 1, "#3b2a1a"); for (const dx of [-8, 7]) R(x + dx, y, 1, 6, "#4a3220");   // bệ trên cọc
+  R(x - 8, y - 12, 16, 11, "#6b4a2f"); R(x - 8, y - 12, 1, 11, "#8a6240"); R(x + 7, y - 12, 1, 11, "#8a6240");
+  for (let i = 0; i < 4; i++) R(x - 11 + i * 2, y - 13 - i * 2, 22 - i * 4, 2, i % 2 ? roof2 : roof);
+  R(x - 12, y - 13, 2, 1, "#f5de95"); R(x + 10, y - 13, 2, 1, "#f5de95"); PIX(x, y - 21, "#f2c230");
+  R(x - 3, y - 9, 6, 8, lit ? "#ffcf6b" : "#1c1209");
+  if (lit) { R(x - 2, y - 6, 4, 5, "#ff9d3c"); PIX(x, y - 7 - (Math.floor(T * 6) % 2), "#ffe36b"); A(0.25, () => disc(x, y - 6, 8, "#ffc85a")); }
+  const hx = x + 13, ht = y - 3;
+  R(hx - 2, ht, 5, 3, "#7a5a32"); R(hx - 2, ht, 5, 1, "#f5de95");
+  for (const o of [-1, 0, 1]) {
+    const tp = ht - 6 - (o ? 0 : 1); R(hx + o, tp, 1, ht - tp, lit ? "#c8301f" : "#8a5a2b");
+    if (lit) {
+      PIX(hx + o, tp, "#ffb04a");
+      for (let k = 0; k < 3; k++) {   // khói xám bay lên rồi mờ dần
+        const ph = (T * 0.4 + k / 3 + o * 0.17) % 1, px = hx + o + Math.round(Math.sin(ph * 9 + o) * (1 + ph * 2)), py = tp - 1 - Math.round(ph * 18);
+        A(0.75 * (1 - ph), () => disc(px, py, Math.round(ph * 2), "#e6e8ea"));
+      }
+    }
+  }
 }
 function lucBinh(x, y, seed) {   // lục bình: cụm lá phồng + hoa tím
   const bob = Math.round(Math.sin(T * 1.3 + seed));
@@ -915,6 +946,9 @@ function drawGather(w, h, topCss, botCss) {
   Q("cay_beo", bx(28), surfY - 28, {});
   xuongBaLa(bx(28), surfY - 1, { beo: true, vendor: "#c1440e" }); xuongBaLa(bx(44), surfY - 1, { goods: true });
   xuongBaLa(bx(62), surfY - 1, { beo: true }); xuongBaLa(bx(86) + Math.sin(T * 0.7) * 2, surfY - 1, { beo: true, vendor: "#3a5a9a" });
+  const crv = snap.creative;   // đền/miếu của --creative vẽ cùng lớp cảnh (sau lưng nhân vật, cá, quái)
+  if (crv && crv.active) for (const sh of crv.shrines || []) { mieu(bx(sh.x), surfY - 1, sh.lit, sh.id === "ca_ong"); L(sh.name, bx(sh.x), surfY, { size: 18, dy: -30, color: sh.id === "ca_ong" ? "#bfe6ff" : "#ffe9b0" }); Q(sh.id, bx(sh.x), surfY, { dy: -58 }); }
+  if (crv && crv.active && (crv.serpents || []).length) { const sp = crv.serpents[0]; Q("mang_xa", bx(sp.pos[0]), by(sp.pos[1]), { dy: -62 }); }   // dấu ? cho Mãng Xà Vương
   for (const [lx, sd] of [[5, 0], [24, 1], [40, 2], [57, 3], [77, 4], [96, 5]]) lucBinh(bx(((lx + T * 0.15) % (X + 6)) - 1), surfY + 1, sd);
   for (const lx of [16, 32, 48, 64, 82]) bongSungDecor(bx(lx), surfY + 2, lx);
   // bến
@@ -1234,8 +1268,9 @@ function drawQuan(w, h, topCss, botCss) {
       const [x, y] = P(tb.pos[0], tb.pos[1] + 2.1), look = custLook(c.id), eating = c.state === "eating";
       const arr = custAnim.get("in" + c.id);
       if (!(arr && T - arr.t0 < CA_IN.walk)) personQ(x, y, { dir: "f", seated: true, step: -1, ...look, pose: eating ? "eat" : "wave" });   // đang đến: sprite do hoạt ảnh xuồng vẽ
-      L(`${c.id} · ${dishName(c.dish_id)}`, x, y, { size: 18, dy: -34 });
-      if (DISH_LORE[c.dish_id]) Q(DISH_LORE[c.dish_id], x, y, { dy: -62 });
+      const lift = (parseInt(String(tb.id).replace(/\D/g, ""), 10) || 0) % 2 ? 0 : 24;   // bàn kề nhau: so le nhãn để không đè chữ
+      L(dishName(c.dish_id), x, y, { size: 18, dy: -34 - lift });
+      if (DISH_LORE[c.dish_id]) Q(DISH_LORE[c.dish_id], x, y, { dy: -62 - lift });
       if (eating) L(`Đang ăn · ${fmtTime(c.eat_ticks_left)}`, x, y, { size: 18, dy: 52 });
       else if (c.patience_ticks_left !== undefined) bars.push([x, y, c]);
     } });
