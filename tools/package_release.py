@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PREFIX = "chonoi-v1.0.0"
 TOP = {"README.md", "game.contract.json", "TEAM.md", "AGENTS.md", "CHANGELOG.md", "CREDITS.md", "LICENSE"}
 FOLDERS = {"chonoi", "tools", "tests", "docs"}
-SUFFIXES = {".py", ".mjs", ".js", ".html", ".css", ".json", ".md", ".txt", ".png", ".svg", ".jpg", ".jpeg", ".woff2", ".wav", ".ogg"}
+SUFFIXES = {".py", ".mjs", ".js", ".html", ".css", ".json", ".md", ".txt", ".png", ".svg", ".jpg", ".jpeg", ".woff2", ".wav", ".ogg", ".command", ".sh"}
 EXCLUDED = {".git", ".venv", "node_modules", "__pycache__", "dist"}
 
 
@@ -58,7 +58,7 @@ def build_archive(root, destination):
         for name, data in entries:
             info = zipfile.ZipInfo(f"{PREFIX}/{name}", date_time=(1980, 1, 1, 0, 0, 0))
             info.create_system = 3
-            info.external_attr = 0o100644 << 16
+            info.external_attr = (0o100755 if Path(name).suffix in (".command", ".sh") else 0o100644) << 16
             info.compress_type = zipfile.ZIP_DEFLATED
             archive.writestr(info, data)
     return metadata
