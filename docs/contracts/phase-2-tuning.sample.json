@@ -1,0 +1,437 @@
+{
+  "contract_version": "1.1",
+  "tuning": {
+    "tick_hz": 60,
+    "gather": {
+      "duration_s": 180,
+      "bounds": {
+        "x": [
+          0,
+          100
+        ],
+        "d": [
+          0,
+          30
+        ]
+      },
+      "dock_pos": [
+        2,
+        0
+      ],
+      "dock_radius": 3,
+      "start_pos": [
+        2,
+        0
+      ],
+      "start_heading_deg": 0,
+      "swim_speed": 4.0,
+      "ramp_max_ticks": 6,
+      "surface_depth": 0.5,
+      "oxygen_max_s": 30,
+      "oxygen_refill_per_tick": 6,
+      "choke_interval_ticks": 60,
+      "hp_max": 3,
+      "hold_capacity": 12,
+      "interact_radius": 2.0,
+      "node_yield": 1,
+      "regrow_s": 20,
+      "catch_radius": 2.0,
+      "catch_cooldown_s": 0.5,
+      "fish_yield": {
+        "ca_loc": 1,
+        "ca_linh": 3,
+        "ca_keo": 2
+      },
+      "nodes": [
+        {
+          "id": "N1",
+          "kind": "bong_dien_dien",
+          "pos": [
+            12,
+            0
+          ]
+        },
+        {
+          "id": "N2",
+          "kind": "bong_dien_dien",
+          "pos": [
+            28,
+            0
+          ]
+        },
+        {
+          "id": "N3",
+          "kind": "bong_sung",
+          "pos": [
+            44,
+            0
+          ]
+        },
+        {
+          "id": "N4",
+          "kind": "bong_sung",
+          "pos": [
+            60,
+            0
+          ]
+        },
+        {
+          "id": "N5",
+          "pos": [
+            76,
+            0
+          ],
+          "kind": "keo_neo"
+        },
+        {
+          "id": "N6",
+          "pos": [
+            90,
+            0
+          ],
+          "kind": "keo_neo"
+        }
+      ],
+      "fish_initial": 8,
+      "fish_speed": 1.5,
+      "fish_turn_ticks": 120,
+      "fish_max": 12,
+      "fish_spawn_ticks": 360,
+      "fish_spawn_clearance": 1.0,
+      "fish_x": [
+        4,
+        96
+      ],
+      "fish_depths": {
+        "ca_loc": [
+          8,
+          20
+        ],
+        "ca_linh": [
+          3,
+          12
+        ],
+        "ca_keo": [
+          22,
+          28
+        ]
+      },
+      "fish_spawn_x": [
+        15,
+        30,
+        45,
+        60,
+        75,
+        90
+      ],
+      "fish_spawn_depths": {
+        "ca_loc": [
+          10,
+          16
+        ],
+        "ca_linh": [
+          5,
+          10
+        ],
+        "ca_keo": [
+          24,
+          27
+        ]
+      },
+      "fish_weights": {
+        "ca_loc": 30,
+        "ca_linh": 40,
+        "ca_keo": 30
+      },
+      "monsters": {
+        "invuln_ticks": 90,
+        "species": {
+          "ca_sau": {
+            "exit_radius": 16.0,
+            "depths": [
+              10,
+              30
+            ],
+            "patrol_speed": 1.0,
+            "detect_radius": 10.0,
+            "chase_speed": 3.0,
+            "recoil_dist": 2.0,
+            "hit_radius": 1.5,
+            "recoil_ticks": 60
+          }
+        },
+        "loss_ratio": 0.5,
+        "spawns": [
+          {
+            "id": "M1",
+            "from_day": 1,
+            "waypoints": [
+              [
+                60,
+                24
+              ],
+              [
+                64,
+                24
+              ]
+            ],
+            "pos": [
+              60,
+              24
+            ],
+            "kind": "ca_sau"
+          },
+          {
+            "id": "M2",
+            "from_day": 3,
+            "waypoints": [
+              [
+                85,
+                18
+              ],
+              [
+                89,
+                18
+              ]
+            ],
+            "pos": [
+              85,
+              18
+            ],
+            "kind": "ca_sau"
+          }
+        ]
+      }
+    },
+    "quan": {
+      "duration_s": 180,
+      "bounds": {
+        "x": [
+          0,
+          16
+        ],
+        "z": [
+          0,
+          10
+        ]
+      },
+      "start_pos": [
+        8,
+        5
+      ],
+      "walk_speed": 4.0,
+      "ramp_max_ticks": 6,
+      "interact_radius": 1.5,
+      "stoves": [
+        {
+          "id": "B1",
+          "pos": [
+            2,
+            8
+          ]
+        },
+        {
+          "id": "B2",
+          "pos": [
+            5,
+            8
+          ]
+        }
+      ],
+      "tables": [
+        {
+          "id": "T1",
+          "pos": [
+            9,
+            2
+          ]
+        },
+        {
+          "id": "T2",
+          "pos": [
+            13,
+            2
+          ]
+        },
+        {
+          "id": "T3",
+          "pos": [
+            9,
+            6
+          ]
+        },
+        {
+          "id": "T4",
+          "pos": [
+            13,
+            6
+          ]
+        }
+      ],
+      "first_customer_tick": 120,
+      "customer_interval_s": 15,
+      "patience_s": 60,
+      "eat_s": 10,
+      "burn_s": null,
+      "carry_limit": 1,
+      "tip_rate": 0.2,
+      "tip_min_patience_ratio": 0.5,
+      "tip_reputation": 0.2,
+      "left_reputation_delta": -0.5,
+      "reputation_initial": 3.0,
+      "reputation_min": 0,
+      "reputation_max": 5
+    },
+    "menu": {
+      "ca_loc_nuong_trui": {
+        "recipe": {
+          "ca_loc": 1
+        },
+        "cook_s": 6,
+        "price": 60
+      },
+      "goi_bong_sung": {
+        "recipe": {
+          "bong_sung": 2
+        },
+        "cook_s": 4,
+        "price": 40
+      },
+      "lau_ca_linh_dien_dien": {
+        "recipe": {
+          "ca_linh": 3,
+          "bong_dien_dien": 1
+        },
+        "cook_s": 10,
+        "price": 120
+      },
+      "canh_chua_ca_loc": {
+        "cook_s": 8,
+        "price": 90,
+        "recipe": {
+          "bong_dien_dien": 1,
+          "ca_loc": 1
+        }
+      },
+      "ca_keo_nuong": {
+        "cook_s": 6,
+        "price": 70,
+        "recipe": {
+          "ca_keo": 2
+        }
+      },
+      "lau_mam": {
+        "cook_s": 12,
+        "price": 200,
+        "recipe": {
+          "keo_neo": 1,
+          "ca_keo": 1,
+          "bong_dien_dien": 1,
+          "ca_linh": 2
+        }
+      }
+    },
+    "score": {
+      "reputation_multiplier": 100
+    },
+    "day_plan": [
+      {
+        "day": 1,
+        "ingredients": {
+          "bong_sung": 6,
+          "ca_loc": 3
+        },
+        "dishes": {
+          "ca_loc_nuong_trui": 3,
+          "goi_bong_sung": 3
+        }
+      },
+      {
+        "day": 2,
+        "ingredients": {
+          "ca_loc": 2,
+          "bong_dien_dien": 2,
+          "ca_linh": 6
+        },
+        "dishes": {
+          "ca_loc_nuong_trui": 2,
+          "lau_ca_linh_dien_dien": 2
+        }
+      },
+      {
+        "day": 3,
+        "ingredients": {
+          "bong_sung": 4,
+          "ca_loc": 2,
+          "bong_dien_dien": 2,
+          "ca_keo": 4
+        },
+        "dishes": {
+          "canh_chua_ca_loc": 2,
+          "ca_keo_nuong": 2,
+          "goi_bong_sung": 2
+        }
+      },
+      {
+        "day": 4,
+        "ingredients": {
+          "ca_keo": 1,
+          "bong_sung": 2,
+          "keo_neo": 1,
+          "bong_dien_dien": 1,
+          "ca_loc": 2,
+          "ca_linh": 2
+        },
+        "dishes": {
+          "ca_loc_nuong_trui": 2,
+          "goi_bong_sung": 1,
+          "lau_mam": 1
+        }
+      },
+      {
+        "day": 5,
+        "ingredients": {
+          "ca_keo": 1,
+          "ca_linh": 5,
+          "keo_neo": 1,
+          "bong_dien_dien": 2,
+          "ca_loc": 1
+        },
+        "dishes": {
+          "lau_ca_linh_dien_dien": 1,
+          "ca_loc_nuong_trui": 1,
+          "lau_mam": 1
+        }
+      }
+    ],
+    "shop": {
+      "upgrades": {
+        "hp": [
+          {
+            "hp_max": 4,
+            "level": 1,
+            "price": 250
+          },
+          {
+            "hp_max": 5,
+            "level": 2,
+            "price": 500
+          }
+        ],
+        "oxygen": [
+          {
+            "oxygen_max_s": 45,
+            "level": 1,
+            "price": 200
+          },
+          {
+            "oxygen_max_s": 60,
+            "level": 2,
+            "price": 400
+          }
+        ]
+      },
+      "max_ticks": 600
+    }
+  }
+}

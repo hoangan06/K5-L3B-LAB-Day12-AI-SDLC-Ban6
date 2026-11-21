@@ -1,0 +1,1 @@
+PASS: gather inventory matches quan stock at tick 0
