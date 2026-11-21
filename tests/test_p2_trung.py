@@ -293,5 +293,22 @@ class QuanSimContext(unittest.TestCase):
         self.assertEqual(sc, SERVE_SC)
 
 
+class TwoStoves(unittest.TestCase):
+    def test_two_stoves_take_two_oldest_distinct_orders(self):
+        # Ba đơn reserved; B1 lấy order_tick nhỏ nhất, B2 lấy đơn cũ kế tiếp, không trùng đơn với B1.
+        sc = {"random_customers": False, "player": {"pos": [2, 8]}, "customers": [
+            {"id": "C1", "table_id": "T1", "dish_id": "goi_bong_sung", "order_tick": 5},
+            {"id": "C2", "table_id": "T2", "dish_id": "goi_bong_sung", "order_tick": 1},
+            {"id": "C3", "table_id": "T3", "dish_id": "goi_bong_sung", "order_tick": 3}]}
+        sim = quan(sc, inventory=LOTS)
+        first = [d for n, d in sim.step(PRESS) if n == "cook_started"]
+        sim.pos = [5.0, 8.0]
+        sim.step(IDLE)
+        second = [d for n, d in sim.step(PRESS) if n == "cook_started"]
+        self.assertEqual([(d["stove_id"], d["order_id"]) for d in first + second], [("B1", "C2"), ("B2", "C3")])
+        status = {c["id"]: c["order_status"] for c in sim.snapshot()["customers"]}
+        self.assertEqual(status, {"C1": "reserved", "C2": "assigned", "C3": "assigned"})
+
+
 if __name__ == "__main__":
     unittest.main()
