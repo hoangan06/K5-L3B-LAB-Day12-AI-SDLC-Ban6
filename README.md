@@ -79,7 +79,9 @@ Phần sáng tạo đã được nhóm nối vào live với cờ `--creative`, 
   - Thẻ truyền thuyết: dấu **?** trên vật, món, quái; bấm để đọc chuyện kể kèm nguồn; mở thẻ dùng nút `pause` lõi.
   - Bảng "ngất vì…" theo nguyên nhân (ngạt hoặc Cá Sấu).
   - Đền Bà Thủy, Cá Ông; quái sáng tạo Mãng Xà Vương với chuỗi mũi tên để thoát. Chỉ ở bản chơi live.
-- Điều kiện khi cài: tắt ở headless, luồng RNG riêng, không đổi số liệu và sự kiện của Test Contract. Bằng chứng "lõi vẫn đúng" sẽ ghi ở đây khi có.
+- Điều kiện khi cài: tắt ở headless, luồng RNG riêng, không đổi số liệu và sự kiện của Test Contract.
+- Bằng chứng lõi vẫn đúng (main `59319e9`): `tests/test_creative_trung.py::test_headless_does_not_load_creative` (headless không import `chonoi.creative`); `python3 tools/check_determinism.py` PASS; toàn bộ 266 test OK; JSONL headless gather/quan/day 5 ngày giống từng byte với bản không có phần sáng tạo (ghi trong commit `651d5ba`).
+- Giao diện pixel miền Tây, đồng hồ trong ngày, mặt trăng đổi pha, khách chèo xuồng tới quán: chỉ ở lớp hình (`chonoi/web/`), không đổi snapshot.
 
 ## Lịch 3 giờ
 
