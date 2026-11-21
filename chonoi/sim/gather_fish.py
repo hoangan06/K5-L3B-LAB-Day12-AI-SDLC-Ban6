@@ -1,94 +1,82 @@
-"""Phase 2 fish lifecycle. Called by GatherSim, not by the runner."""
-import math
+"""Khởi tạo, bơi và sinh đàn cá bằng các luồng RNG riêng."""
 
-from ..errors import BadInput
+from math import atan2, cos, degrees, dist, radians, sin
+
+from .. import TICK_HZ
 from ..ids import sort_by_id
 
 
-def _points(t, fish):
-    result = {}
-    for kind in sorted(t["fish_yield"]):
-        result[kind] = [[x, d] for x in sorted(t["fish_spawn_x"])
-                        for d in sorted(t["fish_spawn_depths"][kind])
-                        if all(math.dist([x, d], f["pos"]) > t["fish_spawn_clearance"] for f in fish)]
-    return result
-
-
-def _choose(sim, points):
-    kinds = [k for k in sorted(points) if points[k] and sim.t["fish_weights"][k] > 0]
-    if not kinds:
-        return None
-    rng = sim.rng.get("fish_spawn")
-    total = sum(sim.t["fish_weights"][k] for k in kinds)
-    pick = rng.random() * total
-    kind = kinds[-1]
-    for candidate in kinds:
-        pick -= sim.t["fish_weights"][candidate]
-        if pick < 0:
-            kind = candidate
-            break
-    return kind, list(rng.choice(points[kind])), rng.uniform(0, 360)
-
-
-def init_fish(sim, scenario: dict) -> None:
+def init_fish(sim, scenario):
     sim.random_fish = scenario.get("random_fish", True)
-    sim.fish = []
-    for f in scenario.get("fish", []):
-        fish = {"id": f["id"], "kind": f["kind"], "pos": list(f["pos"]),
-                "heading_deg": f.get("heading_deg", 0), "age_ticks": f.get("age_ticks", 0)}
+    sim.fish = [
+        {"id": row["id"], "kind": row["kind"], "pos": list(map(float, row["pos"])),
+         "heading_deg": float(row.get("heading_deg", 0)), "age_ticks": row.get("age_ticks", 0)}
+        for row in scenario.get("fish", [])
+    ]
+    for fish in sim.fish:
         sim.ids.reserve(fish["id"])
-        sim.fish.append(fish)
     if "fish" not in scenario and sim.random_fish:
         for _ in range(sim.t["fish_initial"]):
-            choice = _choose(sim, _points(sim.t, sim.fish))
-            if choice is None:
-                raise BadInput("không đủ điểm sinh cá ban đầu")
-            kind, pos, heading = choice
-            sim.fish.append({"id": sim.ids.new("F"), "kind": kind, "pos": pos,
-                             "heading_deg": heading, "age_ticks": 0})
+            if _spawn(sim) is None:
+                break
 
 
-def _reflect(value, velocity, lo, hi):
-    # Fold an arbitrary displacement into the interval, including repeated bounces.
-    width = hi - lo
-    offset = (value - lo) % (2 * width)
-    if offset == 0:
-        return lo, abs(velocity)
-    if offset == width:
-        return hi, -abs(velocity)
-    if offset < width:
-        return lo + offset, velocity
-    return hi - (offset - width), -velocity
+def _spawn(sim):
+    tuning = sim.t
+    locations = {}
+    for kind in sorted(tuning["fish_weights"]):
+        open_points = [
+            [x, depth] for x in sorted(tuning["fish_spawn_x"])
+            for depth in sorted(tuning["fish_spawn_depths"][kind])
+            if all(dist((x, depth), fish["pos"]) > tuning["fish_spawn_clearance"] for fish in sim.fish)
+        ]
+        if open_points:
+            locations[kind] = open_points
+    if not locations:
+        return None
+    stream = sim.rng.get("fish_spawn")
+    kinds = list(locations)
+    weights = [tuning["fish_weights"][kind] for kind in kinds]
+    kind = stream.choices(kinds, weights=weights, k=1)[0]
+    fish = {"id": sim.ids.new("F"), "kind": kind, "pos": list(map(float, stream.choice(locations[kind]))),
+            "heading_deg": stream.random() * 360, "age_ticks": 0}
+    sim.fish.append(fish)
+    return fish
 
 
-def update_fish(sim, events: list) -> None:
+def _reflect(position, delta, interval):
+    low, high = interval
+    position += delta
+    while position < low or position > high:
+        edge = low if position < low else high
+        position = 2 * edge - position
+        delta = -delta
+    if (position == low and delta < 0) or (position == high and delta > 0):
+        delta = -delta
+    return position, delta
+
+
+def update_fish(sim, events):
     if not sim.random_fish:
         return
-    t = sim.t
-    for f in sort_by_id(sim.fish):
-        f["age_ticks"] += 1
-        if f["age_ticks"] % t["fish_turn_ticks"] == 0:
-            f["heading_deg"] = sim.rng.get("fish_turn").uniform(0, 360)
-        angle = math.radians(f["heading_deg"])
-        dx = math.cos(angle) * t["fish_speed"] / 60
-        dd = math.sin(angle) * t["fish_speed"] / 60
-        x, dx = _reflect(f["pos"][0] + dx, dx, *t["fish_x"])
-        d, dd = _reflect(f["pos"][1] + dd, dd, *t["fish_depths"][f["kind"]])
-        f["pos"] = [x, d]
-        f["heading_deg"] = math.degrees(math.atan2(dd, dx)) % 360
-    if sim.phase_tick % t["fish_spawn_ticks"] or len(sim.fish) >= t["fish_max"]:
-        return
-    choice = _choose(sim, _points(t, sim.fish))
-    if choice is None:
-        return
-    kind, pos, heading = choice
-    fish = {"id": sim.ids.new("F"), "kind": kind, "pos": pos,
-            "heading_deg": heading, "age_ticks": 0}
-    sim.fish.append(fish)
-    events.append(("fish_spawned", {"id": fish["id"], "kind": kind, "pos": list(pos)}))
+    tuning = sim.t
+    speed = tuning["fish_speed"] / TICK_HZ
+    for fish in sort_by_id(sim.fish):
+        fish["age_ticks"] += 1
+        if fish["age_ticks"] % tuning["fish_turn_ticks"] == 0:
+            fish["heading_deg"] = sim.rng.get("fish_turn").random() * 360
+        angle = radians(fish["heading_deg"])
+        dx, dd = cos(angle) * speed, sin(angle) * speed
+        x, rx = _reflect(fish["pos"][0], dx, tuning["fish_x"])
+        depth, rd = _reflect(fish["pos"][1], dd, tuning["fish_depths"][fish["kind"]])
+        fish["pos"] = [x, depth]
+        if (rx, rd) != (dx, dd):
+            fish["heading_deg"] = degrees(atan2(rd, rx)) % 360
+    if sim.phase_tick % tuning["fish_spawn_ticks"] == 0 and len(sim.fish) < tuning["fish_max"]:
+        fish = _spawn(sim)
+        if fish is not None:
+            events.append(("fish_spawned", {"id": fish["id"], "kind": fish["kind"], "pos": list(fish["pos"])}))
 
 
-def snapshot_fish(sim) -> list:
-    return [{"id": f["id"], "kind": f["kind"], "pos": list(f["pos"]),
-             "heading_deg": f["heading_deg"], "age_ticks": f["age_ticks"]}
-            for f in sort_by_id(sim.fish)]
+def snapshot_fish(sim):
+    return [dict(fish, pos=list(fish["pos"])) for fish in sort_by_id(sim.fish)]

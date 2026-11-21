@@ -9,6 +9,7 @@ Chạy: PYTHONPATH=tests:. python3 -m unittest tests.test_p1_trung -v
 import sys
 import types
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from chonoi.contract import load_contract
@@ -19,7 +20,7 @@ from chonoi.sim.quan_customers import (advance_timers, available_stock, init_cus
                                        spawn_customer)
 from chonoi.sim.quan_validation import validate_quan_fixture, validate_quan_state
 
-TUNING = load_contract()["tuning"]
+TUNING = load_contract(Path(__file__).parent / "fixtures/phase-1/game.contract.json")["tuning"]
 Q = TUNING["quan"]
 PATIENCE = int(round(Q["patience_s"] * 60))
 EVERY = int(round(Q["customer_interval_s"] * 60))

@@ -11,7 +11,12 @@ import tempfile
 from .errors import BadInput
 
 KINDS_P1 = ("ca_loc", "ca_linh", "bong_dien_dien", "bong_sung")
-KINDS_P2 = KINDS_P1 + ("ca_keo", "keo_neo")
+KINDS_P2 = KINDS_P1 + ("ca_keo", "keo_neo")  # mặc định khi không biết tuning (test Duy); có tuning thì dùng inventory_kinds
+
+
+def inventory_kinds(tuning):
+    gather = tuning["gather"]
+    return set(gather["fish_yield"]) | {node["kind"] for node in gather["nodes"]}
 
 
 def validate_items(items, kinds=KINDS_P2):

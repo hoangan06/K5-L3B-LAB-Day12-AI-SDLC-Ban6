@@ -1,151 +1,130 @@
-"""Cá Sấu Phase 2: init, di chuyển, một hit/bước và snapshot tất định."""
+"""Cá sấu tuần tra, đuổi, chạm và lùi trong pha gather."""
 
-from copy import deepcopy
-import math
+from math import dist, floor, hypot
 
+from .. import TICK_HZ
 from ..errors import BadInput
 from ..ids import id_key, sort_by_id
 
-TICK_HZ = 60
-KEYS = {"id", "kind", "pos", "waypoints", "target_idx", "state", "state_ticks_left", "recoil_dir"}
-
-
-def _integer(value):
-    return isinstance(value, int) and not isinstance(value, bool)
-
-
-def _vector(value):
-    return (isinstance(value, list) and len(value) == 2
-            and all(isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) for v in value))
-
 
 def init_monsters(sim, scenario):
-    """Fixture thay thế spawns; không có config P2 thì không tự thêm quái P1."""
-    config = sim.t.get("monsters")
-    if config is None:
-        if "monsters" in scenario:
-            raise BadInput("gather.monsters cần tuning.monsters của Phase 2")
-        sim.monsters = []
-        return
-    source = scenario.get("monsters")
-    if source is None and "monsters" in scenario:
-        raise BadInput("gather.monsters phải là mảng")
-    if "monsters" not in scenario:
-        source = [{k: deepcopy(v) for k, v in spawn.items() if k != "from_day"}
-                  for spawn in config["spawns"] if spawn["from_day"] <= sim.day]
+    tuning = sim.t["monsters"]
+    defaults = {row["id"]: row for row in tuning["spawns"]}
+    source = scenario.get("monsters", [row for row in defaults.values() if row["from_day"] <= sim.day])
     if not isinstance(source, list):
         raise BadInput("gather.monsters phải là mảng")
-    monsters, seen = [], set()
+    seen = set()
+    monsters = []
     for raw in source:
-        if not isinstance(raw, dict) or set(raw) - KEYS:
-            raise BadInput("monster: object có trường lạ hoặc sai kiểu")
-        monster = deepcopy(raw)
-        ident, kind = monster.get("id"), monster.get("kind")
+        allowed = {"id", "kind", "pos", "waypoints", "target_idx", "state", "state_ticks_left", "recoil_dir"}
+        if not isinstance(raw, dict) or set(raw) - (allowed | {"from_day"}):
+            raise BadInput("fixture quái có trường không hợp lệ")
+        if "monsters" in scenario and "from_day" in raw:
+            raise BadInput("from_day chỉ dùng trong preset quái")
+        ident = raw.get("id")
         if not isinstance(ident, str) or not ident or ident in seen:
-            raise BadInput("monster: cần id duy nhất, khác rỗng")
+            raise BadInput("quái cần id khác rỗng và duy nhất")
         seen.add(ident)
-        # Chỉ loài lõi; extension snake/stunned chưa bật.
-        if kind != "ca_sau" or kind not in config["species"]:
-            raise BadInput("monster.kind chưa hỗ trợ")
-        species = config["species"][kind]
-        positions = [monster.get("pos")]
+        monster = {**defaults.get(ident, {}), **raw}
+        kind = monster.get("kind", "ca_sau")
+        if not isinstance(kind, str) or kind not in tuning["species"]:
+            raise BadInput(f"{ident}: loài quái không được hỗ trợ")
+        species = tuning["species"][kind]
         waypoints = monster.get("waypoints")
-        if not isinstance(waypoints, list) or len(waypoints) != 2:
-            raise BadInput("monster.waypoints cần đúng hai điểm")
-        positions.extend(waypoints)
-        for pos in positions:
-            if (not _vector(pos) or not sim.t["bounds"]["x"][0] <= pos[0] <= sim.t["bounds"]["x"][1]
-                    or not max(sim.t["bounds"]["d"][0], species["depths"][0]) <= pos[1]
-                    <= min(sim.t["bounds"]["d"][1], species["depths"][1])):
-                raise BadInput("monster.pos/waypoints ngoài miền loài hoặc map")
-        monster.setdefault("target_idx", 1)
-        monster.setdefault("state", "patrol")
-        monster.setdefault("state_ticks_left", 0)
-        monster.setdefault("recoil_dir", None)
-        if not _integer(monster["target_idx"]) or monster["target_idx"] not in (0, 1):
-            raise BadInput("monster.target_idx phải là 0 hoặc 1")
-        state, timer, direction = monster["state"], monster["state_ticks_left"], monster["recoil_dir"]
-        if not _integer(timer) or timer < 0 or state not in ("patrol", "chase", "recoil"):
-            raise BadInput("monster.state/timer không hợp lệ")
+        if not isinstance(waypoints, list) or len(waypoints) < 2:
+            raise BadInput(f"{ident}: cần ít nhất hai waypoint")
+        points = [_position(point, sim.t["bounds"]["x"], species["depths"], ident) for point in waypoints]
+        position = _position(monster.get("pos", points[0]), sim.t["bounds"]["x"], species["depths"], ident)
+        index = monster.get("target_idx", 1)
+        state = monster.get("state", "patrol")
+        timer = monster.get("state_ticks_left", 0)
+        if type(index) is not int or not 0 <= index < len(points):
+            raise BadInput(f"{ident}: target_idx không hợp lệ")
+        if (state not in ("patrol", "chase", "recoil") or type(timer) is not int
+                or not 0 <= timer <= species["recoil_ticks"] or (state == "recoil") != (timer > 0)):
+            raise BadInput(f"{ident}: trạng thái và timer không khớp")
+        direction = None
         if state == "recoil":
-            if timer <= 0 or not _vector(direction) or not math.isclose(math.hypot(*direction), 1.0, abs_tol=1e-9):
-                raise BadInput("monster recoil cần timer dương và recoil_dir đơn vị")
-        elif timer != 0 or direction is not None:
-            raise BadInput("monster không recoil phải có timer0 và recoil_dir null")
-        monster["pos"] = [float(v) for v in monster["pos"]]
-        monsters.append(monster)
+            dx, dd = _position(monster.get("recoil_dir", [1, 0]), (-1, 1), (-1, 1), ident)
+            magnitude = hypot(dx, dd)
+            if not magnitude:
+                raise BadInput(f"{ident}: hướng lùi phải khác 0")
+            direction = [dx / magnitude, dd / magnitude]
+        elif monster.get("recoil_dir") is not None:
+            raise BadInput(f"{ident}: chỉ quái đang lùi có recoil_dir")
+        monsters.append({"id": ident, "kind": kind, "pos": position, "waypoints": points, "target_idx": index,
+                         "state": state, "state_ticks_left": timer, "recoil_dir": direction})
         sim.ids.reserve(ident)
     sim.monsters = sort_by_id(monsters)
 
 
-def _clamp(sim, monster, species):
-    bounds = sim.t["bounds"]
-    monster["pos"][0] = min(bounds["x"][1], max(bounds["x"][0], monster["pos"][0]))
-    monster["pos"][1] = min(bounds["d"][1], species["depths"][1],
-                            max(bounds["d"][0], species["depths"][0], monster["pos"][1]))
+def _position(point, x_bounds, depth_bounds, ident):
+    if (not isinstance(point, list) or len(point) != 2
+            or any(type(value) not in (int, float) for value in point)
+            or not (x_bounds[0] <= point[0] <= x_bounds[1] and depth_bounds[0] <= point[1] <= depth_bounds[1])):
+        raise BadInput(f"{ident}: vị trí hoặc hướng nằm ngoài miền")
+    return list(map(float, point))
 
 
-def _towards(monster, target, distance):
-    delta = [target[i] - monster["pos"][i] for i in (0, 1)]
-    length = math.hypot(*delta)
+def _toward(position, target, distance):
+    length = dist(position, target)
     if length <= distance:
-        monster["pos"] = list(target)
-        return True
-    monster["pos"] = [monster["pos"][i] + delta[i] * distance / length for i in (0, 1)]
-    return False
+        return list(target)
+    return [p + (t - p) * distance / length for p, t in zip(position, target)]
+
+
+def _clamp(pos, x_bounds, depth_bounds):
+    return [min(high, max(low, value)) for value, (low, high) in zip(pos, (x_bounds, depth_bounds))]
 
 
 def update_monsters(sim, events):
-    config = sim.t.get("monsters")
-    if config is None:
-        return
+    tuning = sim.t["monsters"]
+    x_bounds = sim.t["bounds"]["x"]
     candidates = []
-    for monster in sort_by_id(sim.monsters):
-        species = config["species"][monster["kind"]]
+    for monster in sim.monsters:
+        species = tuning["species"][monster["kind"]]
+        depths = species["depths"]
         if monster["state"] == "recoil":
-            distance = species["recoil_dist"] / species["recoil_ticks"]
-            monster["pos"] = [monster["pos"][i] + monster["recoil_dir"][i] * distance for i in (0, 1)]
-            _clamp(sim, monster, species)
+            speed = species["recoil_dist"] / species["recoil_ticks"]
+            pos = [p + v * speed for p, v in zip(monster["pos"], monster["recoil_dir"])]
+            monster["pos"] = _clamp(pos, x_bounds, depths)
             monster["state_ticks_left"] -= 1
             if monster["state_ticks_left"] == 0:
-                monster["state"] = "patrol"
-                monster["recoil_dir"] = None
-            # Bước recoil cuối vẫn không phát hiện/chạm.
+                monster.update(state="patrol", recoil_dir=None)
             continue
-        distance = math.dist(monster["pos"], sim.pos)
-        in_depth = sim.pos[1] >= species["depths"][0]
-        if monster["state"] == "chase":
-            if not in_depth or distance > species["exit_radius"]:
-                monster["state"] = "patrol"
-        elif in_depth and distance <= species["detect_radius"]:
+
+        player_deep = sim.pos[1] >= depths[0]
+        radius = species["exit_radius"] if monster["state"] == "chase" else species["detect_radius"]
+        chasing = player_deep and dist(sim.pos, monster["pos"]) <= radius
+        if chasing:
             monster["state"] = "chase"
-        if monster["state"] == "chase":
-            _towards(monster, sim.pos, species["chase_speed"] / TICK_HZ)
+            target = _clamp(sim.pos, x_bounds, depths)
+            monster["pos"] = _toward(monster["pos"], target, species["chase_speed"] / TICK_HZ)
         else:
-            target = monster["waypoints"][monster["target_idx"]]
-            if _towards(monster, target, species["patrol_speed"] / TICK_HZ):
-                monster["target_idx"] = 1 - monster["target_idx"]
-        _clamp(sim, monster, species)
-        distance = math.dist(monster["pos"], sim.pos)
-        if in_depth and distance <= species["hit_radius"]:
-            candidates.append((distance, id_key(monster["id"]), monster))
-    if sim.invuln_ticks > 0 or not candidates:
+            monster["state"] = "patrol"
+            waypoint = monster["waypoints"][monster["target_idx"]]
+            monster["pos"] = _toward(monster["pos"], waypoint, species["patrol_speed"] / TICK_HZ)
+            if monster["pos"] == waypoint:
+                monster["target_idx"] = (monster["target_idx"] + 1) % len(monster["waypoints"])
+        gap = dist(sim.pos, monster["pos"])
+        if sim.invuln_ticks == 0 and player_deep and gap <= species["hit_radius"]:
+            candidates.append((gap, id_key(monster["id"]), monster, species))
+
+    if not candidates:
         return
-    monster = min(candidates, key=lambda item: (item[0], item[1]))[2]
-    species = config["species"][monster["kind"]]
-    delta = [monster["pos"][i] - sim.pos[i] for i in (0, 1)]
-    length = math.hypot(*delta)
-    monster["recoil_dir"] = [v / length for v in delta] if length else [1.0, 0.0]
-    monster["state"] = "recoil"
-    monster["state_ticks_left"] = species["recoil_ticks"]
-    sim.hp = max(0, sim.hp - 1)
-    lost = [sim.hold.pop() for _ in range(math.floor(len(sim.hold) * config["loss_ratio"]))]
-    sim.invuln_ticks = config["invuln_ticks"]
-    events.append(("monster_hit", {"monster_id": monster["id"], "hp": sim.hp,
-                                   "lost": lost, "pos": list(sim.pos)}))
+    _, _, monster, species = min(candidates, key=lambda row: row[:2])
+    delta = [m - p for m, p in zip(monster["pos"], sim.pos)]
+    magnitude = hypot(*delta)
+    direction = [v / magnitude for v in delta] if magnitude else [1, 0]
+    monster.update(state="recoil", state_ticks_left=species["recoil_ticks"], recoil_dir=direction)
+    sim.invuln_ticks = tuning["invuln_ticks"]
+    sim.hp -= 1
+    lost = [sim.hold.pop() for _ in range(floor(len(sim.hold) * tuning["loss_ratio"]))]
+    events.append(("monster_hit", {"monster_id": monster["id"], "hp": sim.hp, "lost": lost, "pos": list(sim.pos)}))
     if sim.hp == 0:
         sim._faint("monster", events)
 
 
 def snapshot_monsters(sim):
-    return deepcopy(sort_by_id(sim.monsters))
+    return [{"id": m["id"], "kind": m["kind"], "pos": list(m["pos"]), "state": m["state"],
+             "state_ticks_left": m["state_ticks_left"]} for m in sim.monsters]

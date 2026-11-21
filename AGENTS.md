@@ -7,6 +7,9 @@
 - Headless: `python3 -m chonoi.headless --mode gather|quan --seed 1 --ticks 600 --out out.jsonl`
 - Chơi thử trên trình duyệt: `python3 -m chonoi.live --mode gather|quan` (mở địa chỉ in ra; WASD, E, Space, R)
 
+- Vòng ngày Phase 2: `python3 -m chonoi.live --mode day --days 5` hoặc `python3 -m chonoi.headless --mode day --days 5 --seed 1 --ticks 111000 --out out.jsonl`.
+- `runner.Session` dùng chung cho day live/headless và xử lý pause. Dữ liệu Phase 2 dùng manifest 1.1; test Phase 1 có thể nạp fixture manifest 1.0.
+
 ## Cấu trúc & quy ước
 - (Starter Python là TÙY CHỌN; nhóm có thể dùng ngôn ngữ khác nếu giữ Test Contract.) Khung do giảng viên cấp: `chonoi/{headless,inputs,scenario,contract,rng,ids,jsonl,inventory,runner,live}.py` và `chonoi/web/`. Hạn chế sửa; nếu phải sửa thì báo cả nhóm và ghi lại lý do.
 - Luật chơi của nhóm: `chonoi/sim/gather.py`, `chonoi/sim/quan.py` (tìm `TODO(nhóm)`).
