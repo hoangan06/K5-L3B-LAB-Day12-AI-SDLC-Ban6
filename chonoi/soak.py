@@ -15,7 +15,7 @@ from .runner import Session
 
 
 class Bot:
-    """Collect one nearby surface node, return to dock, and close the shop."""
+    """Collect two flowers, serve available orders and buy an affordable upgrade."""
 
     def __init__(self):
         self.previous = set()
@@ -24,18 +24,48 @@ class Bot:
         pressed, move, buy = set(), (0.0, 0.0), None
         child = sim.current_sim
         if sim.phase == "gather":
-            target = child.t["dock_pos"] if child.hold else child.nodes[0]["pos"]
-            dx = target[0] - child.pos[0]
-            radius = child.t["dock_radius"] if child.hold else child.t["interact_radius"]
-            if abs(dx) <= radius * 0.6:
+            node = next((n for n in child.nodes if n["kind"] == "bong_sung"), None)
+            finished = len(child.hold) >= 2 or node is None
+            target = child.t["dock_pos"] if finished else node["pos"]
+            radius = child.t["dock_radius"] if finished else child.t["interact_radius"]
+            move = self._move(child.pos, target, radius)
+            if move == (0.0, 0.0) and (finished or node["regrow_ticks"] == 0):
                 pressed.add("interact")
+        elif sim.phase == "quan":
+            target = None
+            if child.hand:
+                customer = next((c for c in child.customers if c["id"] == child.hand["order_id"]), None)
+                target = next((t for t in child.tables if customer and t["id"] == customer["table_id"]), None)
             else:
-                move = (1.0 if dx > 0 else -1.0, 0.0)
+                target = next((s for s in child.stoves if s["state"] == "ready"), None)
+                if target is None and any(c["order_status"] == "reserved" for c in child.customers):
+                    target = next((s for s in child.stoves if s["state"] == "idle"), None)
+            if target is not None:
+                move = self._move(child.pos, target["pos"], child.t["interact_radius"])
+                if move == (0.0, 0.0):
+                    pressed.add("interact")
         elif sim.phase == "shop":
+            for name in sorted(child.upgrades):
+                next_level = child.upgrades[name] + 1
+                option = next((entry for entry in child.t["upgrades"][name] if entry["level"] == next_level), None)
+                if option and child.money >= option["price"]:
+                    buy = name
+                    break
             pressed.add("shop_done")
+        # Releasing between attempts creates real rising edges, including after a failed interaction.
+        if "interact" in self.previous:
+            pressed.discard("interact")
         edges = pressed - self.previous
         self.previous = pressed
         return InputState(move, {b: b in pressed for b in ("interact", "shop_done")}, edges, buy=buy)
+
+    @staticmethod
+    def _move(pos, target, radius):
+        dx, dy = target[0] - pos[0], target[1] - pos[1]
+        distance = math.hypot(dx, dy)
+        if distance <= radius * 0.5:
+            return (0.0, 0.0)
+        return (dx / distance, dy / distance)
 
 
 def run_soak(tuning, seed, days):

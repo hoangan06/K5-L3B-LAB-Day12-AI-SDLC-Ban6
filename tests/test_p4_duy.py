@@ -1,12 +1,14 @@
 import unittest
 from copy import deepcopy
 from unittest.mock import patch
+from types import SimpleNamespace
 
 from chonoi.contract import load_contract
 from chonoi.errors import BadInput
 from chonoi.ids import IdAllocator
 from chonoi.inputs import InputState
 from chonoi.rng import Streams
+from chonoi.runner import Session
 from chonoi.sim.day import DaySim
 from chonoi.soak import Bot, run_soak
 
@@ -79,3 +81,20 @@ class SoakDay(unittest.TestCase):
             self.assertEqual(result["days_completed"], 10)
             self.assertEqual(result["crashes"], 0)
         self.assertEqual(a, b)
+
+    def test_bot_serves_real_customer(self):
+        session = Session("day", self.tuning, {}, 7, days=1, soak=True)
+        bot = Bot()
+        names = set()
+        while not session.done:
+            names.update(event["name"] for event in session.step(bot.input(session.sim)))
+        self.assertTrue({"gather", "gather_end", "customer_arrived", "cook_started",
+                         "dish_picked", "served", "paid", "shop_end"} <= names)
+        self.assertGreater(session.sim.earned, 0)
+
+    def test_bot_buys_only_affordable_next_level(self):
+        shop = SimpleNamespace(upgrades={"hp": 0, "oxygen": 0}, money=200,
+                               t=self.tuning["shop"])
+        inp = Bot().input(SimpleNamespace(phase="shop", current_sim=shop))
+        self.assertEqual(inp.buy, "oxygen")
+        self.assertTrue(inp.pressed("shop_done"))

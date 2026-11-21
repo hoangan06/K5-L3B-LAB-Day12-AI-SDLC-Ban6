@@ -1,5 +1,14 @@
 # Bàn giao Duy Phase 4
 
+## Kiểm tra lại trên main `a23b947` và thay đổi bot chưa commit
+
+- Windows, Python `.venv` 3.11.9; hai lệnh `python -m chonoi.soak --seed 7 --days 10 --out ...` tạo `soak-1.json` và `soak-2.json`: mỗi lượt đủ 10 ngày, crashes 0; các trường gameplay giống nhau khi bỏ `duration_s`. Thời gian đo 7.755 và 7.670 giây khi chạy song song với test.
+- Kiểm tra độc lập một lượt 10 ngày: 20 lần hái, 6 lần nấu, lấy món, phục vụ và thanh toán; 1 lần mua nâng cấp oxy. Kết quả cuối earned 252, reputation 4.2, score 652. Bot chưa khai thác mọi món hoặc tất cả cơ chế gameplay.
+- `$env:PYTHONPATH='tests;.'; .\.venv\Scripts\python.exe -m unittest discover -s tests`: 268 test đạt trong 21.636 giây. `tools/smoke_inventory.py --require-v12`: PASS với contract 1.3.
+- Bot sử dụng input bình thường: hái hai bông súng, phục vụ đơn khả dụng và mua một nâng cấp nếu đủ tiền. Không thay tuning hoặc state trực tiếp. Kết quả kiểm này cần chạy lại nếu code tích hợp thay đổi.
+
+## Lịch sử trước tích hợp
+
 Nền `04cd262` (có migration `5f9a0aa`); các thay đổi Duy chưa commit. Kiểm trên Windows, Python `.venv` 3.11.9, chạy ngoài sandbox.
 
 - `$env:PYTHONPATH='tests;.'; .\.venv\Scripts\python.exe -m unittest discover -s tests`: 236 test đạt, 18.536 giây, manifest 1.2.
