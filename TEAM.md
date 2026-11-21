@@ -5,7 +5,7 @@
 | Thành viên | GitHub handle | Module chính | Vai quy trình | Người dự phòng cho |
 |---|---|---|---|---|
 | | | `sim/gather` | | |
-| | | `sim/quan` | | |
+| Trung | trungnb | `sim/quan` (khách, giữ chỗ, validation: `quan_customers.py`, `quan_validation.py`) | PO | Đức |
 | Lại Trọng Đức | laitrongduc | `sim/quan`, `client/ui` (bếp, phục vụ, thanh toán, HUD) | Điều phối quán / sản phẩm | Trung |
 | | | `qa` | | |
 

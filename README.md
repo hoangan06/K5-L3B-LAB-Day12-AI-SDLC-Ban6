@@ -13,13 +13,21 @@ Cách làm việc kỹ thuật là **tự do** (push thẳng, nhánh + PR, pair,
 4. **Gắn tag** `phase-1` … `phase-4` đúng hạn; chạy được tại từng tag.
 5. **Ghi chép tối thiểu:** `docs/verification/phase-n.md`, `docs/clarify.md`, `docs/ai-usage-log.md`, `docs/retro.md`, `docs/members/<handle>.md`.
 
-## Bắt đầu nhanh
+## Chơi trên macOS hoặc Linux
+
+Cần Python 3. Mở địa chỉ localhost in ra trong terminal.
 
 ```bash
-git clone <fork-của-nhóm> && cd <fork-của-nhóm>
-PYTHONPATH=tests:. python3 -m unittest discover -s tests -v        # smoke test
-python3 -m chonoi.live --mode gather                                # chơi thử trên trình duyệt (tùy chọn)
+git clone https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6.git
+cd K5-L3B-LAB-Day12-AI-SDLC-Ban6
+python3 -m chonoi.live --mode gather --inventory-out kho.json
 ```
+
+Khi buổi sáng kết thúc, dừng server bằng `Ctrl+C` rồi chạy `python3 -m chonoi.live --mode quan --inventory kho.json`. Để mở quán với kho mẫu, dùng `--inventory docs/contracts/inventory.sample.json`.
+
+- **WASD hoặc phím mũi tên** để di chuyển. **E** để hái, cập bến hoặc tương tác với bếp và bàn. **Space** để bắt cá dưới nước. **R** để chơi lại chế độ hiện tại.
+- **Điểm** bằng tiền kiếm được cộng `100 × floor(uy tín)` theo preset của dự án. Tiền kiếm được bao gồm boa.
+- **Chạy test** bằng `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`.
 
 Game cần chế độ **headless** theo Test Contract (`python3 -m chonoi.headless --mode gather|quan …`) để được chạy và chấm tự động. **Công nghệ không ràng buộc**: khung Python trong `chonoi/` chỉ là gợi ý, chi tiết ở [`docs/STARTER.md`](docs/STARTER.md).
 
