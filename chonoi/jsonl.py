@@ -1,14 +1,20 @@
-"""Ghi JSONL tất định: làm tròn 3 chữ số khi XUẤT (tính toán dùng giá trị chính xác)."""
+"""Ghi JSONL tất định: làm tròn 3 chữ số khi XUẤT (tính toán dùng giá trị chính xác).
+
+Ngoại lệ Contract v1.2: trường `fresh` giữ đủ chính xác, để JSONL khớp file kho và không đổi phía ngưỡng 30
+(vd 29.9999 không hiện thành 30.0). Xem docs/contracts/phase-3-interfaces.md §8.
+"""
 
 import json
 
 
-def _clean(v):
+def _clean(v, key=None):
+    if isinstance(v, float) and key == "fresh":
+        return v
     if isinstance(v, float):
         r = round(v, 3)
         return 0.0 if r == 0 else r  # tránh -0.0
     if isinstance(v, dict):
-        return {k: _clean(x) for k, x in v.items()}
+        return {k: _clean(x, k) for k, x in v.items()}
     if isinstance(v, (list, tuple)):
         return [_clean(x) for x in v]
     return v
