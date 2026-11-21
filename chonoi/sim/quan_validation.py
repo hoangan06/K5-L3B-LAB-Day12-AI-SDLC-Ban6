@@ -18,6 +18,11 @@ TABLE_KEYS = {"id", "pos"}
 DISH_KEYS = {"order_id", "dish_id", "base_price"}
 
 
+def menu_kinds(menu):
+    """Mọi kind xuất hiện trong công thức thực đơn (dữ liệu quyết định, không hard-code 4/6 kind)."""
+    return {k for d in menu.values() for k in d["recipe"]}
+
+
 def ticks(seconds):
     return int(round(seconds * 60))
 
@@ -96,7 +101,7 @@ def validate_quan_fixture(scenario, tuning):
             if key in c:
                 _int(f"{name}.{key}", c[key])
         if "reserved" in c:
-            validate_items(c["reserved"])
+            validate_items(c["reserved"], menu_kinds(menu))
 
 
 def validate_quan_state(sim):
@@ -132,9 +137,12 @@ def validate_quan_state(sim):
     if sim.hand is not None:
         holds("hand", sim.hand)
 
+    allowed = getattr(sim, "allowed_dishes", None)  # day: chỉ món trong kế hoạch (giao diện P2 §5)
     reserved_total = {}
     for c in sim.customers:
         name, st, res = f"customers.{c['id']}", c["order_status"], c["reserved"]
+        if allowed is not None and c["dish_id"] not in allowed:
+            raise BadInput(f"{name}: món {c['dish_id']} không thuộc kế hoạch ngày")
         if st == "reserved":
             if res != sim.menu[c["dish_id"]]["recipe"]:
                 raise BadInput(f"{name}: phần giữ khác công thức món {c['dish_id']}")

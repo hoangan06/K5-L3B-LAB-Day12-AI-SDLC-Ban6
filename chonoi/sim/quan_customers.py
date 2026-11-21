@@ -7,8 +7,7 @@ Các điểm còn chờ coach xác nhận ghi ở docs/clarify.md (Q1–Q8).
 import copy
 
 from ..ids import id_key, sort_by_id
-from ..inventory import KINDS_P1
-from .quan_validation import ticks
+from .quan_validation import menu_kinds, ticks
 
 
 def _by_table(customers):
@@ -35,8 +34,8 @@ def init_customers(sim, scenario):
 
 
 def available_stock(sim):
-    """Tồn vật lý trừ tổng phần giữ, đủ 4 kind (kể cả 0). Trả map mới, không sửa sim.stock."""
-    avail = {k: sim.stock.get(k, 0) for k in KINDS_P1}
+    """Tồn vật lý trừ tổng phần giữ, đủ mọi kind của thực đơn (kể cả 0). Trả map mới, không sửa sim.stock."""
+    avail = {k: sim.stock.get(k, 0) for k in menu_kinds(sim.menu) | set(sim.stock)}
     for c in sim.customers:
         for k, n in c["reserved"].items():
             avail[k] = avail.get(k, 0) - n
@@ -106,8 +105,9 @@ def spawn_customer(sim, events):
     if not free:
         return  # không còn bàn: bỏ lượt
     avail = available_stock(sim)
-    dishes = [d for d in sorted(sim.menu)
-              if all(avail.get(k, 0) >= n for k, n in sim.menu[d]["recipe"].items())]
+    allowed = getattr(sim, "allowed_dishes", None)  # None: toàn menu; day: id món của kế hoạch (P2 §5)
+    dishes = [d for d in sorted(sim.menu) if (allowed is None or d in allowed)
+              and all(avail.get(k, 0) >= n for k, n in sim.menu[d]["recipe"].items())]
     if not dishes:
         events.append(("no_dish", {}))
         return
