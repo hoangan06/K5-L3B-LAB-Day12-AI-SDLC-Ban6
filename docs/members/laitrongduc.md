@@ -1,6 +1,7 @@
-# laitrongduc — phản tư cá nhân Phase 1
+# laitrongduc — phản tư cá nhân
 
-- Phần tôi phụ trách gồm [thanh toán và dọn món](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/ca47bfc), [bếp và phục vụ](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/c2649df), [HUD và hướng dẫn chơi](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/0b039f4).
-- Phần rà khi tích hợp là thứ tự xử lý khách ở tick đóng ca. Hai test chạy qua `Session` xác nhận khách ăn xong dùng `finished_eating`, còn khách vừa được phục vụ dùng `closing`. Mỗi khách chỉ phát một `paid`. [Bằng chứng](../proof/phase-1/duc/quan-and-hud.md)
-- Lượt kiểm Playwright đầu do Codex viết đọc sự kiện quá sớm. Mô phỏng mới ghi `cook_started` khi script đã kiểm thanh toán. Lượt sau chờ từng sự kiện trong snapshot và ghi nhận đầy đủ luồng quán.
-- Bài học từ lần tích hợp này là kiểm thử các mốc chung giữa module bằng luồng chạy thật. Một test helper độc lập khó phát hiện hai bước thay đổi sai thứ tự ở cùng tick.
+- Phase 1: ghép luồng thanh toán, dọn món, bếp và HUD. Tôi rà thứ tự phục vụ và thanh toán ở tick đóng ca để mỗi khách chỉ phát một `paid`. [Bằng chứng](../proof/phase-1/duc/quan-and-hud.md)
+- Phase 2: triển khai Day, Shop và giao diện chơi liên tục năm ngày. [Bằng chứng](../proof/phase-2/duc/day-shop-live.md)
+- Phase 3: hiển thị độ tươi ở giỏ, kho và Shop. [Nhánh và bằng chứng](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/004ab0abd7d9fdbd19a53f093797eb818b0eb205)
+- Phase 4: chuẩn bị lệnh benchmark để Ân khai trong manifest, thêm ba cảnh báo và chế độ tương phản cao. [Commit triển khai](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/4c03258) · [Bằng chứng](../proof/phase-4/duc/README.md)
+- Lượt kiểm Phase 1 do Codex viết đọc sự kiện nấu quá sớm. Bản sửa chờ từng sự kiện từ snapshot. Bài học là kiểm các mốc giao giữa module bằng luồng chạy thật, đồng thời ghi rõ những lần dùng snapshot kiểm thử.
