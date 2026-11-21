@@ -157,6 +157,8 @@ class LiveGame:
         with self._lock:
             snap = self.session.snapshot()
             snap["meta"] = self.tuning[snap["phase"]]
+            if "freshness" in self.tuning:
+                snap["meta"] = {**snap["meta"], "freshness": self.tuning["freshness"]}
             if self.mode == "day":
                 snap["ui"] = {"screen": self._screen, "days": list(self._day_stats.values())}
             snap["events"] = list(self.events)
