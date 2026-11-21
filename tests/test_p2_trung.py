@@ -13,9 +13,11 @@ import unittest
 from pathlib import Path
 
 from chonoi.errors import BadInput
+from chonoi.inputs import InputState
 from chonoi.ids import IdAllocator, sort_by_id
 from chonoi.rng import Streams
 from chonoi.sim.day_plan import resolve_day_plans
+from chonoi.sim.quan import QuanSim
 from chonoi.sim.quan_customers import available_stock, init_customers, spawn_customer
 from chonoi.sim.quan_validation import validate_quan_fixture, validate_quan_state
 
@@ -189,6 +191,106 @@ class QuanP2(unittest.TestCase):
         with self.assertRaises(BadInput):
             make({"customers": [{"id": "C1", "table_id": "T1", "dish_id": "goi_bong_sung",
                                  "order_status": "unfulfillable", "reserved": {"ca_hu": 1}}]})
+
+
+IDLE = InputState((0.0, 0.0), {}, set())
+PRESS = InputState((0.0, 0.0), {"interact": True}, {"interact"})
+
+
+def ctx(**kw):
+    base = {"day": 2, "money": 150, "earned": 400, "reputation": 3.4,
+            "upgrades": {"oxygen": 1, "hp": 0}, "active_upgrades": {"oxygen": 0, "hp": 0},
+            "day_plan": resolve_day_plans(TUNING)[0], "allowed_dishes": ["ca_loc_nuong_trui", "goi_bong_sung"],
+            "oxygen_max_ticks": 1800, "hp_max": 3}
+    base.update(kw)
+    return base
+
+
+def quan(sc=None, inventory=None, context=None, seed=1):
+    return QuanSim(TUNING, sc or {}, Streams(seed), IdAllocator(), inventory=inventory, context=context)
+
+
+SERVE_SC = {"random_customers": False, "player": {"pos": [9, 2]},
+            "hand": {"order_id": "C1", "dish_id": "goi_bong_sung", "base_price": 40},
+            "customers": [{"id": "C1", "table_id": "T1", "dish_id": "goi_bong_sung", "order_status": "assigned",
+                           "reserved": {}}]}
+
+
+class QuanSimContext(unittest.TestCase):
+    def test_standalone_defaults(self):
+        sim = quan()
+        self.assertEqual((sim.money, sim.earned, sim.shift_earned), (0, 0, 0))
+        self.assertEqual(sim.reputation, Q["reputation_initial"])
+        self.assertIsNone(sim.allowed_dishes)
+        self.assertEqual(quan({"reputation": 1.5}).reputation, 1.5)
+        self.assertEqual([s["id"] for s in sim.stoves], ["B1", "B2"])
+        self.assertEqual([t["id"] for t in sim.tables], ["T1", "T2", "T3", "T4"])
+
+    def test_context_sets_working_state_and_is_not_mutated(self):
+        c = ctx()
+        before = copy.deepcopy(c)
+        sim = quan(inventory=LOTS, context=c)
+        self.assertEqual((sim.money, sim.earned, sim.shift_earned, sim.reputation), (150, 400, 0, 3.4))
+        self.assertEqual(sim.allowed_dishes, ["ca_loc_nuong_trui", "goi_bong_sung"])
+        sim.allowed_dishes.append("lau_mam")
+        for _ in range(3000):
+            sim.step(IDLE)
+        self.assertEqual(c, before)
+
+    def test_context_filters_spawned_dishes(self):
+        arrived = []
+        for seed in range(6):
+            sim = quan(inventory=LOTS, context=ctx(), seed=seed)
+            for _ in range(10800):
+                arrived += [d["dish_id"] for n, d in sim.step(IDLE) if n == "customer_arrived"]
+        self.assertTrue(arrived)
+        self.assertEqual(set(arrived), {"ca_loc_nuong_trui", "goi_bong_sung"})
+
+    def test_payment_adds_to_context_money_and_earned(self):
+        sim = quan(SERVE_SC, context=ctx(allowed_dishes=["goi_bong_sung"]))
+        names = [n for n, _ in sim.step(PRESS)]
+        self.assertIn("served", names)
+        paid = [d for _ in range(700) for n, d in sim.step(IDLE) if n == "paid"]
+        self.assertEqual(len(paid), 1)
+        amount = paid[0]["amount"]
+        self.assertEqual((sim.money, sim.earned, sim.shift_earned), (150 + amount, 400 + amount, amount))
+        self.assertAlmostEqual(sim.reputation, 3.4 + Q["tip_reputation"])
+
+    def test_quan_end_reports_cross_day_totals(self):
+        sim = quan(context=ctx(), sc={"random_customers": False, "time_left_ticks": 5})
+        end = [d for _ in range(5) for n, d in sim.step(IDLE) if n == "quan_end"]
+        self.assertEqual(end, [{"reason": "time", "money": 150, "earned": 400, "shift_earned": 0,
+                                "reputation": 3.4}])
+
+    def test_context_rejects_template_stock_and_reputation(self):
+        for sc in ({"stock": {"ca_loc": 1}}, {"reputation": 2.0}):
+            with self.subTest(sc=sc), self.assertRaises(BadInput):
+                quan(sc, context=ctx())
+
+    def test_context_fixture_dish_outside_plan_rejected(self):
+        sc = {"customers": [{"id": "C1", "table_id": "T1", "dish_id": "lau_mam"}]}
+        with self.assertRaises(BadInput):
+            quan(sc, inventory=LOTS, context=ctx())
+        quan(sc, inventory=LOTS, context=ctx(allowed_dishes=["lau_mam"]))
+
+    def test_context_fixture_checked_against_real_stock(self):
+        sc = {"customers": [{"id": "C1", "table_id": "T1", "dish_id": "goi_bong_sung"}]}
+        with self.assertRaises(BadInput):  # kho bàn giao rỗng (vd ngất) mà fixture giữ chỗ -> mã 2 (P1 Q4)
+            quan(sc, inventory={}, context=ctx())
+        quan(sc, inventory={"bong_sung": 2}, context=ctx())
+
+    def test_context_allowed_dishes_must_be_menu_ids(self):
+        for bad in (None, "goi_bong_sung", ["bun_nuoc_leo"], [1]):
+            with self.subTest(bad=bad), self.assertRaises(BadInput):
+                quan(context=ctx(allowed_dishes=bad))
+
+    def test_template_not_mutated(self):
+        sc = copy.deepcopy(SERVE_SC)
+        sim = quan(sc, context=ctx(allowed_dishes=["goi_bong_sung"]))
+        sim.step(PRESS)
+        for _ in range(700):
+            sim.step(IDLE)
+        self.assertEqual(sc, SERVE_SC)
 
 
 if __name__ == "__main__":

@@ -12,6 +12,11 @@ M = [
  ("chonoi/sim/quan_customers.py", "for k in menu_kinds(sim.menu) | set(sim.stock)", "for k in set(sim.stock)"),
  ("chonoi/sim/quan_validation.py", 'if allowed is not None and c["dish_id"] not in allowed:', "if False:"),
  ("chonoi/sim/quan_validation.py", 'validate_items(c["reserved"], menu_kinds(menu))', 'validate_items(c["reserved"])'),
+ ("chonoi/sim/quan.py", 'for key in ("stock", "reputation"):', "for key in ():"),
+ ("chonoi/sim/quan.py", 'if not isinstance(allowed, list) or not all(', "if False and not all("),
+ ("chonoi/sim/quan.py", 'self.money, self.earned = context["money"], context["earned"]', "pass"),
+ ("chonoi/sim/quan.py", 'self.reputation = context["reputation"]', "pass"),
+ ("chonoi/sim/quan.py", 'self.allowed_dishes = list(context["allowed_dishes"])', 'self.allowed_dishes = context["allowed_dishes"]'),
 ]
 for f, a, b in M:
     p = pathlib.Path(f); src = p.read_text()
