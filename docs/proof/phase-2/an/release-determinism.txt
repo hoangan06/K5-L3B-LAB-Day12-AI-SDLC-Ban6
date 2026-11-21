@@ -1,0 +1,4 @@
+PASS gather: JSONL sha256=83ce05261e31c22c30492605ebcc63fa5ecec22dc5f3c01886113de76b39a577
+PASS gather inventory: sha256=599e112e7a4c3a048f918b031713b47de4ed62e3aa6fa3299099b3566144fcd5
+PASS quan: JSONL sha256=8ba4ce86a4c7b6f1390d4dcdcd5602d49f6ae8ab6b9c89275610e0f74fe69775
+PASS: repeated outputs match byte-for-byte (not proof of all gameplay rules)

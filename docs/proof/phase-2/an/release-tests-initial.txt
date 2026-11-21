@@ -1,0 +1,60 @@
+..........................................F........F......................................................................................................................FFF...................
+======================================================================
+FAIL: test_ban_ban_bo_luot_va_luot_sau (test_p1_trung.Spawn.test_ban_ban_bo_luot_va_luot_sau)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\AI20K\lab_day12\K5-L3B-LAB-Day12-AI-SDLC-Ban6\tests\test_p1_trung.py", line 89, in test_ban_ban_bo_luot_va_luot_sau
+    self.assertEqual(ev, [])
+AssertionError: Lists differ: [('customer_arrived', {'order_id': 'C2', '[41 chars]g'})] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+('customer_arrived', {'order_id': 'C2', 'table_id': 'T2', 'dish_id': 'goi_bong_sung'})
+
++ []
+- [('customer_arrived',
+-   {'dish_id': 'goi_bong_sung', 'order_id': 'C2', 'table_id': 'T2'})]
+
+======================================================================
+FAIL: test_kha_dung_tru_giu_cho_khong_doi_ton (test_p1_trung.Stock.test_kha_dung_tru_giu_cho_khong_doi_ton)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\AI20K\lab_day12\K5-L3B-LAB-Day12-AI-SDLC-Ban6\tests\test_p1_trung.py", line 161, in test_kha_dung_tru_giu_cho_khong_doi_ton
+    self.assertEqual(available_stock(sim), {"ca_linh": 0, "bong_dien_dien": 0, "ca_loc": 1, "bong_sung": 0})
+AssertionError: {'ca_linh': 0, 'keo_neo': 0, 'ca_loc': 1, 'bong_sung': 0,[29 chars]': 0} != {'ca_linh': 0, 'bong_dien_dien': 0, 'ca_loc': 1, 'bong_sung': 0}
++ {'bong_dien_dien': 0, 'bong_sung': 0, 'ca_linh': 0, 'ca_loc': 1}
+- {'bong_dien_dien': 0,
+-  'bong_sung': 0,
+-  'ca_keo': 0,
+-  'ca_linh': 0,
+-  'ca_loc': 1,
+-  'keo_neo': 0}
+
+======================================================================
+FAIL: test_con_03_bad_input_exit_2 (test_smoke_p1.Contract.test_con_03_bad_input_exit_2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\AI20K\lab_day12\K5-L3B-LAB-Day12-AI-SDLC-Ban6\tests\test_smoke_p1.py", line 67, in test_con_03_bad_input_exit_2
+    self.assertEqual(run_headless("--mode", "gather", "--seed", "1", "--ticks", "10", "--inputs", unk, "--out", out)[0], 2, button)
+AssertionError: 0 != 2 : attack
+
+======================================================================
+FAIL: test_con_03_old_and_future_modes_rejected (test_smoke_p1.Contract.test_con_03_old_and_future_modes_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\AI20K\lab_day12\K5-L3B-LAB-Day12-AI-SDLC-Ban6\tests\test_smoke_p1.py", line 74, in test_con_03_old_and_future_modes_rejected
+    self.assertEqual(run_headless("--mode", mode, "--seed", "1", "--ticks", "0", "--out", out)[0], 2, mode)
+AssertionError: 0 != 2 : day
+
+======================================================================
+FAIL: test_gather_snapshot_has_gather_fields (test_smoke_p1.Contract.test_gather_snapshot_has_gather_fields)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\AI20K\lab_day12\K5-L3B-LAB-Day12-AI-SDLC-Ban6\tests\test_smoke_p1.py", line 45, in test_gather_snapshot_has_gather_fields
+    self.assertEqual(len(s["fish"]), 6)
+AssertionError: 8 != 6
+
+----------------------------------------------------------------------
+Ran 192 tests in 6.657s
+
+FAILED (failures=5)
