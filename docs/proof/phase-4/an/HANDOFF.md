@@ -26,7 +26,7 @@ Code gameplay kiểm trên `2f3f5b6` (đã gộp Duy `6a445b8` và main `2ff2be1
 | Soak thật10ngày ×2 | days_completed10, crashes0, đủ10results; hai lần cùngseed7 gameplay giống nhau; `soak-1.json`, `soak-2.json`, `soak-check.json` |
 | ZIP trong thư mục riêng | `package-build.txt`, `package-check.json`: kiểm hash, import đúng source giải nén, headless day và GUI HTTP/canvas/menu trên Linux WSL; không tuyên bố đã chơi bằng mắt/clone sạch |
 
-Các log là kết quả thật. Gói candidate dựng từ working tree; BUILD-INFO ghi commit nền, trạng thái dirty và hash nội dung thực tế, không giả là gói từ commit sạch. Khi phát hành phải tạo lại từ commit bàn giao. Các artifact ZIP ở dist/ không commit vào Git.
+Các log là kết quả thật. Gói cuối của Ân: `dist/chonoi-v1.0.0-an-f970332.zip`, dựng từ **commit sạch f970332**; `package-check.json` ghi working_tree_dirty=false và SHA256 ZIP. BUILD-INFO chứa hash từng file. Đây vẫn là gói ứng viên vì thiếu LICENSE; khi phát hành phải tạo lại từ commit bàn giao đủ gate. ZIP ở dist/ không commit vào Git. Bản candidate đầu trước f970332 chỉ là kiểm thử công cụ.
 
 Lần đầu test CLI của AI đọc dòng đầu JSONL như snapshot, nhưng day có event khởi tạo trước snapshot; đã sửa test chọn đúng type=snapshot. Không đổi thứ tự output để phục vụ test.
 

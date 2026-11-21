@@ -1,3 +1,3 @@
 Gói ứng viên; còn thiếu đầu vào phát hành: LICENSE
-Đã tạo dist/chonoi-v1.0.0-candidate-an.zip
+Đã tạo dist/chonoi-v1.0.0-an-f970332.zip
 PASS package: isolated source, file hashes, CLI day and GUI HTTP
