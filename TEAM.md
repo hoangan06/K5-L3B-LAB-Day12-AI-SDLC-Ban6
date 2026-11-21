@@ -6,7 +6,7 @@
 |---|---|---|---|---|
 | | | `sim/gather` | | |
 | Trung | trungnb | `sim/quan` (khách, giữ chỗ, validation: `quan_customers.py`, `quan_validation.py`) | PO | Đức |
-| | | `client/ui` | | |
+| Lại Trọng Đức | laitrongduc | `sim/quan`, `client/ui` (bếp, phục vụ, thanh toán, HUD) | Điều phối quán / sản phẩm | Trung |
 | | | `qa` | | |
 
 **Vai quy trình:** PO (đầu mối hỏi giảng viên, giữ `docs/clarify.md`) · Integrator (giữ `docs/contracts/`, gắn tag) · QA lead · Scrum/Release. Có thể kiêm.
