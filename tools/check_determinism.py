@@ -31,7 +31,7 @@ def main(argv=None):
             command[0] = args.python
         with tempfile.TemporaryDirectory(prefix="chonoi-determinism-") as temp:
             folder = Path(temp)
-            v12 = contract["contract_version"] == "1.2"  # TICKET-03: kho cá thể
+            v12 = contract["contract_version"] in ("1.2", "1.3")  # P4 giữ kho cá thể P3
             def items(kinds):
                 return [{"id": f"I{i}", "kind": k, "fresh": 100} for i, k in enumerate(kinds, 1)]
             scenarios = {

@@ -12,7 +12,7 @@ def main():
     try:
         contract = json.loads((ROOT / "game.contract.json").read_text(encoding="utf-8"))
         command = shlex.split(contract["headless_cmd"])
-        v12 = contract["contract_version"] == "1.2"  # TICKET-03: kho cá thể {id,kind,fresh}
+        v12 = contract["contract_version"] in ("1.2", "1.3")  # P4 giữ kho cá thể P3
         kinds = ["ca_loc", "bong_sung", "bong_sung"]
         hold = [{"id": f"I{i}", "kind": k, "fresh": 100} for i, k in enumerate(kinds, 1)] if v12 else kinds
         def close(a, b):

@@ -74,7 +74,7 @@ def contract_version():
 
 def v12():
     """TICKET-03: từ v1.2 giỏ/kho là mảng cá thể {id,kind,fresh} thay kho đếm."""
-    return contract_version() == "1.2"
+    return contract_version() in ("1.2", "1.3")
 
 
 def hold_of(kinds):

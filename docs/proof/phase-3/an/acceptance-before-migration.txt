@@ -1,0 +1,247 @@
+test_already_spoiled_clamps_to_zero_and_keeps_slot (test_p3_an.GatherFreshnessAcceptance.test_already_spoiled_clamps_to_zero_and_keeps_slot) ... FAIL
+test_cli_file_matches_end_and_quan_without_extra_decay (test_p3_an.GatherFreshnessAcceptance.test_cli_file_matches_end_and_quan_without_extra_decay) ... FAIL
+test_cli_threshold_from_prd (test_p3_an.GatherFreshnessAcceptance.test_cli_threshold_from_prd) ... FAIL
+test_cli_tick_limit_preserves_existing_destination (test_p3_an.GatherFreshnessAcceptance.test_cli_tick_limit_preserves_existing_destination) ... FAIL
+test_crossings_sort_by_numeric_id_without_reordering_hold (test_p3_an.GatherFreshnessAcceptance.test_crossings_sort_by_numeric_id_without_reordering_hold) ... FAIL
+test_exact_boundary_not_rounded_before_decision (test_p3_an.GatherFreshnessAcceptance.test_exact_boundary_not_rounded_before_decision) ... FAIL
+test_exact_thirty_spoils_on_first_tick_once (test_p3_an.GatherFreshnessAcceptance.test_exact_thirty_spoils_on_first_tick_once) ... FAIL
+test_fish_yield_has_distinct_objects_and_monotonic_ids (test_p3_an.GatherFreshnessAcceptance.test_fish_yield_has_distinct_objects_and_monotonic_ids) ... FAIL
+test_hit_and_faint_lost_are_lifo_individuals (test_p3_an.GatherFreshnessAcceptance.test_hit_and_faint_lost_are_lifo_individuals) ... FAIL
+test_input_fixture_is_not_mutated (test_p3_an.GatherFreshnessAcceptance.test_input_fixture_is_not_mutated) ... ok
+test_inventory_end_sorts_copy_preserving_hold_order (test_p3_an.GatherFreshnessAcceptance.test_inventory_end_sorts_copy_preserving_hold_order) ... ERROR
+test_new_harvest_starts_full_then_decays_next_step (test_p3_an.GatherFreshnessAcceptance.test_new_harvest_starts_full_then_decays_next_step) ... FAIL
+test_pause_freezes_freshness_resume_decays_immediately (test_p3_an.GatherFreshnessAcceptance.test_pause_freezes_freshness_resume_decays_immediately) ... FAIL
+test_sixty_ticks_decay_half_point (test_p3_an.GatherFreshnessAcceptance.test_sixty_ticks_decay_half_point) ... FAIL
+test_spoiled_hold_still_blocks_harvest (test_p3_an.GatherFreshnessAcceptance.test_spoiled_hold_still_blocks_harvest) ... ok
+test_spoiled_precedes_lethal_choke_and_faint (test_p3_an.GatherFreshnessAcceptance.test_spoiled_precedes_lethal_choke_and_faint) ... FAIL
+
+======================================================================
+ERROR: test_inventory_end_sorts_copy_preserving_hold_order (test_p3_an.GatherFreshnessAcceptance.test_inventory_end_sorts_copy_preserving_hold_order)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 161, in test_inventory_end_sorts_copy_preserving_hold_order
+    rows = self.step(session)
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 52, in step
+    rows.extend(session.step(inputs.advance(tick)))
+                ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/chonoi/runner.py", line 125, in step
+    events = self.sim.step(inp)
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/chonoi/sim/gather.py", line 153, in step
+    self._finish("time", events)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/chonoi/sim/gather.py", line 202, in _finish
+    events.append(("gather_end", {"reason": reason, "inventory": {"items": self.inventory_items()}}))
+                                                                           ~~~~~~~~~~~~~~~~~~~~^^
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/chonoi/sim/gather.py", line 94, in inventory_items
+    return hold_to_items(self.hold)
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/chonoi/inventory.py", line 51, in hold_to_items
+    counts[k] = counts.get(k, 0) + 1
+                ~~~~~~~~~~^^^^^^
+TypeError: cannot use 'dict' as a dict key (unhashable type: 'dict')
+
+======================================================================
+FAIL: test_already_spoiled_clamps_to_zero_and_keeps_slot (test_p3_an.GatherFreshnessAcceptance.test_already_spoiled_clamps_to_zero_and_keeps_slot)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 93, in test_already_spoiled_clamps_to_zero_and_keeps_slot
+    self.assertEqual(self.held(session), [item("I1", fresh=0)])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'id': 'I1', 'kind': 'ca_linh', 'fresh': 0.001}] != [{'id': 'I1', 'kind': 'ca_linh', 'fresh': 0}]
+
+First differing element 0:
+{'id': 'I1', 'kind': 'ca_linh', 'fresh': 0.001}
+{'id': 'I1', 'kind': 'ca_linh', 'fresh': 0}
+
+- [{'fresh': 0.001, 'id': 'I1', 'kind': 'ca_linh'}]
+?             ----
+
++ [{'fresh': 0, 'id': 'I1', 'kind': 'ca_linh'}]
+
+======================================================================
+FAIL: test_cli_file_matches_end_and_quan_without_extra_decay (test_p3_an.GatherFreshnessAcceptance.test_cli_file_matches_end_and_quan_without_extra_decay)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 197, in test_cli_file_matches_end_and_quan_without_extra_decay
+    rows = self.cli(folder, scenario, 1, [{"tick": 0, "interact": True}], inventory=inventory)
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 180, in cli
+    self.assertEqual(code, 0, errors.getvalue())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : đầu vào sai: hold phải là mảng id nguyên liệu hợp lệ
+
+
+======================================================================
+FAIL: test_cli_threshold_from_prd (test_p3_an.GatherFreshnessAcceptance.test_cli_threshold_from_prd)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 185, in test_cli_threshold_from_prd
+    rows = self.cli(Path(temp), {"gather": {"hold": [item("I1", fresh=30)],
+                    "random_fish": False, "monsters": []}}, 1)
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 180, in cli
+    self.assertEqual(code, 0, errors.getvalue())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : đầu vào sai: hold phải là mảng id nguyên liệu hợp lệ
+
+
+======================================================================
+FAIL: test_cli_tick_limit_preserves_existing_destination (test_p3_an.GatherFreshnessAcceptance.test_cli_tick_limit_preserves_existing_destination)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 212, in test_cli_tick_limit_preserves_existing_destination
+    self.cli(folder, {"gather": {"hold": [item("I1")], "random_fish": False,
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                "monsters": []}}, 1, inventory=inventory)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 180, in cli
+    self.assertEqual(code, 0, errors.getvalue())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : đầu vào sai: hold phải là mảng id nguyên liệu hợp lệ
+
+
+======================================================================
+FAIL: test_crossings_sort_by_numeric_id_without_reordering_hold (test_p3_an.GatherFreshnessAcceptance.test_crossings_sort_by_numeric_id_without_reordering_hold)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 87, in test_crossings_sort_by_numeric_id_without_reordering_hold
+    self.assertEqual([r["data"]["item_id"] for r in rows if r["name"] == "spoiled"], ["I2", "I7", "I10"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['I2', 'I7', 'I10']
+
+Second list contains 3 additional elements.
+First extra element 0:
+'I2'
+
+- []
++ ['I2', 'I7', 'I10']
+
+======================================================================
+FAIL: test_exact_boundary_not_rounded_before_decision (test_p3_an.GatherFreshnessAcceptance.test_exact_boundary_not_rounded_before_decision)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 80, in test_exact_boundary_not_rounded_before_decision
+    self.assertEqual(self.held(session)[0]["fresh"], 30)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 30.5 != 30
+
+======================================================================
+FAIL: test_exact_thirty_spoils_on_first_tick_once (test_p3_an.GatherFreshnessAcceptance.test_exact_thirty_spoils_on_first_tick_once)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 66, in test_exact_thirty_spoils_on_first_tick_once
+    self.assertEqual([(r["tick"], r["data"]) for r in rows if r["name"] == "spoiled"],
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     [(1, {"item_id": "I1", "kind": "ca_linh", "location": "hold"})])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != [(1, {'item_id': 'I1', 'kind': 'ca_linh', 'location': 'hold'})]
+
+Second list contains 1 additional elements.
+First extra element 0:
+(1, {'item_id': 'I1', 'kind': 'ca_linh', 'location': 'hold'})
+
+- []
++ [(1, {'item_id': 'I1', 'kind': 'ca_linh', 'location': 'hold'})]
+
+======================================================================
+FAIL: test_fish_yield_has_distinct_objects_and_monotonic_ids (test_p3_an.GatherFreshnessAcceptance.test_fish_yield_has_distinct_objects_and_monotonic_ids)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 115, in test_fish_yield_has_distinct_objects_and_monotonic_ids
+    held = self.held(session)
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 59, in held
+    self.assertEqual(set(it), {"id", "kind", "fresh"})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'c'
+'n'
+'l'
+'i'
+'a'
+'_'
+'h'
+Items in the second set but not the first:
+'kind'
+'fresh'
+'id'
+
+======================================================================
+FAIL: test_hit_and_faint_lost_are_lifo_individuals (test_p3_an.GatherFreshnessAcceptance.test_hit_and_faint_lost_are_lifo_individuals)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 132, in test_hit_and_faint_lost_are_lifo_individuals
+    self.assertAlmostEqual(float(it["fresh"]), originals[it["id"]]["fresh"] - 1 / 120, places=10)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 20.0 != 19.991666666666667 within 10 places (0.00833333333333286 difference)
+
+======================================================================
+FAIL: test_new_harvest_starts_full_then_decays_next_step (test_p3_an.GatherFreshnessAcceptance.test_new_harvest_starts_full_then_decays_next_step)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 107, in test_new_harvest_starts_full_then_decays_next_step
+    self.assertEqual(self.held(session), [item("I1", "bong_sung", 100)])
+                     ~~~~~~~~~^^^^^^^^^
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 59, in held
+    self.assertEqual(set(it), {"id", "kind", "fresh"})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Items in the first set but not the second:
+'n'
+'o'
+'u'
+'g'
+'b'
+'_'
+'s'
+Items in the second set but not the first:
+'kind'
+'fresh'
+'id'
+
+======================================================================
+FAIL: test_pause_freezes_freshness_resume_decays_immediately (test_p3_an.GatherFreshnessAcceptance.test_pause_freezes_freshness_resume_decays_immediately)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 148, in test_pause_freezes_freshness_resume_decays_immediately
+    self.assertEqual([(r["tick"], r["data"]["item_id"]) for r in spoiled], [(4, "I1")])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != [(4, 'I1')]
+
+Second list contains 1 additional elements.
+First extra element 0:
+(4, 'I1')
+
+- []
++ [(4, 'I1')]
+
+======================================================================
+FAIL: test_sixty_ticks_decay_half_point (test_p3_an.GatherFreshnessAcceptance.test_sixty_ticks_decay_half_point)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 74, in test_sixty_ticks_decay_half_point
+    self.assertAlmostEqual(self.held(session)[0]["fresh"], 99.5, places=10)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 100 != 99.5 within 10 places (0.5 difference)
+
+======================================================================
+FAIL: test_spoiled_precedes_lethal_choke_and_faint (test_p3_an.GatherFreshnessAcceptance.test_spoiled_precedes_lethal_choke_and_faint)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/d/AI20K/lab_day12/K5-L3B-LAB-Day12-AI-SDLC-Ban6/tests/test_p3_an.py", line 140, in test_spoiled_precedes_lethal_choke_and_faint
+    self.assertEqual([r["name"] for r in rows], ["spoiled", "choke", "faint", "gather_end"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['choke', 'faint', 'gather_end'] != ['spoiled', 'choke', 'faint', 'gather_end']
+
+First differing element 0:
+'choke'
+'spoiled'
+
+Second list contains 1 additional elements.
+First extra element 3:
+'gather_end'
+
+- ['choke', 'faint', 'gather_end']
++ ['spoiled', 'choke', 'faint', 'gather_end']
+?  +++++++++++
+
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.130s
+
+FAILED (failures=13, errors=1)
