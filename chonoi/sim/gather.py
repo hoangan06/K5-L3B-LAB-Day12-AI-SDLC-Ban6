@@ -18,14 +18,16 @@ Thứ tự một bước theo PRD, "Gather":
       - hái nút ở mặt nước (gather, hold_full), nút mọc lại (node_regrown đã có phần đếm ngược)
       - bắt đàn cá bằng `catch` (fish_caught, hold_full, hồi chiêu catch_cd_ticks, chỉ khi dưới nước)
       - cập bến xét TRƯỚC hái (đã có); ghi kho đúng một lần do runner lo
-Các tính năng của phase sau chưa nằm trong khung này.
+Phase 2 đã thêm context nâng cấp/ngày và Cá Sấu; cá bơi/sinh do Duy tích hợp riêng.
 """
 
 import math
 
 from ..ids import sort_by_id
 from ..inventory import hold_to_items
+from ..errors import BadInput
 from .gather_actions import catch_fish, gather_node
+from .gather_monsters import init_monsters, snapshot_monsters, update_monsters
 from .ramp import ramp_velocity
 
 TICK = 60.0
@@ -36,20 +38,27 @@ class GatherSim:
     mode = "gather"
     phase = "gather"
 
-    def __init__(self, tuning, scenario, streams, ids):
+    def __init__(self, tuning, scenario, streams, ids, *, context=None):
         t = tuning["gather"]
         self.t = t
         self.rng = streams
         self.ids = ids
+        self.phase_tick = 0
+        self.day = context["day"] if context is not None else 1
         p = scenario.get("player", {})
         self.pos = [float(c) for c in p.get("pos", t["start_pos"])]
         self.vel = [float(c) for c in p.get("vel", [0.0, 0.0])]
         self._tgt = None
         self._ramp_left = 0
         self.heading = float(p.get("heading_deg", t["start_heading_deg"]))
-        self.oxygen_max = int(round(t["oxygen_max_s"] * TICK))
+        self.oxygen_max = context["oxygen_max_ticks"] if context is not None else int(round(t["oxygen_max_s"] * TICK))
+        self.hp_max = context["hp_max"] if context is not None else t["hp_max"]
         self.oxygen_ticks = p.get("oxygen_ticks", self.oxygen_max)
-        self.hp = p.get("hp", t["hp_max"])
+        self.hp = p.get("hp", self.hp_max)
+        for name, value, cap, minimum in (("oxygen_ticks", self.oxygen_ticks, self.oxygen_max, 0),
+                                           ("hp", self.hp, self.hp_max, 1)):
+            if isinstance(value, bool) or not isinstance(value, int) or not minimum <= value <= cap:
+                raise BadInput(f"gather.player.{name} ngoài mức hiệu lực")
         self.zero_oxy_ticks = p.get("zero_oxy_ticks", 0)
         self.invuln_ticks = p.get("invuln_ticks", 0)
         self.catch_cd_ticks = p.get("catch_cd_ticks", 0)
@@ -76,16 +85,19 @@ class GatherSim:
         self.reputation = tuning["quan"]["reputation_initial"]
         self.done = False
         self.reason = None
+        if context is not None:
+            self.money, self.earned, self.reputation = context["money"], context["earned"], context["reputation"]
+        init_monsters(self, scenario)
 
     # --- giao diện cho runner -------------------------------------------------
     def inventory_items(self) -> dict:
         return hold_to_items(self.hold)
 
     def snapshot(self) -> dict:
-        return {
+        result = {
             "player": {"pos": self.pos, "vel": self.vel, "heading_deg": self.heading,
                        "oxygen_ticks": self.oxygen_ticks, "oxygen_max_ticks": self.oxygen_max,
-                       "hp": self.hp, "hp_max": self.t["hp_max"], "zero_oxy_ticks": self.zero_oxy_ticks,
+                       "hp": self.hp, "hp_max": self.hp_max, "zero_oxy_ticks": self.zero_oxy_ticks,
                        "invuln_ticks": self.invuln_ticks, "catch_cd_ticks": self.catch_cd_ticks,
                        "at_surface": self._at_surface()},
             "hold": self.hold, "hold_count": len(self.hold),
@@ -96,12 +108,16 @@ class GatherSim:
             "fish": [{"id": f["id"], "pos": f["pos"], "kind": f["kind"], "heading_deg": f["heading_deg"]}
                      for f in sort_by_id(self.fish)],
         }
+        if "monsters" in self.t:
+            result["monsters"] = snapshot_monsters(self)
+        return result
 
     # --- một bước ---------------------------------------------------------------
     def step(self, inp):
         if self.done:
             return []
         events = []
+        self.phase_tick += 1
         # 1. đồng hồ và hàng có sẵn: giảm bộ đếm, nút mọc lại
         self.time_left_ticks = max(0, self.time_left_ticks - 1)
         self.invuln_ticks = max(0, self.invuln_ticks - 1)
@@ -115,6 +131,9 @@ class GatherSim:
         was_at_surface = self._at_surface()
         self._move(inp)
         self._update_oxygen(was_at_surface, events)
+        if self.done:
+            return events
+        update_monsters(self, events)
         if self.done:
             return events
         # 3. interact: bến trước, rồi hái
@@ -158,10 +177,13 @@ class GatherSim:
         self.hp = max(0, self.hp - 1)
         events.append(("choke", {"hp": self.hp}))
         if self.hp == 0:
-            lost = list(reversed(self.hold))
-            self.hold.clear()
-            events.append(("faint", {"cause": "choke", "lost": lost, "hp": 0}))
-            self._finish("fainted", events)
+            self._faint("choke", events)
+
+    def _faint(self, cause, events):
+        lost = list(reversed(self.hold))
+        self.hold.clear()
+        events.append(("faint", {"cause": cause, "lost": lost, "hp": 0}))
+        self._finish("fainted", events)
 
     def _at_surface(self) -> bool:
         return self.pos[1] <= self.t["surface_depth"]

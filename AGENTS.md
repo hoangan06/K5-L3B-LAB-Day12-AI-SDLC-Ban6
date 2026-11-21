@@ -33,3 +33,11 @@
 - `gather.py` đã có oxy/ngạt/ngất và đã nối helper thật `gather_node`/`catch_fish` từ module Duy. Giữ thứ tự ngất → bến/hái → bắt → hết giờ.
 - Test riêng Ân: `python3 -m unittest discover -s tests -p test_p1_an.py -v`.
 - Giữ thông tin TEAM/GitHub để thành viên tự điền; không tự đoán handle.
+
+## Phase 2 — nền tảng Session/input của Ân
+- Nhánh `p2/an`: Session tách tick/sim_tick, pause trước gameplay, resume chạy ngay; input hỗ trợ buy/shop_done. CLI nhận days khi contract_version=1.1. Manifest/scenario P2 do Duy giữ, DaySim/ShopSim/live do Đức giữ.
+- Test: `python3 -m unittest discover -s tests -p test_p2_an.py -v`. Bàn giao và giới hạn: `docs/proof/phase-2/an/HANDOFF.md`.
+- `load_frames(path)` mặc định giữ parser v1.0 để không phá kiểm P1. Headless chọn BUTTONS_V11 khi manifest1.1; caller P2 khác cần truyền `buttons=BUTTONS_V11`. LiveInputs/InputPlayer mặc định nhận nút v1.1.
+- Không dùng mock DaySim trong runtime: test giả chỉ xác minh giao thức Session; cần code thật và data1.1 mới chạy vòng ngày.
+- Cá Sấu: `gather_monsters.py` đã nối vào GatherSim sau oxy/ngạt, trước interact/catch. Config P1 không có monsters thì không tự thêm quái. Test `python3 -m unittest discover -s tests -p test_p2_an_monsters.py -v`.
+- GatherSim nhận keyword context, hp_max/oxygen_max_ticks/ngày/tiền theo giao diện P2; `_faint(cause, events)` dùng chung choke/monster. Duy cần nối cá/loader mới; Đức dùng context để dựng gather theo Ngày.
