@@ -1,6 +1,6 @@
 # Lát 3 (Trung) — kết quả thật
 
-Nhánh p1/trung, HEAD dd568c3 (giao diện 1.1); code lát 3 chưa commit lúc chạy.
+Nhánh p1/trung, HEAD ef7fe51 + thay đổi theo chốt nhóm Q1–Q8 (chưa commit lúc chạy).
 
 ```
 $ PYTHONPATH=tests:. python3 -m unittest tests.test_p1_trung -v
@@ -28,11 +28,13 @@ Ran 18 tests in 0.003s
 
 OK
 
-$ python3 docs/proof/phase-1/trung/mutate.py  # làm hỏng từng luật, test phải FAIL (CAUGHT)
+$ python3 docs/proof/phase-1/trung/mutate.py
 CAUGHT  if n > sim.stock.get(k, 0):
 CAUGHT  if res != sim.menu[c["dish_id"]]["recipe"]:
 CAUGHT  if c["id"] in holders:
 CAUGHT  elif c["eat_ticks_left"]:
+CAUGHT  if st == "served" and c["state"] != "eating":
+CAUGHT  _int(f"{name}.base_price", dish["base_price"], 1)
 CAUGHT  if all(avail.get(k, 0) >= n
 CAUGHT  if reason == "patience":
 CAUGHT  if c["eat_ticks_left"] == 0:
@@ -42,7 +44,7 @@ CAUGHT  for raw in copy.deepcopy(scenario.get("customers", [])):
 CAUGHT  if s["state"] == "ready":
 
 $ PYTHONPATH=tests:. python3 -m unittest discover -s tests
-Ran 50 tests in 2.725s
+Ran 50 tests in 2.418s
 
 OK
 ```

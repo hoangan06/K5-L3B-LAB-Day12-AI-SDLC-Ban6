@@ -4,6 +4,8 @@ M = [
  ("chonoi/sim/quan_validation.py", 'if res != sim.menu[c["dish_id"]]["recipe"]:', "if False:"),
  ("chonoi/sim/quan_validation.py", 'if c["id"] in holders:', "if False:"),
  ("chonoi/sim/quan_validation.py", 'elif c["eat_ticks_left"]:', "elif False:"),
+ ("chonoi/sim/quan_validation.py", 'if st == "served" and c["state"] != "eating":', "if False:"),
+ ("chonoi/sim/quan_validation.py", '_int(f"{name}.base_price", dish["base_price"], 1)', '_int(f"{name}.base_price", dish["base_price"])'),
  ("chonoi/sim/quan_customers.py", 'if all(avail.get(k, 0) >= n', "if True or all(avail.get(k, 0) >= n"),
  ("chonoi/sim/quan_customers.py", 'if reason == "patience":', "if False:"),
  ("chonoi/sim/quan_customers.py", 'if c["eat_ticks_left"] == 0:', "if closing and False:"),

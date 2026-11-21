@@ -239,6 +239,8 @@ class Validation(unittest.TestCase):
             ({"customers": [dict(cust, order_status="unfulfillable", reserved={}, state="eating",
                                  eat_ticks_left=5, base_price=60, tip=0)]}, None),        # unfulfillable phải chờ
             ({"stoves": [{"id": "B1", "pos": [20, 1]}]}, None),                           # tọa độ ngoài miền
+            ({"customers": [dict(cust, order_status="served", reserved={})]}, None),     # Q5: served mà waiting
+            ({"customers": [assigned], "hand": dict(dish, base_price=0)}, None),         # Q8: giá payload không dương
             ({"reputation": 9}, None),
             ({"random_customers": "yes"}, None),
         ]
@@ -264,6 +266,9 @@ class Validation(unittest.TestCase):
         make({"customers": [assigned], "stoves": [{"id": "B1", "state": "cooking", "dish": dish,
                                                    "cook_ticks_left": 3}]})
         make({"customers": [assigned], "hand": dish})
+        make({"customers": [assigned], "hand": dict(dish, base_price=999)})  # Q8: giá khác menu vẫn hợp lệ
+        make({"customers": [dict(assigned, order_status="reserved", reserved={"ca_loc": 1}, order_tick=50,
+                                 patience_ticks_left=0)]}, stock={"ca_loc": 1})  # Q6
         make({"customers": [{"id": "C1", "table_id": "T1", "dish_id": "goi_bong_sung",
                              "order_status": "unfulfillable", "reserved": {}}]})
 

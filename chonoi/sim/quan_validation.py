@@ -47,7 +47,7 @@ def _dish_shape(name, dish, menu):
         raise BadInput(f"{name}: món phải có đủ order_id, dish_id, base_price")
     if not isinstance(dish["order_id"], str) or dish["dish_id"] not in menu:
         raise BadInput(f"{name}: order_id phải là chuỗi, dish_id phải thuộc thực đơn")
-    _int(f"{name}.base_price", dish["base_price"])
+    _int(f"{name}.base_price", dish["base_price"], 1)  # giá nguyên dương (chốt nhóm Q8)
 
 
 def validate_quan_fixture(scenario, tuning):
@@ -146,6 +146,8 @@ def validate_quan_state(sim):
             raise BadInput(f"{name}: chỉ đơn assigned có (đúng một) món ở bếp/tay")
         if st == "unfulfillable" and c["state"] != "waiting":
             raise BadInput(f"{name}: đơn unfulfillable phải còn chờ")
+        if st == "served" and c["state"] != "eating":
+            raise BadInput(f"{name}: đơn served phải là khách eating (chốt nhóm Q5)")
         if c["state"] == "eating":
             if st != "served" or c["eat_ticks_left"] <= 0 or "base_price" not in c or "tip" not in c:
                 raise BadInput(f"{name}: khách eating cần served, eat_ticks_left > 0, base_price và tip")
