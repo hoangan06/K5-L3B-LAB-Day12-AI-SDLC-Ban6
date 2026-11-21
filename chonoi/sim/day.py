@@ -1,6 +1,7 @@
 """Điều phối các pha sáng, quán và cửa hàng qua nhiều ngày."""
 
 from copy import deepcopy
+import math
 
 from .. import TICK_HZ
 from ..errors import BadInput
@@ -13,9 +14,9 @@ from .shop import ShopSim, initial_upgrades
 class DaySim:
     mode = "day"
 
-    def __init__(self, tuning, scenario, streams, ids, *, days=1):
-        if type(days) is not int or not 1 <= days <= 5:
-            raise BadInput("days phải là số nguyên từ 1 đến 5")
+    def __init__(self, tuning, scenario, streams, ids, *, days=1, soak=False):
+        if type(soak) is not bool or type(days) is not int or days < 1 or (not soak and days > 5):
+            raise BadInput("days phải nguyên dương (tối đa 5 ngoài soak)")
         if not isinstance(scenario, dict) or scenario.keys() - {"day", "gather", "quan"}:
             raise BadInput("scenario day chỉ nhận các khối day, gather và quan")
         day = scenario.get("day", {})
@@ -49,6 +50,7 @@ class DaySim:
         self.days = days
         self.day = 1
         self.days_completed = 0
+        self.completed_results = []
         self.done = False
         self.reason = None
         self._start_day()
@@ -95,6 +97,9 @@ class DaySim:
         else:
             self._upgrades = child.upgrades.copy()
             self.days_completed += 1
+            self.completed_results.append({"day": self.day, "earned": self.earned,
+                                           "reputation": self.reputation,
+                                           "score": self.earned + self.tuning["score"]["reputation_multiplier"] * math.floor(self.reputation)})
             if self.days_completed == self.days:
                 self.done = True
                 self.reason = "days_complete"
@@ -120,7 +125,7 @@ class DaySim:
         return gather.inventory_items()
 
     def _start_day(self):
-        self.day_plan = self._plans[self.day - 1]
+        self.day_plan = self._plans[(self.day - 1) % len(self._plans)]
         self.active_upgrades = self._upgrades.copy()
         gather = deepcopy(self._gather)
         if "freshness" in self.tuning and self.day > 1 and "hold" in gather:
