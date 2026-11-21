@@ -44,3 +44,8 @@
 - Không dùng mock DaySim trong runtime. Bản thật đã được kiểm5ngày headless/live; xem `docs/proof/phase-2/an/RELEASE-PHASE-2.md` và `tools/check_phase2_live_release.py`.
 - Cá Sấu: `gather_monsters.py` đã nối vào GatherSim sau oxy/ngạt, trước interact/catch. Config P1 không có monsters thì không tự thêm quái. Test `python3 -m unittest discover -s tests -p test_p2_an_monsters.py -v`.
 - GatherSim nhận keyword context, hp_max/oxygen_max_ticks/ngày/tiền theo giao diện P2; `_faint(cause, events)` dùng chung choke/monster. Đã nối init/update/snapshot_fish với fish_initial số8 của Duy, giữ nhánh list P1 khi chạy cấu hình cũ.
+
+## Phase 3 — nghiệm thu gather/runner của Ân
+- Theo `docs/plan-p3-p4.md`, Trung giữ migration runtime; Ân giữ `tests/test_p3_an.py` và `docs/proof/phase-3/an/`.
+- Kiểm bắt buộc: `AN_REQUIRE_P3=1 PYTHONPATH=tests:. python3 -m unittest discover -s tests -p test_p3_an.py -v`. Khi manifest1.2, test tự chạy; skip trên manifest1.1 không chứng minh P3 đạt.
+- Giữ thứ tự nhặt của giỏ cho LIFO; sort bản sao khi xuất kho/phát spoiled. Không làm tròn fresh qua ngưỡng 30. Gate tag và kết quả thực tế: `docs/proof/phase-3/an/HANDOFF.md`.
