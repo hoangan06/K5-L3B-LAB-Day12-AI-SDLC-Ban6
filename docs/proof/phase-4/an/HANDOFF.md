@@ -14,7 +14,19 @@ Nhánh `p4/an`. Phân công: `docs/PHAN-CONG-PHASE-4.md`.
 
 ## Kiểm tra
 
-Các log trong thư mục này là kết quả chạy, không dùng số liệu mẫu. `acceptance.txt` là test riêng; `regression.txt` là lần regression cuối; đọc kết luận cuối log. Khi có kết quả mới sẽ cập nhật phần bàn giao.
+Code gameplay kiểm trên `2f3f5b6` (đã gộp Duy `6a445b8` và main `2ff2be1`); các cập nhật sau đó thuộc tài liệu, đóng gói và test packaging, không thay gameplay.
+
+| Kiểm tra | Kết quả / bằng chứng |
+|---|---|
+| Regression P1–P4 | **266/266 đạt, không skip**, `regression.txt` |
+| Test riêng Ân | **9/9 đạt**, `acceptance.txt`; chạy lại sau sửa launcher/package metadata |
+| Gather → file → quán | PASS contract1.3, `smoke.txt` |
+| Tất định | JSONL/kho lặp từng byte, `determinism.txt` |
+| LiveGame/HTTP5ngày | PASS, `live-five-days.txt` và `live-five-summary.json`; chạy engine thật nhanh hơn đồng hồ, không sửa luật |
+| Soak thật10ngày ×2 | days_completed10, crashes0, đủ10results; hai lần cùngseed7 gameplay giống nhau; `soak-1.json`, `soak-2.json`, `soak-check.json` |
+| ZIP trong thư mục riêng | `package-build.txt`, `package-check.json`: kiểm hash, import đúng source giải nén, headless day và GUI HTTP/canvas/menu trên Linux WSL; không tuyên bố đã chơi bằng mắt/clone sạch |
+
+Các log là kết quả thật. Gói candidate dựng từ working tree; BUILD-INFO ghi commit nền, trạng thái dirty và hash nội dung thực tế, không giả là gói từ commit sạch. Khi phát hành phải tạo lại từ commit bàn giao. Các artifact ZIP ở dist/ không commit vào Git.
 
 Lần đầu test CLI của AI đọc dòng đầu JSONL như snapshot, nhưng day có event khởi tạo trước snapshot; đã sửa test chọn đúng type=snapshot. Không đổi thứ tự output để phục vụ test.
 
@@ -26,16 +38,20 @@ Test P3 của Ân từng phát hiện JSONL khác file kho vì làm tròn fresh.
 session = Session("day", tuning, {}, seed, days=10, soak=True)
 ```
 
-Adapter của Ân đã sẵn sàng. DaySim cần nhận keyword soak=True, cho N ngày, chọn kế hoạch modulo5 và giữ một allocator/Streams. Duy giữ `completed_results` lấy lúc Shop đóng và module `chonoi.soak`; xem API đã chốt trong phân công. Unit test adapter dùng mock constructor để kiểm truyền tham số, **không dùng nó làm bằng chứng đã chạy đủ10ngày**.
+Adapter của Ân đã sẵn sàng và **đã tích hợp DaySim/soak thật của Duy `6a445b8`**. Hai lệnh CLI10ngày đã đạt, khác với unit test mock constructor chỉ kiểm truyền tham số. Duy tiếp tục giữ DaySim/soak và ma trận QA.
 
 ## Còn phải chốt trước phase-4 / Release
 
-- Tích hợp module soak/DaySim10ngày của Duy, chạy lệnh manifest thật và kiểm cùng seed hai lần.
+- Soak đã kiểm xong trên bản tích hợp; gửi các log ở trên cho Duy cập nhật AC-P4-01/05/06 trong ma trận (tránh sửa đè file Duy đang giữ).
 - Đức kiểm lại load_ms tính từ lúc khởi chạy và chơi thật ba cảnh báo ở tương phản cao trên bản tích hợp. Kết quả nhánh cũ không thay nghiệm thu cuối.
-- Trung bàn giao LICENSE/release notes, retro/AI log, và các file dùng chung. Ân không tự đoán license cho source/tài sản.
+- Release notes/CREDITS/retro mới của Trung đã gộp. **LICENSE vẫn chưa có**; nhóm cần chốt giấy phép phù hợp. Ân không tự đoán license cho source/tài sản.
 - Duy cập nhật ma trận P4 và clone sạch; cả nhóm tự điền phản tư. Ân có file `docs/members/hoangan06.md`.
 - Tạo lại gói từ code bàn giao, kiểm GUI trong gói, rồi tag phase-4 và Release v1.0.0 cùng SHA main. Chưa tạo tag/Release P4 khi các bước này còn thiếu.
 
 ## Dòng AI log gửi Trung tổng hợp
 
-Ân — OpenAI Codex — P4 loader1.3/Session soak, version gates, CLI tests, README và packaging. Chưa đo token/chi phí. AI từng đọc event đầu JSONL thành snapshot và viết phép so fresh quá chặt; phát hiện bằng chạy CLI thật, sửa test theo contract, không đổi runtime để né test.
+Ân — OpenAI Codex — P4 loader1.3/Session soak, version gates, CLI tests, README, packaging và tích hợp soak Duy. Chưa đo token/chi phí. AI từng đọc event đầu JSONL thành snapshot; phát hiện bằng chạy CLI thật và sửa test chọn đúng type. Test bàn giao fresh bằng tuyệt đối được giữ sau khi Trung sửa serializer, không đổi runtime để né test.
+
+## Tag P3 đã xử lý trong lượt này
+
+Theo yêu cầu riêng của Ân, đã kiểm worktree sạch main `04cd262`: 232 test đạt, smoke v1.2 và tất định đạt; gắn/đẩy annotated tag `phase-3` tại commit đó. Bằng chứng: `docs/proof/phase-3/an/tag-*.txt`. Không lấy code P4 để gắn tag P3.

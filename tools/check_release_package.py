@@ -79,7 +79,8 @@ def check(archive_path):
             server.stdout.close()
         return {"status": "PASS", "platform": platform.platform(), "python": platform.python_version(),
                 "archive_sha256": hashlib.sha256(Path(archive_path).read_bytes()).hexdigest(),
-                "source_commit": metadata["source_commit"], "files_checked": len(metadata["files_sha256"]),
+                "source_commit": metadata["source_commit"], "working_tree_dirty": metadata.get("working_tree_dirty"),
+                "files_checked": len(metadata["files_sha256"]),
                 "isolated_import": True, "headless_day": True, "gui_http": True,
                 "missing_release_inputs": metadata["missing_release_inputs"]}
 

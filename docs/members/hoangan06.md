@@ -4,4 +4,4 @@ Tôi phụ trách gather/oxy/ngất, Session/pause/input và tích hợp các ph
 
 Bằng chứng: `tests/test_p3_an.py`, `tests/test_p4_an.py`, `docs/proof/phase-3/an/`, `docs/proof/phase-4/an/`; commit P3 `163b50f`, phân công P4 `8e7ac88`.
 
-AI từng đòi JSONL và file kho bằng tuyệt đối ở số thực, rồi đọc dòng event đầu lượt day như snapshot. Tôi kiểm bằng CLI thật, sửa phép so theo dung sai contract và chọn snapshot theo type. Bài học: test cũng cần được review theo đề, không coi mọi test đỏ là runtime sai. Khi test skip do version, phải ghi rõ chưa nghiệm thu; khi gói còn thiếu đầu vào, không công bố đã phát hành.
+AI từng đọc dòng event đầu lượt day như snapshot. Tôi kiểm bằng CLI thật và sửa test chọn snapshot theo type. Test fresh phát hiện serializer làm tròn sai bàn giao; Trung sửa serializer, tôi giữ lại phép so bằng tuyệt đối. Bài học: review cả test lẫn runtime theo đề; test skip chưa phải nghiệm thu. Khi gói còn thiếu đầu vào, không công bố đã phát hành.

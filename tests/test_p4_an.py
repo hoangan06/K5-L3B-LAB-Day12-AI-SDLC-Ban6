@@ -113,16 +113,21 @@ class P4Package(unittest.TestCase):
             folder = Path(temp)
             source = folder / "source"
             for name in ("README.md", "game.contract.json", "chonoi/live.py", "chonoi/web/index.html",
-                         "chonoi/__pycache__/live.pyc", ".env", "node_modules/module/index.js"):
+                         "chonoi/__pycache__/live.pyc", ".env", "node_modules/module/index.js",
+                         "tools/choi-game.command"):
                 path = source / name
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("test", encoding="utf-8")
+            (source / "tools/choi-game.command").write_bytes(b"#!/bin/bash\r\necho game\r\n")
             destination = folder / "game.zip"
             result = build_archive(source, destination)
             with zipfile.ZipFile(destination) as archive:
                 names = archive.namelist()
                 self.assertIn("chonoi-v1.0.0/chonoi/live.py", names)
                 self.assertIn("chonoi-v1.0.0/BUILD-INFO.json", names)
+                launcher = "chonoi-v1.0.0/tools/choi-game.command"
+                self.assertNotIn(b"\r", archive.read(launcher))
+                self.assertEqual((archive.getinfo(launcher).external_attr >> 16) & 0o777, 0o755)
                 self.assertFalse(any(".env" in name or "node_modules" in name or "__pycache__" in name for name in names))
             self.assertIn("LICENSE", result["missing_release_inputs"])
             with self.assertRaises(FileExistsError):

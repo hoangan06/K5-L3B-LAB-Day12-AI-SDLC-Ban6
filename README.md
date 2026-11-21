@@ -61,7 +61,7 @@ python3 tools/package_release.py --out dist/chonoi-v1.0.0.zip
 
 Script không ghi đè ZIP đã có. Gói có `BUILD-INFO.json` ghi commit nguồn và hash từng file; chỉ lấy source/docs, bỏ cache và môi trường cục bộ. Nếu còn thiếu đầu vào phát hành, script ghi rõ và gói chỉ là **ứng viên**, chưa phải Release hoàn chỉnh.
 
-Trạng thái ứng viên P4: module soak10ngày đang chờ Duy tích hợp; LICENSE và release notes chờ Trung bàn giao. Benchmark của Đức đang được kiểm lại mốc tải từ khởi chạy. Không coi các báo cáo của nhánh cũ là kết quả nghiệm thu bản1.3; xem `docs/proof/phase-4/an/HANDOFF.md` trước khi phát hành.
+Trạng thái ứng viên P4: soak10ngày đã được tích hợp và kiểm hai lần cùng seed; LICENSE còn chờ nhóm chốt. Benchmark của Đức cần đo lại trên giao diện cuối và kiểm mốc tải từ khởi chạy. Không coi các báo cáo của nhánh cũ là kết quả nghiệm thu bản1.3; xem `docs/proof/phase-4/an/HANDOFF.md` trước khi phát hành.
 
 Bật cả phần sáng tạo (đền Bà Thủy, Mãng Xà Vương, miếu Cá Ông; chỉ ở live, headless không đổi): `python3 -m chonoi.live --mode day --days 5 --creative`. Trên macOS có thể bấm đúp `tools/choi-game.command` (mở trình duyệt ở cổng 8800). Icon pixel cho launcher: `python3 tools/icon/make_icon.py`.
 
@@ -73,7 +73,7 @@ Ngoài phần đề yêu cầu, nhóm được **thêm** nhân vật, loài cá/
 
 ## Sáng tạo của nhóm
 
-Trạng thái: **đề xuất, chưa cài vào game**. Bản đang chạy chỉ có phần lõi theo đề; headless không có phần thêm nào.
+Phần sáng tạo đã được nhóm nối vào live với cờ `--creative`, mặc định tắt; headless giữ phần lõi. Trạng thái kiểm và giới hạn: `docs/ideas/creative-impl-notes.md`. Các ý tưởng chưa triển khai vẫn là đề xuất.
 
 - Ý tưởng và nguồn tham khảo: [`docs/ideas/sang-tao-trung.md`](docs/ideas/sang-tao-trung.md).
   - Thẻ truyền thuyết: dấu **?** trên vật, món, quái; bấm để đọc chuyện kể kèm nguồn; mở thẻ dùng nút `pause` lõi.

@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "python": "3.14.4",
+  "archive_sha256": "c27d41b3889f61a44842dcf21badc147f662e517f9ef32c6d8421ba535d025a8",
+  "source_commit": "2f3f5b6647e94ec9a97c3b5eaa67d95fa02ff683",
+  "files_checked": 209,
+  "isolated_import": true,
+  "headless_day": true,
+  "gui_http": true,
+  "missing_release_inputs": [
+    "LICENSE"
+  ]
+}

@@ -40,16 +40,24 @@ def build_archive(root, destination):
     for required in ("README.md", "game.contract.json", "chonoi/live.py", "chonoi/web/index.html"):
         if not (root / required).is_file():
             raise ValueError(f"thiếu file chạy GUI: {required}")
-    entries = [(relative.as_posix(), path.read_bytes()) for relative, path in source_files(root)]
+    entries = []
+    for relative, path in source_files(root):
+        data = path.read_bytes()
+        if path.suffix in (".command", ".sh"):
+            data = data.replace(b"\r\n", b"\n")  # gói dựng trên Windows vẫn chạy launcher Unix
+        entries.append((relative.as_posix(), data))
     paths = {name for name, _ in entries}
     missing = [name for name in ("LICENSE", "CREDITS.md", "CHANGELOG.md", "tools/bench.mjs",
                                 "chonoi/soak.py", "docs/release-notes-v1.0.0.md") if name not in paths]
     try:
         revision = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, capture_output=True,
                                   text=True, check=True).stdout.strip()
+        dirty = bool(subprocess.run(["git", "status", "--porcelain"], cwd=root, capture_output=True,
+                                    text=True, check=True).stdout.strip())
     except (OSError, subprocess.CalledProcessError):
         revision = None
-    metadata = {"source_commit": revision, "missing_release_inputs": missing,
+        dirty = None
+    metadata = {"source_commit": revision, "working_tree_dirty": dirty, "missing_release_inputs": missing,
                 "files_sha256": {name: hashlib.sha256(data).hexdigest() for name, data in entries}}
     entries.append(("BUILD-INFO.json", (json.dumps(metadata, ensure_ascii=False, indent=2) + "\n").encode("utf-8")))
     destination.parent.mkdir(parents=True, exist_ok=True)
