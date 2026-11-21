@@ -70,6 +70,25 @@
   .warnings:empty { padding: 0; border: 0; }
   #contrast-toggle { position: absolute; z-index: 3; right: 14px; top: 76px; padding: 8px 14px; border: 1px solid #83b9ad; border-radius: 8px; background: #25483f; color: #fff; font: inherit; font-size: 16px; cursor: pointer; }
   #contrast-toggle:focus-visible { outline: 3px solid #ffe4a1; }
+  /* HUD theo đề (TICKET-02 "Menu, pause và HUD"): oxy < 25% nhấp nháy, thời gian <= 30 s đổi màu, viền tím + "Thủy quái!", "Hết hơi!" */
+  @keyframes blink { 50% { opacity: .35; } }
+  .bar.low { animation: blink .6s steps(2) infinite; }
+  .warn { color: #ff6b5a; animation: blink .8s steps(2) infinite; }
+  .edge { position: absolute; inset: 0; z-index: 2; pointer-events: none; box-shadow: inset 0 0 0 10px #9b4dff, inset 0 0 60px 14px #9b4dffaa; }
+  .alert { position: absolute; z-index: 4; left: 50%; top: 130px; transform: translateX(-50%); text-align: center; pointer-events: none; font-size: 32px; letter-spacing: 1px; text-shadow: 2px 2px 0 #000; }
+  .alert span { display: block; padding: 2px 18px; margin-bottom: 4px; }
+  .alert .mon { background: #4b1f8acc; color: #fff; border: 3px solid #b98cff; }
+  .alert .oxy { background: #7a1a14cc; color: #fff; border: 3px solid #ff8a80; }
+  .notice { position: absolute; z-index: 3; left: 50%; transform: translateX(-50%); max-width: min(92vw, 820px); padding: 8px 16px; background: #5a3a0ee6; border: 3px solid #ffd88e; color: #fff6df; text-align: center; }
+  .day-hud .bar { margin-right: 10px; }
+  .need-hud { position: absolute; z-index: 2; left: 14px; width: min(19rem, calc(100% - 28px)); box-sizing: border-box; padding: 8px 14px; background: #2a1a0cf2; border: 4px solid #e0a85a; color: #fff6df; text-shadow: 1px 1px 0 #000; }
+  .need-hud h2 { margin: 0 0 6px; font-size: inherit; color: #ffe4a1; }
+  .need-hud ul { margin: 0; padding: 0; list-style: none; }
+  .need-hud li { padding: 2px 0; display: flex; align-items: center; gap: 8px; }
+  .need-hud i { width: 16px; height: 16px; border: 2px solid #1b1208; flex: 0 0 auto; }
+  .need-hud li.done { color: #9be37a; }
+  .high-contrast .need-hud { background: #000; color: #fff; border-color: #fff; }
+  .day-hud .chip { display: inline-block; margin-right: 16px; }
   .high-contrast canvas { filter: contrast(1.45); }
   .high-contrast :is(.hud, .foot, .day-hud, .day-card, .warnings, .freshness-hud, .lore-card, .intro-card, button) { background: #000; color: #fff; border-color: #fff; }
   .high-contrast .day-overlay { background: #000c; }
@@ -84,6 +103,10 @@
   <div><p id="day-title"></p><p id="day-details"></p></div>
   <button id="day-pause" type="button">Tạm dừng</button>
 </header>
+<section class="need-hud" id="need-hud" aria-labelledby="need-title" hidden>
+  <h2 id="need-title">Cần lấy hôm nay</h2>
+  <ul id="need-items"></ul>
+</section>
 <section class="freshness-hud" id="freshness-hud" aria-labelledby="freshness-title" hidden>
   <h2 id="freshness-title"></h2>
   <ul id="freshness-items"></ul>
@@ -91,6 +114,9 @@
 <div class="banner" id="banner" hidden></div>
 <div class="end" id="end" hidden></div>
 <footer class="foot" id="foot" hidden></footer>
+<div class="edge" id="edge" hidden></div>
+<div class="alert" id="alert"></div>
+<div class="notice" id="notice" hidden></div>
 <aside class="warnings" id="warnings" role="status" aria-atomic="true"></aside>
 <button id="contrast-toggle" type="button" aria-pressed="false">Tương phản cao</button>
 <div class="day-overlay" id="day-overlay" hidden><section class="day-card" id="day-card"></section></div>
@@ -101,7 +127,7 @@
   <div class="intro-cols">
     <div>
       <h3>Vòng chơi</h3>
-      <ol><li>Sáng (05:30 – 11:00): lặn hái, bắt cá, tránh Cá Sấu Năm Chèo, cập bến.</li><li>Tối (17:00 – 22:00): nấu, bưng món, khách trả tiền.</li><li>Cửa hàng: dùng tiền nâng cấp Oxy, Máu.</li></ol>
+      <ol><li>Sáng (05:30 – 11:00): lặn hái, bắt cá, tránh Cá Sấu Năm Chèo, cập bến.</li><li>Chiều tối (13:00 – 18:30): nấu, bưng món, khách trả tiền.</li><li>Cửa hàng: dùng tiền nâng cấp Oxy, Máu.</li></ol>
       <h3>Điều khiển</h3>
       <p>WASD / mũi tên: di chuyển · E: hái, cập bến, tương tác · Space: bắt cá · R: chơi lại · Esc: đóng thẻ.</p>
       <p>Cửu Long (giả thuyết của nhà nghiên cứu): chín cửa sông ví như chín rồng.</p>
@@ -170,6 +196,15 @@ function renderWarnings() {
   }
   const text = active.join("\n");
   if (warnings.textContent !== text) warnings.textContent = text;
+  // chữ lớn + viền tím (đề: "Thủy quái!" cùng viền tím khi có thủy quái gần; "Hết hơi!" khi oxy cạn); giữ nguyên cảnh báo P4 ở trên
+  const big = [];
+  const live = !offline && !snap.finished && !snap.ui?.screen && snap.state !== "paused" && (snap.phase || snap.mode) === "gather" && !introOpen;
+  const near = live && snap.monsters?.some(monster => monsterNear(monster, snap.player, snap.meta?.monsters?.species));
+  if (near) big.push(["mon", "Thủy quái!"]);
+  if (live && snap.player?.oxygen_max_ticks > 0 && snap.player.oxygen_ticks <= 0) big.push(["oxy", "Hết hơi!"]);
+  document.getElementById("edge").hidden = !near;
+  const alertEl = document.getElementById("alert"), sigA = big.map((b) => b[1]).join("|");
+  if (alertEl.dataset.sig !== sigA) { alertEl.dataset.sig = sigA; alertEl.replaceChildren(...big.map(([c, t]) => { const e = document.createElement("span"); e.className = c; e.textContent = t; return e; })); }
 }
 
 const QS = new URLSearchParams(location.search);
@@ -389,6 +424,30 @@ function availableStock(snapshot) {
   }
   return tallyLabel(m, true);
 }
+// Kho khả dụng dạng Map kind -> số (không tính hàng đã giữ cho khách và hàng ươn).
+function availableMap(snapshot) {
+  if (Array.isArray(snapshot.stock) && snapshot.stock.some((it) => it && typeof it === "object")) {
+    const res = reservedIds(snapshot), m = new Map();
+    for (const it of snapshot.stock) if (!res.has(it.id) && !isStaleVal(it.fresh)) m.set(it.kind, (m.get(it.kind) || 0) + 1);
+    return m;
+  }
+  const m = new Map([...tally(snapshot.stock)].map(([k, e]) => [k, e.n]));
+  for (const c of snapshot.customers || []) if (!Array.isArray(c.reserved)) for (const [k, n] of Object.entries(c.reserved || {})) m.set(k, (m.get(k) || 0) - n);
+  return m;
+}
+// Món nấu được từ kho khả dụng (theo công thức snap.meta.menu; day: chỉ món trong kế hoạch ngày). Trả [[dish_id, số suất]] hoặc null nếu thiếu công thức.
+function cookable() {
+  const menu = snap.meta?.menu;
+  if (!menu) return null;
+  const have = availableMap(snap), plan = snap.day_plan?.dishes, out = [];
+  for (const [id, d] of Object.entries(menu)) {
+    if (plan && !(id in plan)) continue;
+    const n = Math.min(...Object.entries(d.recipe).map(([k, need]) => Math.floor((have.get(k) || 0) / need)));
+    if (n > 0) out.push([id, n]);
+  }
+  return out;
+}
+const cookableLabel = (c) => (c === null ? "không rõ" : c.length ? c.map(([id, n]) => `${dishName(id)} ×${n}`).join(", ") : "không có");
 function fmtTime(ticks) {
   const s = Math.ceil(ticks / 60);
   return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
@@ -703,6 +762,12 @@ function custLook(id) {
 
 // ---------- nhân vật bơi (Út Sen), nhìn ngang ----------
 const UT_SHIRT = "#1f9d8a", UT_SCARF = ["#8c6a3a", "#efe6cf"];
+// Thúng/giỏ tre đeo sau lưng ~0.7 m = 6 px rộng, 5 px cao; đầy dần theo fill (0..1) = giỏ hiện có / sức chứa.
+function thung(cx, cy, fill) {
+  const n = Math.round(clamp01(fill) * 5);
+  R(cx - 3, cy - 4, 6, 5, "#a8803e"); R(cx - 3, cy - 4, 6, 1, "#e6c27a"); R(cx - 3, cy - 2, 6, 1, "#7a5a28"); R(cx - 2, cy, 4, 1, "#5a3e18"); R(cx - 1, cy - 4, 1, 5, "#c8a45a");
+  for (let i = 0; i < n; i++) { const c = ["#4f9a3c", "#e8a02a", "#d6e6f2", "#f09ac0", "#7c9a52"][i]; R(cx - 3 + i, cy - 6 + (i % 2), 2, 2, c); }   // hàng nhô khỏi miệng thúng
+}
 function swimmer(x, y, o) {
   // mode: 'stand' (trên bến) | 'surf' (bơi mặt nước) | 'under' (lặn). face = ±1. moving, pitch -1..1
   const f = o.face, t = T, fr = Math.floor(t * 8) % 4;
@@ -719,9 +784,13 @@ function swimmer(x, y, o) {
     RR(-11, 1 - kp - p, 6, 2, PANTS); RR(-13, 1 - kp - p, 2, 2, SKIN);
     arm(2, mix(UT_SHIRT, "#000000", 0.25));
     RR(-5, -2, 9, 4, UT_SHIRT); RR(-5, 1, 9, 1, "#00000033"); RR(0, -2, 1, 4, "#ffffff55");
-    RR(-8, -4 + 0, 5, 1, "#e6c27a"); RR(-7, -5, 3, 1, "#d9b46a"); RR(-8, -3, 3, 1, "#b98a45");   // nón lá đeo sau lưng
+    thung(x - f * 8, y + 1, o.fill);   // thúng đeo sau lưng (thay nón lá)
+    RR(-4, -2, 4, 1, "#7a5a28");   // dây đeo thúng
     for (let i = 0; i < 2; i++) RR(3 + i * 2 - 2, -3 + 1, 1, 2, i ? UT_SCARF[0] : UT_SCARF[1]);
     RR(4, -4 + p, 4, 4, SKIN); RR(4, -5 + p, 4, 1, HAIR); RR(3, -6 + p, 2, 2, HAIR); RR(7, -3 + p, 1, 1, "#222"); RR(7, -1 + p, 1, 1, SKIN_D);
+    // ống thở (snorkel) cam: ống đứng ~0.45 m = 4 px nhô lên trên đầu, cong về trước; mặt nạ xanh nhạt trên mắt
+    RR(5, -6 + p, 3, 2, "#9ad8ec"); RR(7, -4 + p, 1, 1, "#e8f8ff");
+    RR(5, -11 + p, 1, 6, "#ee8a2a"); RR(5, -12 + p, 3, 1, "#ee8a2a"); RR(7, -12 + p, 1, 2, "#c8601a");
     arm(0, UT_SHIRT);
     if (o.moving || Math.sin(t * 4) > 0.6) for (let i = 0; i < 2; i++) { const tt = (t * 0.8 + i * 0.5) % 1; A(0.8 * (1 - tt), () => PIX(x + f * (5 + i * 2), y - 6 - tt * 12 + p, "#f4e6c8")); }
   } else if (o.mode === "surf") {   // thân trên nhô khỏi mặt nước, tay quạt ngang
@@ -731,6 +800,8 @@ function swimmer(x, y, o) {
     RS(-3, -9, 6, 6, UT_SHIRT); RS(0, -9, 1, 6, "#ffffff55");
     for (let i = 0; i < 6; i++) RS(-3 + i, -10, 1, 1, i % 2 ? UT_SCARF[1] : UT_SCARF[0]);
     RS(-2, -14, 5, 4, SKIN); RS(0, -12, 1, 1, "#222"); RS(2, -12, 1, 1, "#222"); RS(0, -10, 3, 1, SKIN_D);
+    RS(-1, -13, 4, 2, "#9ad8ec"); RS(3, -19, 1, 7, "#ee8a2a"); RS(3, -20, 3, 1, "#ee8a2a"); RS(5, -20, 1, 2, "#c8601a");   // mặt nạ + ống thở
+    thung(x - f * 9, yy - 3, o.fill);
     RS(-5, -15, 11, 1, "#b98a45"); RS(-4, -16, 9, 1, "#e6c27a"); RS(-3, -17, 7, 1, "#d9b46a"); RS(-2, -18, 5, 1, "#e6c27a"); RS(-1, -19, 3, 1, "#d9b46a"); RS(0, -20, 1, 1, "#e6c27a");
     const sw = o.moving ? [[6, -4], [8, -2], [5, -1], [2, -3]][fr] : [3, -2], sw2 = o.moving ? [[6, -4], [8, -2], [5, -1], [2, -3]][(fr + 2) % 4] : [-3, -2];
     RS(sw[0], sw[1], 4, 2, UT_SHIRT); RS(sw[0] + 3, sw[1], 2, 2, SKIN);
@@ -739,7 +810,9 @@ function swimmer(x, y, o) {
     A(0.5, () => R(x - 12 + Math.round(Math.sin(t * 4) * 2), yy + 2, 24, 1, "#f2dfb8"));
     if (o.moving) for (let i = 0; i < 3; i++) PIX(x - f * (8 + i * 3), yy + 1 + (i % 2), "#f2dfb8");
   } else {   // đứng trên bến
+    thung(x - f * 7, y - 3, o.fill);
     personQ(x, y, { dir: "s", flip: f < 0, step: o.moving ? fr : -1, shirt: UT_SHIRT, hat: "non", scarf: UT_SCARF });
+    R(x + f * 2 - (f < 0 ? 1 : 0), y - 18, 1, 3, "#ee8a2a"); R(x + f * 2 - (f < 0 ? 1 : 0), y - 19, 2, 1, "#ee8a2a");   // ống thở gài ở nón
   }
 }
 
@@ -847,7 +920,8 @@ function drawGather(w, h, topCss, botCss) {
   R(dx - 14, surfY - 3, 28, 3, "#8d6e4b"); R(dx - 14, surfY - 3, 28, 1, "#b88b55");
   for (const px of [dx - 12, dx - 4, dx + 4, dx + 11]) R(px, surfY, 2, 12, "#4a3220");
   for (let i = -3; i <= 3; i++) R(dx + i * 4, surfY - 3, 1, 3, "#6b4a2a");
-  L("Bến (E)", dx, by(0) + 4 * PX * 0, { size: 18, dy: -26 });
+  const pp = snap.player, atDock = pp && Math.hypot(pp.pos[0] - dp[0], pp.pos[1] - dp[1]) <= dr && pp.pos[1] <= (meta.surface_depth ?? 0.5);
+  L(atDock ? "Cập bến (E)" : "Bến (E)", dx, by(0), { size: 18, dy: -26, color: atDock ? "#ffe680" : undefined });   // gợi ý cập bến khi đến gần
   if (DEBUG) A(0.5, () => disc(dx, by(dp[1]), Math.round(dr * U), "#ffe69633"));
   // nút hái
   (snap.nodes || []).forEach((n) => {
@@ -862,7 +936,7 @@ function drawGather(w, h, topCss, botCss) {
       }
     });
     if (!ready && n.regrow_ticks) L(Math.ceil(n.regrow_ticks / 60) + "s", x, y, { size: 18, dy: -28 });
-    if (DEBUG) L(n.id, x, y, { size: 14, dy: 22 });
+    if (DEBUG) L(n.id, x, y, { size: 18, dy: 22 });
   });
   const markedKinds = new Set();  // một dấu ? cho mỗi loại cá
   (snap.fish || []).forEach((fh) => {
@@ -870,7 +944,7 @@ function drawGather(w, h, topCss, botCss) {
     const face = Math.cos(rad) < -0.1 ? -1 : (Math.cos(rad) > 0.1 ? 1 : faceOf(fh.id, fh.pos));
     const ip = interp("f" + fh.id, fh.pos), fx = bx(ip.pos[0]), fy = by(ip.pos[1]);
     fishSpr(fx, fy, fh.kind, face, T, fh.heading_deg, fh.id);
-    if (DEBUG) L(fh.id, fx, fy, { size: 14, dy: -14 });
+    if (DEBUG) L(fh.id, fx, fy, { size: 18, dy: -14 });
     if (KIND_LORE[fh.kind] && !markedKinds.has(fh.kind)) { markedKinds.add(fh.kind); Q(KIND_LORE[fh.kind], fx, fy, { dy: -20 }); }
   });
   trackMonsters();
@@ -892,6 +966,12 @@ function drawGather(w, h, topCss, botCss) {
   // người chơi
   const p = snap.player;
   let under = false;
+  if (p && meta.interact_radius && p.pos[1] <= (meta.surface_depth ?? 0.5)) {   // gợi ý hái khi nút sẵn sàng nằm trong bán kính
+    (snap.nodes || []).forEach((n) => { if (n.ready !== false && Math.hypot(p.pos[0] - n.pos[0], p.pos[1] - n.pos[1]) <= meta.interact_radius) L("Hái (E)", bx(n.pos[0]), by(n.pos[1]), { size: 18, dy: -50, color: "#ffe680" }); });
+  }
+  if (p && meta.catch_radius && !(p.catch_cd_ticks > 0) && p.pos[1] > (meta.surface_depth ?? 0.5) && (snap.fish || []).some((fh) => Math.hypot(p.pos[0] - fh.pos[0], p.pos[1] - fh.pos[1]) <= meta.catch_radius)) {
+    L("Bắt cá (Space)", bx(p.pos[0]), by(p.pos[1]), { size: 18, dy: -44, color: "#ffe680" });
+  }
   if (p) {
     const ipp = interp("p", p.pos), px = bx(ipp.pos[0]), py = by(ipp.pos[1]);
     under = p.at_surface === undefined ? p.pos[1] > 0.5 : !p.at_surface;
@@ -902,7 +982,7 @@ function drawGather(w, h, topCss, botCss) {
     const mode = under ? "under" : (nearDock && !moving ? "stand" : "surf");
     if (meta.catch_radius && under) A(0.3, () => { for (let a = 0; a < 24; a++) PIX(px + Math.cos(a / 24 * 6.283) * meta.catch_radius * U, py + Math.sin(a / 24 * 6.283) * meta.catch_radius * U, "#fff"); });
     if (meta.interact_radius && !under) A(0.4, () => { for (let a = 0; a < 24; a++) PIX(px + Math.cos(a / 24 * 6.283) * meta.interact_radius * U, py + Math.sin(a / 24 * 6.283) * meta.interact_radius * U, "#fff"); });
-    if (!(p.invuln_ticks > 0 && Math.floor(snap.tick / 5) % 2)) swimmer(px, mode === "stand" ? surfY - 3 : py, { mode, face, moving, pitch: p.vel ? clamp01(Math.abs(p.vel[1]) / (meta.swim_speed || 4)) * Math.sign(p.vel[1]) : 0 });
+    if (!(p.invuln_ticks > 0 && Math.floor(snap.tick / 5) % 2)) swimmer(px, mode === "stand" ? surfY - 3 : py, { mode, face, moving, fill: snap.hold_capacity ? itemList(snap.hold).length / snap.hold_capacity : 0, pitch: p.vel ? clamp01(Math.abs(p.vel[1]) / (meta.swim_speed || 4)) * Math.sign(p.vel[1]) : 0 });
   }
   ambient(clock);
   fireflies(hz, 18, byD);
@@ -925,6 +1005,7 @@ function fireflies(top, n, bottom) {   // đom đóm khi trời tối
 }
 
 // ---------- chữ nổi (+Nk, giỏ đầy) từ event, thuần trình bày ----------
+let noDishAt = -99;
 const seenEv = new Set(); let evInit = false, lastEvTick = -1; const floatsList = [];
 function scanEvents() {
   if (!snap) return;
@@ -937,6 +1018,7 @@ function scanEvents() {
     if (!evInit) continue;
     if (e.name === "paid") floatsList.push({ born: T, kind: "paid", text: `+${e.data.amount}k`, table: e.data.table_id });
     else if (e.name === "hold_full") floatsList.push({ born: T, kind: "player", text: "Giỏ đầy!" });
+    else if (e.name === "no_dish") noDishAt = T;   // sim: khách ghé nhưng kho không đủ nguyên liệu món nào -> không ngồi (đúng luật, chỉ thông báo)
     else if (e.name === "faint" && e.data && e.data.cause === "monster") openLore("ca_sau", true);   // bảng "ngất vì…" (chỉ có lore cho Cá Sấu; ngạt chưa có nguồn)
   }
   evInit = true;
@@ -1233,8 +1315,25 @@ function clockChip() {
   const i = document.createElement("span"); i.className = "ico " + (clock.moon && clock.hour >= SUNSET ? "moon" : "sun"); s.appendChild(i);
   let t = `${clock.label} · còn ${clock.left}`;
   if (clock.moon) { const a = moonAge(); t += ` · ${moonName(a)} (ngày ${Math.floor(a) + 1})`; }
+  if (snap.time_left_ticks <= 1800 && snap.time_left_ticks > 0) s.classList.add("warn");   // đề: thời gian đổi màu khi còn <= 30 s
   s.appendChild(document.createTextNode(t));
   return s;
+}
+// Thanh/chip HUD sáng dùng chung cho gather riêng và day sáng: oxy (đổi màu + nhấp nháy < 25%), Máu, độ sâu, hồi bắt.
+function gatherChips(sig) {
+  const p = snap.player || {}, nodes = [];
+  if (p.oxygen_ticks !== undefined && p.oxygen_max_ticks) {
+    const low = lowOxygen(p), b = barChip("Oxy " + Math.ceil(p.oxygen_ticks / 60) + "s", p.oxygen_ticks / p.oxygen_max_ticks, low ? "#ef5350" : "#4fc3f7");
+    if (low) b.classList.add("low");
+    nodes.push(b); sig.push(p.oxygen_ticks);
+  }
+  if (p.hp !== undefined && p.hp_max) {
+    nodes.push(chip("Máu " + "♥".repeat(p.hp) + "♡".repeat(Math.max(0, p.hp_max - p.hp)) + ` ${p.hp}/${p.hp_max}`, "heart")); sig.push(p.hp, p.hp_max);
+  }
+  if (p.pos) { const t = `Độ sâu ${p.pos[1].toFixed(1)} · x ${p.pos[0].toFixed(1)}`; nodes.push(chip(t, "dim")); sig.push(t); }
+  const cd = p.catch_cd_ticks > 0 ? `Hồi bắt ${(p.catch_cd_ticks / 60).toFixed(1)}s` : "Bắt: sẵn sàng";
+  nodes.push(chip(cd, "dim")); sig.push(cd);
+  return nodes;
 }
 function barChip(label, frac, color) {
   const s = document.createElement("span"); s.className = "bar";
@@ -1268,17 +1367,9 @@ function updateDom() {
     const nodes = [clockChip()], sig = [clock.label, clock.left, phase];
     const p = snap.player;
     if (phase === "gather") {
-      if (p && p.oxygen_ticks !== undefined && p.oxygen_max_ticks) {
-        const low = lowOxygen(p);
-        nodes.push(barChip("Oxy " + Math.ceil(p.oxygen_ticks / 60) + "s", p.oxygen_ticks / p.oxygen_max_ticks, low ? "#ef5350" : "#4fc3f7")); sig.push(p.oxygen_ticks);
-      }
-      if (p && p.hp !== undefined && p.hp_max) {
-        const hh = chip("♥".repeat(p.hp) + "♡".repeat(Math.max(0, p.hp_max - p.hp)), "heart"); nodes.push(hh); sig.push(p.hp, p.hp_max);
-      }
-      if (p && p.catch_cd_ticks > 0) { nodes.push(chip("hồi chiêu bắt " + (p.catch_cd_ticks / 60).toFixed(1) + "s", "dim")); sig.push(p.catch_cd_ticks); }
-      if (p && p.pos) { const t = `x ${p.pos[0].toFixed(1)}  d ${p.pos[1].toFixed(1)}`; nodes.push(chip(t, "dim")); sig.push(t); }
+      nodes.push(...gatherChips(sig));
     } else {
-      const t = `Tiền ${snap.money ?? 0}k · uy tín ${(snap.reputation ?? 0).toFixed(1)} · điểm ${snap.score ?? 0}`;
+      const t = `Tiền ca ${snap.money ?? 0}k · uy tín ${(snap.reputation ?? 0).toFixed(1)} · điểm ${snap.score ?? 0}`;
       nodes.push(chip(t)); sig.push(t);
     }
     setHud(JSON.stringify(sig), nodes);
@@ -1299,6 +1390,16 @@ function updateDom() {
   const sigF = JSON.stringify(fs);
   footEl.hidden = !fn.length || (isDay && snap.ui?.screen);
   if (sigF !== footSig) { footSig = sigF; footEl.replaceChildren(...fn); }
+  // thông báo kho không đủ món (UI chỉ báo, luật do sim: khách chỉ ngồi khi có món đủ nguyên liệu khả dụng)
+  const noticeEl = document.getElementById("notice");
+  let note = "";
+  if (phase === "quan" && !snap.ui?.screen && snap.state !== "paused" && !introOpen) {
+    const ck = cookable();
+    if (T - noDishAt < 8) note = "Khách ghé nhưng kho không đủ nguyên liệu món nào — sáng mai lặn lấy thêm";
+    else if (ck && !ck.length && !(snap.customers || []).length) note = "Kho không đủ nguyên liệu món nào nên khách sẽ không ngồi — sáng mai lặn lấy thêm";
+  }
+  noticeEl.hidden = !note;
+  if (note) { noticeEl.textContent = note; noticeEl.style.top = (visibleTop() + 12) + "px"; }
   // thông báo
   const msgs = [];
   if (offline) msgs.push("Mất kết nối tới máy chủ (đã tắt chưa?)");
@@ -1358,12 +1459,13 @@ function gatherDetails() {
     `${KIND_NAME[kind] || kind} ${(held.get(kind)?.n || 0) - (held.get(kind)?.stale || 0)}/${count}`);
   const inventory = targets.join(" · ");
   const stale = [...held.values()].reduce((a, e) => a + e.stale, 0);
-  return `Giỏ ${itemList(snap.hold).length}/${snap.hold_capacity ?? 0}${stale ? ` (${stale} ươn)` : ""}${inventory ? " · " + inventory : ""}`;
+  const held2 = tallyLabel(held, true);
+  return `Giỏ ${itemList(snap.hold).length}/${snap.hold_capacity ?? 0}${held2 ? " (" + held2 + ")" : ""}${stale ? ` (${stale} ươn)` : ""}`;   // danh sách cần lấy: khung riêng #need
 }
 
 function dayStats(stats) {
   const delta = stats.reputation_change;
-  return `Ngày ${stats.day} · Phục vụ ${stats.served} · Rời bàn ${stats.left} · Thanh toán ${stats.paid} · Thu ${stats.revenue}k · Uy tín ${delta >= 0 ? "+" : ""}${delta.toFixed(1)}`;
+  return `Ngày ${stats.day} · Phục vụ ${stats.served} · Bỏ đi ${stats.left} · Thanh toán ${stats.paid} · Thu ${stats.revenue}k · Boa ${stats.tips ?? 0}k · Uy tín ${delta >= 0 ? "+" : ""}${delta.toFixed(1)}`;
 }
 
 function renderDayUI() {
@@ -1378,19 +1480,19 @@ function renderDayUI() {
   dayHud.hidden = screen === "menu" || screen === "exited";
   dayPause.hidden = Boolean(screen);
   const clk = snap.phase === "shop" ? "" : `${clock.label} · `;
+  dayTitle.className = snap.time_left_ticks > 0 && snap.time_left_ticks <= 1800 && snap.phase !== "shop" ? "warn" : "";   // đề: đổi màu khi còn <= 30 s
   dayTitle.textContent = `${clk}Ngày ${snap.day} · ${PHASE_LABEL[snap.phase]} · ${fmtTime(snap.time_left_ticks)} · Tiền ${snap.money}k · Uy tín ${snap.reputation.toFixed(1)} · Điểm ${snap.score}`;
   if (snap.phase === "gather") {
-    // day sáng: thanh Oxy + Máu (tim) như mode gather riêng (đề: HUD đủ oxy/máu/giỏ), kèm giỏ và mục tiêu nguyên liệu
-    const p = snap.player || {}, nodes = [], txt = gatherDetails(), sig = [p.oxygen_ticks, p.oxygen_max_ticks, p.hp, p.hp_max, txt];
-    if (p.oxygen_ticks !== undefined && p.oxygen_max_ticks) nodes.push(barChip("Oxy " + Math.ceil(p.oxygen_ticks / 60) + "s", p.oxygen_ticks / p.oxygen_max_ticks, lowOxygen(p) ? "#ef5350" : "#4fc3f7"));
-    if (p.hp !== undefined && p.hp_max) nodes.push(chip("Máu " + "♥".repeat(p.hp) + "♡".repeat(Math.max(0, p.hp_max - p.hp)), "heart"));
+    // day sáng: cùng HUD với gather riêng (oxy/Máu/độ sâu/hồi bắt) + giỏ theo loại + mục tiêu nguyên liệu
+    const txt = gatherDetails(), sig = [txt], nodes = gatherChips(sig);
     nodes.push(document.createTextNode(" " + txt));
     const k = JSON.stringify(sig);
     if (dayDetails.dataset.sig !== k) { dayDetails.dataset.sig = k; dayDetails.replaceChildren(...nodes); }
   } else if (snap.phase === "quan") {
     const hand = snap.hand ? dishName(snap.hand.dish_id) : "trống";
     delete dayDetails.dataset.sig;
-    dayDetails.textContent = `Kho khả dụng: ${availableStock(snap) || "trống"} · Đang cầm: ${hand}`;
+    const shift = (snap.ui?.days || []).find((d) => d.day === snap.day)?.revenue ?? 0;
+    dayDetails.textContent = `Tiền ca +${shift}k · Kho khả dụng: ${availableStock(snap) || "trống"} · Đang cầm: ${hand}`;
   } else {
     delete dayDetails.dataset.sig;
     dayDetails.textContent = `Kho còn lại: ${stockLabel(snap.stock)}`;
@@ -1417,7 +1519,7 @@ function renderDayUI() {
   } else if (screen === "day_intro") {
     nodes.push(uiText("p", planLabel()), uiButton("Bỏ qua", () => uiAction("continue")));
   } else if (screen === "evening_intro") {
-    nodes.push(uiText("p", `Kho buổi sáng: ${stockLabel(snap.stock)}`), uiText("p", planLabel()),
+    nodes.push(uiText("p", `Kho buổi sáng: ${stockLabel(snap.stock)}`), uiText("p", `Món nấu được từ kho: ${cookableLabel(cookable())}`), uiText("p", planLabel()),
       uiButton("Mở quán", () => uiAction("continue")));
   } else if (screen === "day_result") {
     const stats = days.find(entry => entry.day === snap.day);
@@ -1444,7 +1546,12 @@ function renderDayUI() {
   } else {
     if (screen === "summary") {
       for (const stats of days) nodes.push(uiText("p", dayStats(stats)));
-      nodes.push(uiText("p", `Tổng điểm: ${snap.score}`));
+      const sold = {};
+      for (const st of days) for (const [d, n] of Object.entries(st.dishes || {})) sold[d] = (sold[d] || 0) + n;
+      const top = Object.entries(sold).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0];
+      nodes.push(uiText("p", `Tổng tiền kiếm được: ${snap.earned ?? days.reduce((a, d) => a + d.revenue, 0)}k · Tiền hiện có: ${snap.money}k`),
+        uiText("p", `Tổng điểm: ${snap.score} · Uy tín: ${snap.reputation.toFixed(1)}`),
+        uiText("p", `Món bán chạy: ${top ? `${dishName(top[0])} ×${top[1]}` : "chưa phục vụ món nào"}`));
     }
     nodes.push(uiButton("Về menu", () => uiAction("menu")));
   }
@@ -1477,6 +1584,31 @@ function renderFreshness() {
   freshnessItems.replaceChildren(...(rows.length ? rows : [["Trống", ""]]).map(([label, cls]) => { const li = uiText("li", label); li.className = cls; return li; }));
 }
 
+// ---------- khung "Cần lấy" (đề: HUD sáng có danh sách cần lấy, đã lấy/cần; không tính hàng ươn) ----------
+const needHud = document.getElementById("need-hud"), needItems = document.getElementById("need-items");
+let needKey = "";
+function renderNeed() {
+  const plan = snap.day_plan?.ingredients, phase = snap.phase || snap.mode;
+  needHud.hidden = !plan || !Object.keys(plan).length || phase !== "gather" || Boolean(snap.ui?.screen) || snap.state === "paused" || introOpen || loreOpen;
+  if (needHud.hidden) return;
+  needHud.style.bottom = ((footEl.hidden ? 0 : footEl.offsetHeight) + 10) + "px";
+  const held = tally(snap.hold);
+  const rows = Object.entries(plan).map(([kind, need]) => {
+    const e = held.get(kind), got = e ? e.n - e.stale : 0;
+    return [kind, got, need];
+  });
+  const key = JSON.stringify(rows);
+  if (key === needKey) return;
+  needKey = key;
+  needItems.replaceChildren(...rows.map(([kind, got, need]) => {
+    const li = document.createElement("li"), sw = document.createElement("i"), ok = got >= need;
+    sw.style.background = kc(kind);
+    li.className = ok ? "done" : "";
+    li.append(sw, document.createTextNode(`${ok ? "✓ " : ""}${KIND_NAME[kind] || kind} ${Math.min(got, 99)}/${need}`));
+    return li;
+  }));
+}
+
 // ---------- vòng vẽ ----------
 function fit() {
   const dpr = window.devicePixelRatio || 1;
@@ -1487,7 +1619,7 @@ function fit() {
 }
 function debugLog(w, h) {
   const ev = (snap.events || []).slice(-6);
-  ev.forEach((e, i) => ctext(`t${e.tick} ${e.name} ${JSON.stringify(e.data).slice(0, 50)}`, w - 10, h - 110 - (ev.length - 1 - i) * 18, { size: 14, align: "right" }));
+  ev.forEach((e, i) => ctext(`t${e.tick} ${e.name} ${JSON.stringify(e.data).slice(0, 50)}`, w - 10, h - 110 - (ev.length - 1 - i) * 18, { size: 18, align: "right" }));
 }
 function frame() {
   requestAnimationFrame(frame);  // đặt trước để lỗi vẽ không làm dừng vòng lặp
@@ -1502,6 +1634,7 @@ function frame() {
   renderDayUI();
   updateDom();
   renderFreshness();
+  renderNeed();
   renderWarnings();
   if (introOpen) { hudEl.hidden = true; footEl.hidden = true; dayHud.hidden = true; dayOverlay.hidden = true; bannerEl.hidden = true; endEl.hidden = true; warnings.textContent = ""; }
   const topCss = visibleTop(), botCss = footEl.hidden ? 0 : footEl.offsetHeight;
@@ -1523,7 +1656,7 @@ function frame() {
       markers.push({ id: o.id, x: qx, y: qy });
       continue;
     }
-    if (s === "__bar") { const bwid = 110; pbar(X - bwid / 2, Y + 8, bwid, 24, o.frac, "#9c4541", o.text); continue; }
+    if (s === "__bar") { const bwid = 110; pbar(X - bwid / 2, Y + 8, bwid, 24, o.frac, o.frac < 0.25 ? (Math.floor(T * 3) % 2 ? "#ff3b30" : "#9c1f18") : o.frac < 0.5 ? "#e8a02a" : "#5fa04a", o.text); continue; }   // đề: đổi màu khi kiên nhẫn < 25%
     if (o.box) { ctx.fillStyle = "#ffe680"; ctx.fillRect(X - 13, Y - 18, 26, 24); ctx.strokeStyle = "#1b1208"; ctx.lineWidth = 3; ctx.strokeRect(X - 13, Y - 18, 26, 24); }
     if (o.alpha !== undefined) ctx.globalAlpha = o.alpha;
     ctext(s, X, Y, { ...o, size: o.size || 18, color: o.color });

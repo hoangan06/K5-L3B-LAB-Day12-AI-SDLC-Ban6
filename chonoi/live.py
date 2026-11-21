@@ -154,12 +154,16 @@ class LiveGame:
                 self._day_stats[row["day"]] = {
                     "day": row["day"], "served": 0, "left": 0, "paid": 0, "revenue": 0,
                     "reputation_start": self.session.sim.reputation, "reputation_change": 0,
+                    "tips": 0, "dishes": {},   # chỉ để HUD day: boa trong ngày, số món đã phục vụ theo dish_id
                 }
             elif name in counters:
                 stats = self._day_stats[row["day"]]
                 stats[counters[name]] += 1
                 if name == "paid":
                     stats["revenue"] += row["data"]["amount"]
+                    stats["tips"] += row["data"].get("tip", 0)
+                elif name == "served" and row["data"].get("dish_id"):
+                    stats["dishes"][row["data"]["dish_id"]] = stats["dishes"].get(row["data"]["dish_id"], 0) + 1
 
     # --- API cho handler -----------------------------------------------------------
     def state_json(self) -> bytes:
@@ -168,6 +172,8 @@ class LiveGame:
             snap["meta"] = self.tuning[snap["phase"]]
             if "freshness" in self.tuning:
                 snap["meta"] = {**snap["meta"], "freshness": self.tuning["freshness"]}
+            if snap["phase"] == "quan":  # công thức món để HUD tính "món nấu được" (chỉ hiển thị, không vào sim)
+                snap["meta"] = {**snap["meta"], "menu": self.tuning["menu"]}
             if self.mode == "day":
                 snap["ui"] = {"screen": self._screen, "days": list(self._day_stats.values())}
             if self.creative:
