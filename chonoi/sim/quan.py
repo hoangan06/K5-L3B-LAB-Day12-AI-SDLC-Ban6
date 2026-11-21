@@ -1,4 +1,4 @@
-"""Mô phỏng buổi tối, dùng chung cho headless và live."""
+"""Mô phỏng buổi tối, dùng chung cho headless và live. Context Phase 2: giao diện P2 §2, §5."""
 
 from .. import TICK_HZ
 from ..errors import BadInput
@@ -13,7 +13,14 @@ class QuanSim:
     mode = "quan"
     phase = "quan"
 
-    def __init__(self, tuning, scenario, streams, ids, inventory=None):
+    def __init__(self, tuning, scenario, streams, ids, inventory=None, *, context=None):
+        if context is not None:
+            for key in ("stock", "reputation"):
+                if key in scenario:
+                    raise BadInput(f"quan.{key} bị cấm khi chạy day (kho/uy tín lấy từ bàn giao)")
+            allowed = context.get("allowed_dishes")
+            if not isinstance(allowed, list) or not all(isinstance(d, str) and d in tuning["menu"] for d in allowed):
+                raise BadInput("context.allowed_dishes phải là danh sách id món trong thực đơn")
         validate_quan_fixture(scenario, tuning)
         t = tuning["quan"]
         self.t = t
@@ -30,6 +37,7 @@ class QuanSim:
         self.hand = scenario.get("hand")
         self.time_left_ticks = scenario.get("time_left_ticks", round(t["duration_s"] * TICK_HZ))
         self.reputation = scenario.get("reputation", t["reputation_initial"])
+        self.allowed_dishes = None  # None: toàn menu (quán độc lập)
         self.stoves = [dict(s, state=s.get("state", "idle"), dish=s.get("dish"),
                             cook_ticks_left=s.get("cook_ticks_left", 0), ready_ticks=s.get("ready_ticks", 0))
                        for s in self._merge(t["stoves"], scenario.get("stoves", []))]
@@ -39,6 +47,10 @@ class QuanSim:
         self.money = 0
         self.earned = 0
         self.shift_earned = 0
+        if context is not None:  # bản sao trạng thái đầu pha; sim giữ working copy, không sửa context
+            self.money, self.earned = context["money"], context["earned"]
+            self.reputation = context["reputation"]
+            self.allowed_dishes = list(context["allowed_dishes"])
         self.done = False
         self.reason = None
         init_customers(self, scenario)
