@@ -12,6 +12,6 @@ Kiểm trên `p1/duc` sau khi ghép module khách và validation từ `p1/trung`
 
 Ảnh HUD ở 1200 × 760 gồm [buổi sáng](hud-gather.png), [bếp đang nấu](hud-quan-cooking.png) và [đang cầm món](hud-quan-carry.png).
 
-Một fixture kiểm thêm với `customers[0].dish_id: []` hiện trả mã 1 do `TypeError` trong `quan_validation.py`. Đây là trường hợp cần Trung rà để trả mã 2 như các fixture sai kiểu khác.
+Kiểm thử hồi quy trên CLI tái hiện mã 1 với `dish_id: []` ở khách và payload món. Sau khi kiểm kiểu trước khi tra menu, cả hai vị trí trả mã 2 trước khi ghi output.
 
 Mô phỏng ghép `p1/an` với `p1/trung` phát hiện xung đột trong `docs/clarify.md`. Hai nhánh ghi lại cùng bộ câu hỏi Phase 1. Ân và Trung có thể hợp nhất thành một bảng khi tích hợp.
