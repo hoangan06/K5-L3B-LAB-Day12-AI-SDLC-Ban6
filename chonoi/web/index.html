@@ -88,7 +88,9 @@
   .need-hud i { width: 16px; height: 16px; border: 2px solid #1b1208; flex: 0 0 auto; }
   .need-hud li.done { color: #9be37a; }
   .high-contrast .need-hud { background: #000; color: #fff; border-color: #fff; }
-  .day-hud .chip { display: inline-block; margin-right: 16px; }
+  #day-details { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin-top: 4px; }
+  .day-hud .chip { display: inline-block; margin-right: 0; }
+  .day-hud .bar { margin-right: 0; }
   .high-contrast canvas { filter: contrast(1.45); }
   .high-contrast :is(.hud, .foot, .day-hud, .day-card, .warnings, .freshness-hud, .lore-card, .intro-card, button) { background: #000; color: #fff; border-color: #fff; }
   .high-contrast .day-overlay { background: #000c; }
@@ -1638,6 +1640,7 @@ function frame() {
   renderWarnings();
   if (introOpen) { hudEl.hidden = true; footEl.hidden = true; dayHud.hidden = true; dayOverlay.hidden = true; bannerEl.hidden = true; endEl.hidden = true; warnings.textContent = ""; }
   const topCss = visibleTop(), botCss = footEl.hidden ? 0 : footEl.offsetHeight;
+  warnings.style.top = contrastToggle.style.top = (topCss + 10) + "px";   // HUD tự xuống dòng thì cảnh báo/nút tương phản nằm dưới HUD, không chồng
   layout(w, h);
   labels = [];
   const phase = snap.phase || snap.mode;
@@ -1648,7 +1651,8 @@ function frame() {
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(BUF, 0, 0, bw, bh, 0, 0, bw * PX, bh * PX);
   for (const [s, x, y, o] of labels) {
-    const X = x * PX, Y = y * PX + (o.dy || 0);
+    let X = x * PX; const Y = y * PX + (o.dy || 0);
+    if (!o.box && s !== "__q" && s !== "__bar") { ctx.font = `700 ${o.size || 18}px ${FONT}`; const hw = ctx.measureText(s).width / 2 + 8; X = Math.max(hw, Math.min(w - hw, X)); }   // nhãn không tràn mép màn hình
     if (s === "__q") {
       const qx = X + (o.dx || 0), qy = Y - 6;
       ctx.fillStyle = "#ffe680"; ctx.fillRect(qx - 13, qy - 15, 26, 26); ctx.strokeStyle = "#1b1208"; ctx.lineWidth = 3; ctx.strokeRect(qx - 13, qy - 15, 26, 26);
