@@ -26,4 +26,10 @@
 - Sáng tạo thêm được khuyến khích nhưng phải tắt ở headless (xem README, mục "Tự do sáng tạo").
 
 ## Skills / hooks của nhóm
-- (Ghi tên và khi nào dùng; tối thiểu 2 skill/hook/command nhóm tự viết, đặt ở `.agents/skills/` hoặc tương đương.)
+- `python3 tools/check_determinism.py`: trước bàn giao, chạy lại headless gather/quan và so từng byte JSONL + kho ngất. Hướng dẫn: `docs/proof/phase-1/an/HANDOFF.md`. Chỉ kết luận tất định, không thay test đúng luật.
+- Command smoke kho do Duy phụ trách, chưa có trong nhánh Ân; không tính là đã hoàn thành command thứ hai.
+
+## Tích hợp Phase 1 — phần Ân
+- `gather.py` đã có oxy/ngạt/ngất. Duy giữ `gather_actions.py`; chỉ nối `gather_node` và `catch_fish` khi helper thật đã được bàn giao theo `docs/contracts/phase-1-interfaces.md`.
+- Test riêng Ân: `python3 -m unittest discover -s tests -p test_p1_an.py -v`.
+- Giữ thông tin TEAM/GitHub để thành viên tự điền; không tự đoán handle.
