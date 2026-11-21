@@ -2,6 +2,7 @@
 
 | # | Ngày giờ | Câu hỏi | Trả lời / giả định | Ai quyết |
 |---|---|---|---|---|
+| P4-LICENSE | 2026-11-21 | Bản v1.0.0 có công bố giấy phép không? | Chủ repo xác nhận chưa công bố giấy phép. Ghi rõ trong release notes và docs/licensing-status.md; không tự gán MIT, không tạo LICENSE giả. | Ân (chủ repo, trả lời trực tiếp) |
 | Q1 | 2026-11-21 | Id khách tự sinh dùng tiền tố gì, bắt đầu từ số mấy? PRD chỉ nói `order_id` = id khách và quy tắc nối hậu tố. | Nhóm chốt: `C1, C2…` qua `IdAllocator`; fixture có `C10` thì sinh tiếp `C11`; không tái dùng id khách đã rời — chưa có xác nhận của bot/coach | Ân (nhóm trưởng) |
 | Q2 | 2026-11-21 | Khách chưa được chốt giá: snapshot/fixture để `base_price`, `tip` là vắng, `null` hay `0`? | Nhóm chốt: trước phục vụ để VẮNG `base_price`, `tip` (không `null`/`0`); giá nằm trong payload món khi nấu/bưng; sau phục vụ có đủ hai trường, không boa thì `tip = 0` — chưa có xác nhận của bot/coach | Ân (nhóm trưởng) |
 | Q3 | 2026-11-21 | Khách đang ăn lúc hết ca: chỉ phát `paid` (reason `closing`), hay phát thêm `customer_left` (reason `closing`)? | Nhóm chốt: chỉ `paid` rồi xóa khách, không `customer_left`. Timer ăn vừa về 0 → `finished_eating`; còn ăn hoặc vừa phục vụ → `closing` — chưa có xác nhận của bot/coach | Ân (nhóm trưởng) |

@@ -62,7 +62,7 @@ python3 tools/package_release.py --out dist/chonoi-v1.0.0.zip
 
 Script không ghi đè ZIP đã có. Gói có `BUILD-INFO.json` ghi commit nguồn và hash từng file; chỉ lấy source/docs, bỏ cache và môi trường cục bộ. Nếu còn thiếu đầu vào phát hành, script ghi rõ và gói chỉ là **ứng viên**, chưa phải Release hoàn chỉnh.
 
-Trạng thái ứng viên P4: soak10ngày đã được tích hợp và kiểm hai lần cùng seed; LICENSE còn chờ nhóm chốt. Benchmark của Đức cần đo lại trên giao diện cuối và kiểm mốc tải từ khởi chạy. Không coi các báo cáo của nhánh cũ là kết quả nghiệm thu bản1.3; xem `docs/proof/phase-4/an/HANDOFF.md` trước khi phát hành.
+Kiểm chứng phát hành v1.0.0: `docs/verification/phase-4.md` và `docs/proof/phase-4/release/`. Bench đo lại trên giao diện cuối; `load_ms` tính từ khởi chạy đến frame gather đầu tiên. **Chưa công bố giấy phép**, theo xác nhận của chủ repo; xem `docs/licensing-status.md` và `CREDITS.md`.
 
 Bật cả phần sáng tạo (đền Bà Thủy, Mãng Xà Vương, miếu Cá Ông; chỉ ở live, headless không đổi): `python3 -m chonoi.live --mode day --days 5 --creative`. Trên macOS có thể bấm đúp `tools/choi-game.command` (mở trình duyệt ở cổng 8800). Icon pixel cho launcher: `python3 tools/icon/make_icon.py`.
 

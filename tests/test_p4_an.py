@@ -107,6 +107,23 @@ class P4SessionAdapter(unittest.TestCase):
 
 
 class P4Package(unittest.TestCase):
+    def test_reviewed_unlicensed_package_does_not_create_a_license(self):
+        import zipfile
+        with tempfile.TemporaryDirectory() as temp:
+            folder = Path(temp)
+            source = folder / "source"
+            for name in ("README.md", "game.contract.json", "chonoi/live.py", "chonoi/web/index.html",
+                         "docs/licensing-status.md"):
+                path = source / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("Owner confirmed: no project-wide license declared", encoding="utf-8")
+            destination = folder / "game.zip"
+            result = build_archive(source, destination)
+            self.assertEqual(result["licensing_status"], "not-declared")
+            self.assertNotIn("LICENSE", result["missing_release_inputs"])
+            with zipfile.ZipFile(destination) as archive:
+                self.assertNotIn("chonoi-v1.0.0/LICENSE", archive.namelist())
+
     def test_archive_excludes_local_state_and_is_self_contained(self):
         import zipfile
         with tempfile.TemporaryDirectory() as temp:

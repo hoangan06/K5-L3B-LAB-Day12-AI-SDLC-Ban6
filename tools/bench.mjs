@@ -1,9 +1,10 @@
 import { spawn } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { parseArgs } from "node:util";
+import { fileURLToPath } from "node:url";
 
 async function waitFor(description, read) {
   const deadline = Date.now() + 15000;
@@ -38,7 +39,13 @@ async function connect(url) {
     socket.addEventListener("error", reject, { once: true });
   });
   let nextId = 0;
+  const errors = [];
+  socket.addEventListener("message", event => {
+    const message = JSON.parse(event.data);
+    if (message.method === "Runtime.exceptionThrown") errors.push(message.params.exceptionDetails);
+  });
   return {
+    errors,
     close: () => socket.close(),
     call(method, params = {}, timeout = 15000) {
       const id = ++nextId;
@@ -64,9 +71,9 @@ async function connect(url) {
 
 async function measureScene(seconds) {
   const frame = () => new Promise(resolve => requestAnimationFrame(resolve));
-  await frame();
-  const loaded = await frame();
-  const warmupEnd = loaded + 3000;
+  const loaded = globalThis.__chonoiBenchFirstFrameEpochMs;
+  if (!Number.isFinite(loaded)) throw new Error("First rendered gather frame was not recorded");
+  const warmupEnd = loaded - performance.timeOrigin + 3000;
   let previous = await frame();
   while (previous < warmupEnd) previous = await frame();
 
@@ -84,11 +91,13 @@ async function measureScene(seconds) {
     p1_low_fps: slowest.length * 1000 / slowest.reduce((total, delta) => total + delta, 0),
     frames: deltas.length,
     measured_s: measured,
-    load_ms: loaded,
+    first_frame_epoch_ms: loaded,
   };
 }
 
 async function main() {
+  // Node process start includes Python/Chrome startup and scene loading.
+  const launchEpochMs = performance.timeOrigin;
   const { values } = parseArgs({ options: {
     seed: { type: "string", default: "42" },
     duration: { type: "string", default: "30" },
@@ -119,18 +128,33 @@ async function main() {
     const response = await fetch(`http://127.0.0.1:${port}/json/list`);
     const target = (await response.json()).find(item => item.type === "page");
     page = await connect(target.webSocketDebuggerUrl);
+    await page.call("Page.enable");
+    await page.call("Runtime.enable");
     await page.call("Emulation.setDeviceMetricsOverride", { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
-    const navigation = await page.call("Page.navigate", { url });
+    await page.call("Page.addScriptToEvaluateOnNewDocument", { source: `
+      const originalFrame = globalThis.requestAnimationFrame.bind(globalThis);
+      globalThis.requestAnimationFrame = callback => originalFrame(timestamp => {
+        callback(timestamp);
+        if (globalThis.__chonoiBenchFirstFrameEpochMs === undefined &&
+            typeof snap !== "undefined" && snap?.phase === "gather" && !snap.error && !introOpen) {
+          globalThis.__chonoiBenchFirstFrameEpochMs = performance.timeOrigin + timestamp;
+        }
+      });
+    ` });
+    const navigation = await page.call("Page.navigate", { url: url + "?nointro=1" });
     if (navigation.errorText) throw new Error(navigation.errorText);
-    await waitFor("gather snapshot", async () => {
-      const { result } = await page.call("Runtime.evaluate", { expression: 'typeof snap !== "undefined" && snap?.phase === "gather" && !snap.error' });
+    await waitFor("rendered gather scene", async () => {
+      if (page.errors.length) throw new Error(JSON.stringify(page.errors[0]));
+      const { result } = await page.call("Runtime.evaluate", { expression: 'Number.isFinite(globalThis.__chonoiBenchFirstFrameEpochMs)' });
       return result.value;
     });
     const report = await page.call("Runtime.evaluate", {
       expression: `(${measureScene})(${duration})`, awaitPromise: true, returnByValue: true,
     }, (duration + 15) * 1000);
     if (report.exceptionDetails) throw new Error(report.exceptionDetails.text);
-    await writeFile(values.out, JSON.stringify(report.result.value, null, 2) + "\n");
+    const { first_frame_epoch_ms, ...metrics } = report.result.value;
+    metrics.load_ms = Math.max(0, first_frame_epoch_ms - launchEpochMs);
+    await writeFile(values.out, JSON.stringify(metrics, null, 2) + "\n");
   } finally {
     page?.close();
     game?.child.kill();
@@ -139,11 +163,18 @@ async function main() {
       chrome.child.kill();
       await closed;
     }
+    if (dirname(resolve(profile)) !== resolve(tmpdir()) || !basename(profile).startsWith("chonoi-bench-")) {
+      throw new Error("Refusing to remove an unexpected Chrome profile directory");
+    }
     await rm(profile, { recursive: true, force: true });
   }
 }
 
-main().catch(error => {
-  console.error(error.message);
-  process.exitCode = 1;
-});
+export { start, connect, waitFor };
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch(error => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}

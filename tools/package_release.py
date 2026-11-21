@@ -49,6 +49,10 @@ def build_archive(root, destination):
     paths = {name for name, _ in entries}
     missing = [name for name in ("LICENSE", "CREDITS.md", "CHANGELOG.md", "tools/bench.mjs",
                                 "chonoi/soak.py", "docs/release-notes-v1.0.0.md") if name not in paths]
+    licensing_status = "declared" if "LICENSE" in paths else "unreviewed"
+    if "LICENSE" not in paths and "docs/licensing-status.md" in paths:
+        licensing_status = "not-declared"
+        missing.remove("LICENSE")  # chủ repo đã xác nhận; ghi trạng thái, không giả có giấy phép
     try:
         revision = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, capture_output=True,
                                   text=True, check=True).stdout.strip()
@@ -57,7 +61,8 @@ def build_archive(root, destination):
     except (OSError, subprocess.CalledProcessError):
         revision = None
         dirty = None
-    metadata = {"source_commit": revision, "working_tree_dirty": dirty, "missing_release_inputs": missing,
+    metadata = {"source_commit": revision, "working_tree_dirty": dirty,
+                "licensing_status": licensing_status, "missing_release_inputs": missing,
                 "files_sha256": {name: hashlib.sha256(data).hexdigest() for name, data in entries}}
     entries.append(("BUILD-INFO.json", (json.dumps(metadata, ensure_ascii=False, indent=2) + "\n").encode("utf-8")))
     destination.parent.mkdir(parents=True, exist_ok=True)

@@ -1,34 +1,54 @@
-# Quán Ăn Chợ Nổi v1.0.0 — Bàn 6 (NHÁP, Trung gom; chốt khi có kết quả cuối)
+# Quán Ăn Chợ Nổi v1.0.0 — Bàn 6
 
-> Trạng thái: **nháp**. Các mục ghi UNVERIFIED chưa có bằng chứng trên commit phát hành; Ân điền SHA/tag/Release, Duy điền soak/clone sạch, Đức điền bench cuối.
+Bản phát hành tổng hợp bốn phase của lab, Test Contract1.3. Tag `phase-4` và `v1.0.0` dùng cùng commit bàn giao trên main.
 
 ## Điểm mới
-- Vòng một Ngày: sáng lặn hái/bắt cá (oxy, ngạt, ngất, Cá Sấu Năm Chèo), tối mở quán (giữ chỗ, nấu, phục vụ, thu tiền), Shop nâng cấp; 5 Ngày liên tiếp (P2).
-- Độ tươi cá thể (Contract v1.2, P3): kho `{"items":[{id,kind,fresh}]}`, giỏ hao 0.5/s, kho quán hao 0.25/s, hàng < 30 là ươn, giá món theo độ tươi trung bình lúc nấu.
-- Phát hành (P4): bench 1280×720, ba cảnh báo (thủy quái gần, oxy sắp hết, khách sắp giận), chế độ tương phản cao; soak 10 Ngày (UNVERIFIED: chưa có `soak.json` trên main).
-- Giao diện pixel miền Tây: xuồng ba lá, cây bẹo, nhà sàn, lục bình, nón lá; đồng hồ trong ngày, mặt trời/mặt trăng đổi pha; thẻ truyền thuyết "?" có nguồn.
-- Phần sáng tạo chỉ ở live (`--creative`, headless không đổi): đền Bà Thủy (thắp hương → bơi nhanh hơn, ít gặp quái), Mãng Xà Vương (chuỗi mũi tên để thoát), miếu Cá Ông (xúc xắc hồi sinh).
 
-## Cách chạy (macOS/Linux, Python 3 stdlib)
+- Một lượt5ngày liên tục: lặn hái/bắt cá → mở quán → kết quả → Shop nâng cấp → ngày tiếp. Có pause và HUD.
+- Oxy/ngạt/ngất, Cá Sấu Năm Chèo, cá bơi/sinh; bếp, giữ nguyên liệu, phục vụ, boa và uy tín.
+- Kho cá thể `{id,kind,fresh}`, hao độ tươi, hàng ươn và giá nấu theo độ tươi; ID nối qua pha/ngày. Luật headless giữ theo contract.
+- Cảnh báo chữ/biểu tượng cho thủy quái gần, oxy thấp, khách sắp giận; tương phản cao.
+- Giao diện pixel miền Tây, thẻ truyền thuyết; phần sáng tạo bật riêng qua `--creative`. Bể cá chỉ thuộc bản chơi live.
+- Benchmark có render, soak10ngày một Session, công cụ tạo/kiểm ZIP độc lập.
+
+## Chạy từ ZIP
+
+Giải nén asset `chonoi-v1.0.0.zip`, vào thư mục `chonoi-v1.0.0`, rồi chạy:
+
 ```bash
-git clone https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6 && cd K5-L3B-LAB-Day12-AI-SDLC-Ban6
-python3 -m chonoi.live --mode day --days 5 --creative
+python3 -m chonoi.live --mode day --days 5
 ```
-Test: `PYTHONPATH=tests:. python3 -m unittest discover -s tests`. Headless: `python3 -m chonoi.headless --mode day --days 5 --seed 1 --ticks 111000 --out out.jsonl`. macOS: bấm đúp `tools/choi-game.command`.
-Bench/soak: lệnh chính thức theo `bench_cmd`/`soak_cmd` trong `game.contract.json` (UNVERIFIED: manifest chưa lên 1.3 lúc viết).
 
-## Số liệu (điền từ bằng chứng)
-| Mục | Giá trị | Nguồn |
-|---|---|---|
-| Test | 253 OK trên main `918ed67` (lúc viết) | chạy `unittest discover` |
-| Bench | avg_fps 60.0, p1_low_fps 59.5, 1801 frames, 30.0 s, load_ms 162.7 (đo trên nhánh `p4/duc`, trước khi gộp giao diện pixel; cần đo lại) | `docs/proof/phase-4/bench.json` |
-| Soak 10 Ngày | UNVERIFIED | `soak.json` (Duy) |
-| Clone sạch ≤ 3 lệnh | UNVERIFIED | Duy |
+Cần Python3.10+ và trình duyệt hiện đại; không cần pip/npm để chơi. Mở URL localhost được in ra. WASD/mũi tên: di chuyển; E: tương tác; Space: bắt cá; P/Esc: pause; Enter: qua intro; R: chơi lại. Shop dùng nút trên màn hình.
 
-## Giới hạn đã biết
-- Bench đo trước khi gộp lớp pixel; đồ họa mới nặng hơn nên số FPS phải đo lại trên commit phát hành.
-- Phần sáng tạo: hệ số buff, vị trí đền, 3 s đứng yên là số tạm (`docs/ideas/creative-impl-notes.md`); Mãng Xà chưa được chơi tay đủ một ca.
-- Mở rộng (leaderboard, phụ đề SFX) không làm.
+Từ clone sạch trên macOS/Linux, tối đa3lệnh:
 
-## Ghi công
-Xem `CREDITS.md`, `docs/ai-usage-log.md`. Giấy phép: UNKNOWN (chưa có `LICENSE`, nhóm cần chọn).
+```bash
+git clone --branch v1.0.0 https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6.git
+cd K5-L3B-LAB-Day12-AI-SDLC-Ban6
+python3 -m chonoi.live --mode day --days 5
+```
+
+## Kiểm chứng
+
+Lệnh test: `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`.
+
+Bench: `node tools/bench.mjs --seed 42 --duration 30 --out bench.json` — cần Node22+ và Google Chrome; có thể đặt `CHONOI_CHROME`/`PYTHON`. Soak: `python3 -m chonoi.soak --seed 7 --days 10 --out soak.json`.
+
+| Kiểm | Kết quả đo trên bản tích hợp |
+|---|---|
+| Regression | 278 test đạt trước bước chốt đóng gói; kết quả cuối và SHA nguồn xem `docs/proof/phase-4/release/` |
+| Bench | 1801frame / 30.0161s; avg60.00FPS, 1%low57.75FPS, load828.3ms; 1280×720, nóng3s, seed42, đứng ở bến |
+| Soak | 10/10ngày, 0crash; hai lần seed7 có gameplay giống nhau; đã đi qua hái/nấu/phục vụ/thu tiền |
+| UI | Cả3cảnh báo hiện ở tương phản cao, input browser thật trên fixture engine, không thay snapshot; console0exception |
+
+Bench/UI dùng Chrome trên Windows; test/soak và kiểm gói dùng Python trong WSL Linux. Đây là số đo theo môi trường ghi trong proof, không hứa FPS trên mọi máy. Ma trận: `docs/verification/phase-4.md`.
+
+## Giới hạn và giấy phép
+
+- **Chưa công bố giấy phép**, theo xác nhận của chủ repo. Repo không có LICENSE cấp quyền chung; xem `docs/licensing-status.md` và `CREDITS.md`.
+- Sáng tạo chỉ ở live; hệ số buff và các tình huống Mãng Xà chưa được chơi tay đầy đủ. Leaderboard/phụ đề SFX không triển khai.
+- Kiểm UI tự động dùng scenario hợp lệ để tái hiện cảnh báo, không thay cho một buổi chơi tay dài.
+- Phản tư cá nhân của Duy chưa có trong `docs/members/` lúc chốt; bằng chứng code/test của Duy có trong lịch sử và proof. Không viết thay phản tư của thành viên.
+
+Gói ZIP có BUILD-INFO.json với SHA nguồn/hash từng file. Đối chiếu SHA256SUMS.txt của Release trước khi dùng.
