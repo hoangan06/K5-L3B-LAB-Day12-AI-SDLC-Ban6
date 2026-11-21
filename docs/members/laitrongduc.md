@@ -1,7 +1,10 @@
-# laitrongduc — phản tư cá nhân
+# laitrongduc — phản tư cá nhân (≤ 200 từ)
 
-- Phase 1: ghép luồng thanh toán, dọn món, bếp và HUD. Tôi rà thứ tự phục vụ và thanh toán ở tick đóng ca để mỗi khách chỉ phát một `paid`. [Bằng chứng](../proof/phase-1/duc/quan-and-hud.md)
-- Phase 2: triển khai Day, Shop và giao diện chơi liên tục năm ngày. [Bằng chứng](../proof/phase-2/duc/day-shop-live.md)
-- Phase 3: hiển thị độ tươi ở giỏ, kho và Shop. [Nhánh và bằng chứng](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/004ab0abd7d9fdbd19a53f093797eb818b0eb205)
-- Phase 4: chuẩn bị lệnh benchmark để Ân khai trong manifest, thêm ba cảnh báo và chế độ tương phản cao. [Commit triển khai](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/4c03258) · [Bằng chứng](../proof/phase-4/duc/README.md)
-- Lượt kiểm Phase 1 do Codex viết đọc sự kiện nấu quá sớm. Bản sửa chờ từng sự kiện từ snapshot. Bài học là kiểm các mốc giao giữa module bằng luồng chạy thật, đồng thời ghi rõ những lần dùng snapshot kiểm thử.
+- Tôi đã làm (kèm link commit):
+  - Phase 1 Quán & HUD: dọn món, thanh toán, ghép bếp ([ca47bfc](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/ca47bfc), [c2649df](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/c2649df)), HUD canvas và vá dish_id ([0b039f4](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/0b039f4), [120ceda](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/120ceda)). [Bằng chứng](../proof/phase-1/duc/quan-and-hud.md).
+  - Phase 2 Day & Shop: DaySim, ShopSim nâng cấp máu/oxy, live 5 ngày ([74c0269](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/74c0269), [1d99ac5](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/1d99ac5)). [Bằng chứng](../proof/phase-2/duc/day-shop-live.md).
+  - Phase 3 HUD Độ tươi: hiển thị độ tươi giỏ/kho/shop và hàng ươn/giữ chỗ ([70f74fa](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/70f74fa), [004ab0a](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/004ab0a)). [Bằng chứng](../proof/phase-3/duc/hud-freshness.md).
+  - Phase 4 Benchmark & Cảnh báo: công cụ `bench.mjs` (FPS, load_ms), 3 cảnh báo trực quan và tương phản cao ([4c03258](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/4c03258), [04f3681](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/04f3681)). [Bằng chứng](../proof/phase-4/duc/README.md).
+- Tôi đã review (kèm link): Rà soát nhánh giao diện pixel `p3/ui-pixel-trung` của Trung để bảo toàn luồng canvas; hỗ trợ Ân tích hợp DaySim/ShopSim vào `runner.Session` ở `p2/integration-duc` ([1d99ac5](https://github.com/hoangan06/K5-L3B-LAB-Day12-AI-SDLC-Ban6/commit/1d99ac5)); đối chiếu hợp đồng kho và sự kiện quán.
+- AI sai ở đâu và tôi phát hiện thế nào: AI từng sinh test đọc sự kiện nấu quá sớm khi snapshot chưa gửi; Shop kích hoạt nâng cấp ngay giữa tick; làm tròn Math.round làm sai ngưỡng 30. Tôi phát hiện qua replay JSONL, kiểm tra console trình duyệt và test biên.
+- Điều tôi học được: Phải kiểm tra các mốc giao module (gather → quan → shop) bằng luồng tích hợp thật thay vì mock rời rạc; luôn neo bằng chứng vào commit hash cụ thể.
