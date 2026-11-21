@@ -54,7 +54,9 @@ def available_counts(sim):
 
 def decay(sim, events):
     """Hao tươi kho quán (kể cả hàng đang giữ), phát spoiled theo id, rồi giữ lại cho đơn bị ảnh hưởng."""
-    newly = decay_items(sim.stock, sim.fresh_cfg["quan_decay_per_s"], spoiled_below(sim), "stock", events)
+    tank_kinds = sim.fresh_cfg.get("tank_fish_kinds", ())
+    exposed = [it for it in sim.stock if it["kind"] not in tank_kinds]
+    newly = decay_items(exposed, sim.fresh_cfg["quan_decay_per_s"], spoiled_below(sim), "stock", events)
     if not newly:
         return
     hit = [c for c in sim.customers if c["order_status"] == "reserved" and newly & set(c["reserved"])]
