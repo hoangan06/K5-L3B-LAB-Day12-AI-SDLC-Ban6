@@ -66,15 +66,41 @@
     c.fillStyle = ongFish ? "#2b6f8f" : "#a63a2f";
     c.beginPath(); c.moveTo(x - bw / 2 - 0.7 * s, y - bh); c.lineTo(x - 0.5 * s, y - roofTop); c.lineTo(x + 0.5 * s, y - roofTop); c.lineTo(x + bw / 2 + 0.7 * s, y - bh); c.closePath(); c.fill();
     c.strokeStyle = "#f5de95"; c.lineWidth = 2; c.stroke();
-    c.fillStyle = "#1c1209"; c.fillRect(x - 0.6 * s, y - 1.7 * s, 1.2 * s, 1.45 * s);  // cửa
-    // nén hương ở bên phải: đỏ + khói khi đã thắp
-    const hx = x + bw / 2 + 0.9 * s;
-    c.strokeStyle = "#8a5a2b"; c.lineWidth = 3; c.beginPath(); c.moveTo(hx, y); c.lineTo(hx, y - 1.5 * s); c.stroke();
+    const dw = 1.2 * s, dh = 1.45 * s, dx = x - dw / 2, dy = y - 0.25 * s - dh;
+    if (sh.lit) {  // đã thắp: ánh nến vàng ấm trong cửa, quầng sáng, ngọn nến lung linh theo tick
+      const fl = 0.85 + 0.15 * Math.sin(tick / 7) + 0.05 * Math.sin(tick / 3);
+      const g = c.createRadialGradient(x, y - 0.9 * s, 0.1 * s, x, y - 0.9 * s, 2.6 * s * fl);
+      g.addColorStop(0, "rgba(255,200,90,.55)"); g.addColorStop(1, "rgba(255,170,60,0)");
+      c.fillStyle = g; c.fillRect(x - 2.8 * s, y - 3.5 * s, 5.6 * s, 3.5 * s);
+      c.fillStyle = "#ffcf6b"; c.fillRect(dx, dy, dw, dh);
+      c.fillStyle = "#ff9d3c"; c.fillRect(dx + 0.15 * s, dy + 0.45 * s, dw - 0.3 * s, dh - 0.45 * s);
+      c.fillStyle = "#fff4c4"; c.fillRect(x - 0.08 * s, y - 0.25 * s - 0.55 * s, 0.16 * s, 0.4 * s);  // thân nến
+      c.beginPath(); c.ellipse(x, y - 0.25 * s - 0.72 * s, 0.1 * s * fl, 0.22 * s * fl, 0, 0, 7); c.fillStyle = "#ffe36b"; c.fill();
+      c.strokeStyle = "#5a2a10"; c.lineWidth = 2; c.strokeRect(dx, dy, dw, dh);
+    } else { c.fillStyle = "#1c1209"; c.fillRect(dx, dy, dw, dh); }
+    // bát hương bên phải: chưa thắp = ba nén nâu không khói; đã thắp = ba nén đỏ đầu cháy + khói uốn lượn
+    const hx = x + bw / 2 + 0.9 * s, bt = y - 0.45 * s;
+    c.fillStyle = "#7a5a32"; c.beginPath(); c.moveTo(hx - 0.55 * s, bt); c.lineTo(hx + 0.55 * s, bt); c.lineTo(hx + 0.4 * s, y); c.lineTo(hx - 0.4 * s, y); c.closePath(); c.fill();
+    c.strokeStyle = "#f5de95"; c.lineWidth = 2; c.stroke();
+    const tops = [];
+    [-0.28, 0, 0.28].forEach((o, n) => {
+      const sx0 = hx + o * s, tp = bt - (1.5 + (n === 1 ? 0.2 : 0)) * s;
+      c.strokeStyle = sh.lit ? "#c8301f" : "#8a5a2b"; c.lineWidth = 3; c.lineCap = "round";
+      c.beginPath(); c.moveTo(sx0, bt); c.lineTo(sx0, tp); c.stroke(); c.lineCap = "butt";
+      tops.push([sx0, tp]);
+    });
     if (sh.lit) {
-      c.fillStyle = "#ff5a3c"; c.beginPath(); c.arc(hx, y - 1.55 * s, 3.5, 0, 7); c.fill();
-      c.strokeStyle = "rgba(255,255,255,.6)"; c.lineWidth = 2; c.beginPath();
-      for (let i = 0; i < 6; i++) c.lineTo(hx + Math.sin(tick / 25 + i) * 4, y - 1.7 * s - i * 6);
-      c.stroke();
+      tops.forEach(([tx, ty], n) => {  // đầu nén cháy đỏ
+        c.fillStyle = "#ff7a3c"; c.beginPath(); c.arc(tx, ty, 4.5, 0, 7); c.fill();
+        c.fillStyle = "#fff0a0"; c.beginPath(); c.arc(tx, ty, 2, 0, 7); c.fill();
+        // vài cuộn khói xám trắng: mỗi cuộn bay lên rồi mờ dần, uốn lượn theo sin
+        for (let k = 0; k < 4; k++) {
+          const ph = ((tick / 150 + k / 4 + n * 0.31) % 1), H = 4.5 * s;
+          const px = tx + Math.sin(ph * 9 + n * 2) * (0.25 + ph * 0.5) * s, py = ty - 6 - ph * H, r = 7 + ph * 16;
+          c.fillStyle = "rgba(236,238,240," + (0.8 * (1 - ph)).toFixed(3) + ")";
+          c.beginPath(); c.arc(px, py, r, 0, 7); c.fill();
+        }
+      });
     }
     txt(sh.name, x, y - roofTop - 8, { align: "center", color: ongFish ? "#bfe6ff" : "#ffe9b0" });
     if (!sh.lit && sh.progress > 0) {  // vòng tiến độ thắp hương + chữ
@@ -99,12 +125,38 @@
       c.beginPath(); c.ellipse(x, y0, (1.2 + q * 3.5) * s, (0.35 + q * 0.9) * s, 0, 0, 7); c.stroke();
     }
     c.globalAlpha = Math.max(0, Math.min(1, k));
-    c.strokeStyle = "#2f5d34"; c.lineWidth = 0.7 * s; c.lineCap = "round"; c.beginPath();
-    for (let i = -4; i <= 4; i++) c.lineTo(x + i * 0.45 * s, y + Math.sin(i + tick / 20) * 0.5 * s);
-    c.stroke();
-    c.strokeStyle = "#d9c06a"; c.lineWidth = 2; c.setLineDash([4, 6]); c.stroke(); c.setLineDash([]);
-    c.fillStyle = "#e8d77a"; c.beginPath(); c.arc(x + 1.9 * s, y + Math.sin(4 + tick / 20) * 0.5 * s - 0.1 * s, 0.14 * s, 0, 7); c.fill();
-    txt("Mãng Xà Vương", x, y - 1 * s - 6, { align: "center" });
+    // thân dài ~7 m, thân dày dần về phía đầu; uốn sin chạy dọc thân theo tick; đầu quay theo hướng bơi (m.dir)
+    const N = 34, L = 7 * s, chase = m.state === "chase", dir = m.dir || 1;
+    const amp = (chase ? 0.55 : 0.4) * s, spd = chase ? 9 : 16, ph = tick / spd;
+    const seg = [];
+    for (let i = 0; i < N; i++) {  // i = 0 là đuôi, N-1 là đầu
+      const u = i / (N - 1), px = (u - 1) * L, py = Math.sin(u * 9 - ph) * amp * (0.35 + 0.65 * (1 - u));
+      seg.push([px, py, (0.12 + 0.88 * Math.pow(Math.sin(Math.min(1, u * 1.15) * Math.PI / 2), 0.7)) * 0.5 * s]);
+    }
+    c.save(); c.translate(x, y); c.scale(dir, 1);
+    c.fillStyle = "rgba(190,235,150,.45)"; seg.forEach(([px, py, r]) => { c.beginPath(); c.arc(px, py, r + 3, 0, 7); c.fill(); });  // viền sáng cho nổi trên nền nước tối
+    seg.forEach(([px, py, r], i) => {
+      c.fillStyle = i % 4 < 2 ? "#4f8a45" : "#6aa24f"; c.beginPath(); c.arc(px, py, r, 0, 7); c.fill();
+      c.fillStyle = "#c9a24a"; c.beginPath(); c.ellipse(px, py - r * 0.35, r * 0.28, r * 0.5, 0, 0, 7); c.fill();  // vảy vàng đồng trên lưng
+      if (i % 4 === 0) { c.fillStyle = "#e9d58a"; c.beginPath(); c.arc(px, py + r * 0.45, r * 0.3, 0, 7); c.fill(); }  // bụng sáng
+    });
+    c.strokeStyle = "#1f3a22"; c.lineWidth = 2; c.beginPath(); seg.forEach(([px, py, r]) => c.lineTo(px, py - r)); c.stroke();
+    const [hx, hy, hr] = seg[N - 1];
+    c.fillStyle = "#5f9a4a"; c.beginPath(); c.ellipse(hx + 0.5 * s, hy, 0.95 * s, 0.62 * s, 0, 0, 7); c.fill();  // đầu
+    c.strokeStyle = "#1f3a22"; c.lineWidth = 2; c.stroke();
+    c.fillStyle = "#f2c94c";  // mào/vương miện nhỏ
+    c.beginPath();
+    c.moveTo(hx - 0.2 * s, hy - 0.5 * s);
+    [[-0.3, -1.25], [0.15, -0.95], [0.55, -1.4], [0.95, -0.9], [1.1, -0.45]].forEach(([qx, qy]) => c.lineTo(hx + qx * s, hy + qy * s * 0.9));
+    c.lineTo(hx + 0.9 * s, hy - 0.3 * s); c.closePath(); c.fill(); c.strokeStyle = "#8a6a10"; c.lineWidth = 1.5; c.stroke();
+    c.fillStyle = "#ff2a2a"; c.beginPath(); c.arc(hx + 0.75 * s, hy - 0.17 * s, 0.17 * s, 0, 7); c.fill();  // mắt đỏ
+    c.fillStyle = "#000"; c.beginPath(); c.arc(hx + 0.8 * s, hy - 0.17 * s, 0.07 * s, 0, 7); c.fill();
+    const fl = Math.sin(tick / (chase ? 3 : 8)) > 0 ? 1 : 0.35, tx0 = hx + 1.4 * s;  // lưỡi chẻ thè ra
+    c.strokeStyle = "#e0324a"; c.lineWidth = 2.5; c.beginPath(); c.moveTo(tx0, hy + 0.1 * s); c.lineTo(tx0 + 0.7 * s * fl, hy + 0.1 * s);
+    c.moveTo(tx0 + 0.7 * s * fl, hy + 0.1 * s); c.lineTo(tx0 + 1.0 * s * fl, hy - 0.05 * s);
+    c.moveTo(tx0 + 0.7 * s * fl, hy + 0.1 * s); c.lineTo(tx0 + 1.0 * s * fl, hy + 0.25 * s); c.stroke();
+    c.restore();
+    txt(chase ? "Mãng Xà Vương đang đuổi!" : "Mãng Xà Vương", x + dir * 0.4 * s, y - 2.0 * s, { align: "center", color: chase ? "#ffb4a8" : "#fff" });
     c.restore();
   }
   function serpents(sx, sy, s, list, tick) {
@@ -114,12 +166,13 @@
     list.forEach((m) => {
       let r = seen.get(m.id);
       if (!r || r.gone != null) { r = { born: tick, gone: null, pos: m.pos }; seen.set(m.id, r); }
-      r.pos = m.pos;
+      r.pos = m.pos; r.state = m.state; r.vel = m.vel;
+      if (m.vel && Math.abs(m.vel[0]) > 1e-4) r.dir = m.vel[0] > 0 ? 1 : -1;  // đầu quay theo hướng bơi; đứng yên thì giữ hướng cũ
     });
     seen.forEach((r, id) => {
       if (!ids.has(id) && r.gone == null) r.gone = tick;
       if (r.gone != null && tick - r.gone >= FADE) { seen.delete(id); return; }
-      const m = { id, pos: r.pos };
+      const m = { id, pos: r.pos, state: r.state, vel: r.vel, dir: r.dir };
       if (r.gone != null) serpent(sx, sy, s, m, tick, 1 - (tick - r.gone) / FADE, true);
       else serpent(sx, sy, s, m, tick, Math.min(1, (tick - r.born) / FADE), false);
     });
@@ -143,7 +196,7 @@
     serpents(sx, sy, s, cr.serpents, snap.tick);
     const p = snap.player;
     if (cr.coil && p) {  // chuỗi mũi tên trên đầu nhân vật
-      const k = cr.coil, n = k.chain.length, gap = 40, x0 = sx(p.pos[0]) - ((n - 1) * gap) / 2, y0 = Math.max(top + 70, sy(p.pos[1]) - 1.6 * s - 40);
+      const k = cr.coil, n = k.chain.length, gap = 40, x0 = sx(p.pos[0]) - ((n - 1) * gap) / 2, y0 = Math.max(top + 70, sy(p.pos[1]) - 3.4 * s - 50);
       const msg = "Bị quấn! Gõ đúng chuỗi mũi tên"; c.font = "700 18px " + FONT;
       const pw = Math.max((n - 1) * gap + 56, c.measureText(msg).width + 28), cxm = sx(p.pos[0]);
       panel(cxm - pw / 2, y0 - 30, pw, 100, "#4fc3f7");

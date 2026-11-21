@@ -44,6 +44,7 @@ class CreativeLayer:
         self.rng_monster = streams.get("creative_monster")
         self.rng_dice = streams.get("creative_dice")
         self.rng_skip = streams.get("creative_skip")
+        self.rng_patrol = streams.get("creative_serpent_patrol")  # luồng riêng: đổi tuần tra không lệch luồng spawn/xúc xắc
         self.ids = IdAllocator()
         self.tick = 0
         self.messages = []
@@ -172,11 +173,13 @@ class CreativeLayer:
             d = self.rng_monster.uniform(*c["depth"])
             if roll < chance and math.dist(core.pos, (x, d)) >= c["min_distance_from_player"]:
                 self.spawned += 1
-                self.serpents.append({"id": self.ids.new("MX"), "pos": [x, d], "ttl": c["ttl_ticks"]})
+                self.serpents.append({"id": self.ids.new("MX"), "pos": [x, d], "ttl": c["ttl_ticks"],
+                                      "state": "patrol", "vel": [0.0, 0.0], "target": None, "retarget": 0})
         for s in self.serpents:
             s["ttl"] -= 1
         coiling = self.coil["serpent_id"] if self.coil else None
         self.serpents = [s for s in self.serpents if s["ttl"] > 0 or s["id"] == coiling]
+        self._move_serpents(core)
         if not self.coil:
             self._pending.clear()
             if self.immunity == 0 and not self._at_surface(core):
@@ -205,6 +208,45 @@ class CreativeLayer:
                 coil["chain"] = self._new_chain()
                 coil["index"], coil["time_left"] = 0, c["chain_time_ticks"]
                 self._say("Bị siết thêm một lượt, oxy hao đi.")
+
+    def _move_serpents(self, core):
+        """Mãng Xà tuần tra (đi lang thang tới điểm ngẫu nhiên) rồi ĐUỔI người chơi khi lại gần.
+        Số liệu (bán kính, tốc độ) trong creative.json là giả định chờ PO duyệt. Cá Sấu lõi không bị đụng tới."""
+        c = self.cfg["serpent"]
+        hz = float(self.cfg.get("tick_hz", 60))
+        coiling = self.coil["serpent_id"] if self.coil else None
+        hunt = not self._at_surface(core)
+        chase_mult = self.cfg["ba_thuy_buff"].get("serpent_chase_speed_mult", 1.0) if self.buff_left > 0 else 1.0
+        for s in sort_by_id(self.serpents):
+            if s["id"] == coiling:
+                s["vel"] = [0.0, 0.0]
+                continue
+            dist = math.dist(core.pos, s["pos"])
+            state = s.get("state", "patrol")
+            if state == "patrol" and hunt and dist <= c["chase_radius"]:
+                state = "chase"
+            elif state == "chase" and (not hunt or dist > c["lose_radius"]):
+                state, s["target"] = "patrol", None
+            s["state"] = state
+            if state == "chase":
+                tx, ty = core.pos
+                step = c["chase_speed_per_s"] * chase_mult / hz
+            else:
+                s["retarget"] = s.get("retarget", 0) - 1
+                tg = s.get("target")
+                if tg is None or s["retarget"] <= 0 or math.dist(tg, s["pos"]) < 0.5:
+                    tg = [self.rng_patrol.uniform(*c["x"]), self.rng_patrol.uniform(*c["depth"])]
+                    s["target"], s["retarget"] = tg, c["patrol_retarget_ticks"]
+                tx, ty = tg
+                step = c["patrol_speed_per_s"] / hz
+            dx, dy = tx - s["pos"][0], ty - s["pos"][1]
+            gap = math.hypot(dx, dy)
+            if gap > 1e-9:
+                k = min(step, gap) / gap
+                s["vel"] = [dx * k, dy * k]
+                s["pos"] = [s["pos"][0] + dx * k, s["pos"][1] + dy * k]
+            else:
+                s["vel"] = [0.0, 0.0]
 
     def _new_chain(self):
         c = self.cfg["serpent"]
@@ -276,7 +318,8 @@ class CreativeLayer:
             buffs.append({"id": "ca_ong", "name": "Cá Ông phù hộ", "left_ticks": None, "total_ticks": None,
                           "effects": ["revive"]})
         return {"enabled": True, "active": active, "tick": self.tick, "shrines": shrines, "buffs": buffs,
-                "serpents": [{"id": s["id"], "pos": list(s["pos"])} for s in sort_by_id(self.serpents)],
+                "serpents": [{"id": s["id"], "pos": list(s["pos"]), "state": s.get("state", "patrol"),
+                              "vel": list(s.get("vel", (0.0, 0.0)))} for s in sort_by_id(self.serpents)],
                 "coil": dict(self.coil, chain=list(self.coil["chain"])) if self.coil else None,
                 "immunity_ticks": self.immunity, "last_roll": self.last_roll,
                 "messages": list(self.messages)}

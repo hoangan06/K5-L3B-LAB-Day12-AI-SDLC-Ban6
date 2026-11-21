@@ -121,6 +121,54 @@ class ShrineAndBuffTest(unittest.TestCase):
         self.assertEqual(hp_after(True), TUNING["gather"]["hp_max"])
 
 
+class SerpentChaseTest(unittest.TestCase):
+    def one(self, ppos, spos, **kw):
+        cfg = copy.deepcopy(load_config())
+        cfg["serpent"].update(check_interval_ticks=10**9, **kw)  # không spawn thêm: chỉ xét con thả tay
+        s, layer, inp = make({"player": {"pos": list(ppos)}}, cfg)
+        layer.serpents.append({"id": "MX1", "pos": list(spos), "ttl": 10**6, "state": "patrol",
+                               "vel": [0.0, 0.0], "target": None, "retarget": 0})
+        return s, layer, inp
+
+    def test_patrols_when_player_far_and_is_deterministic(self):
+        def run():
+            s, layer, inp = self.one((5.0, 12.0), (80.0, 15.0))
+            drive(s, layer, inp, 300, move=(0.0, 0.0))
+            return layer.serpents[0]
+        a, b = run(), run()
+        self.assertEqual(a["state"], "patrol")
+        self.assertNotEqual(a["pos"], [80.0, 15.0])  # có bơi lang thang
+        self.assertEqual(a["pos"], b["pos"])  # cùng seed, cùng đường tuần tra
+
+    def test_chases_when_player_near(self):
+        s, layer, inp = self.one((30.0, 12.0), (38.0, 12.0))
+        d0 = 8.0
+        drive(s, layer, inp, 30, move=(0.0, 0.0))
+        m = layer.serpents[0]
+        self.assertEqual(m["state"], "chase")
+        self.assertLess(abs(m["pos"][0] - 30.0), d0)  # đang áp sát người
+        drive(s, layer, inp, 400, move=(0.0, 0.0))
+        self.assertIsNotNone(layer.coil)  # chạm thì quấn (cơ chế chuỗi mũi tên có sẵn)
+
+    def test_chase_slower_than_swimming_and_gives_up(self):
+        s, layer, inp = self.one((70.0, 12.0), (78.0, 12.0))
+        drive(s, layer, inp, 600, move=(-1.0, 0.0))  # bơi thẳng ra xa với tốc độ bơi (4 > 3,2)
+        self.assertIsNone(layer.coil)
+        self.assertEqual(layer.serpents[0]["state"], "patrol")
+
+    def test_no_chase_when_player_at_surface(self):
+        s, layer, inp = self.one((30.0, 0.0), (35.0, 8.0))
+        drive(s, layer, inp, 20, move=(0.0, 0.0))
+        self.assertEqual(layer.serpents[0]["state"], "patrol")
+
+    def test_snapshot_exposes_state_and_velocity(self):
+        s, layer, inp = self.one((30.0, 12.0), (38.0, 12.0))
+        drive(s, layer, inp, 5, move=(0.0, 0.0))
+        m = layer.snapshot(s)["serpents"][0]
+        self.assertEqual(m["state"], "chase")
+        self.assertLess(m["vel"][0], 0)  # đầu quay về phía người (bên trái)
+
+
 class SerpentTest(unittest.TestCase):
     def coiled(self, buff=False):
         s, layer, inp = make({"player": {"pos": [30.0, 12.0]}})
