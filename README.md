@@ -37,6 +37,16 @@ Game cần chế độ **headless** theo Test Contract (`python3 -m chonoi.headl
 
 Ngoài phần đề yêu cầu, nhóm được **thêm** nhân vật, loài cá/cây, sinh vật, món, bản đồ, cơ chế, câu chuyện, đồ họa, âm nhạc… với ba điều kiện: **không phá phần cố định** (tắt ở headless), ghi mục **"Sáng tạo của nhóm"** trong README của nhóm, và **làm lõi đúng trước**.
 
+## Sáng tạo của nhóm
+
+Trạng thái: **đề xuất, chưa cài vào game**. Bản đang chạy chỉ có phần lõi theo đề; headless không có phần thêm nào.
+
+- Ý tưởng và nguồn tham khảo: [`docs/ideas/sang-tao-trung.md`](docs/ideas/sang-tao-trung.md).
+  - Thẻ truyền thuyết: dấu **?** trên vật, món, quái; bấm để đọc chuyện kể kèm nguồn; mở thẻ dùng nút `pause` lõi.
+  - Bảng "ngất vì…" theo nguyên nhân (ngạt hoặc Cá Sấu).
+  - Đền Bà Thủy, Cá Ông; quái sáng tạo Mãng Xà Vương với chuỗi mũi tên để thoát. Chỉ ở bản chơi live.
+- Điều kiện khi cài: tắt ở headless, luồng RNG riêng, không đổi số liệu và sự kiện của Test Contract. Bằng chứng "lõi vẫn đúng" sẽ ghi ở đây khi có.
+
 ## Lịch 3 giờ
 
 | Mốc | Phase | Hạn tag |
