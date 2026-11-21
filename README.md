@@ -31,6 +31,8 @@ Khi buổi sáng kết thúc, dừng server bằng `Ctrl+C` rồi chạy `python
 
 Sau khi gói Phase 2 đã tích hợp, mở một lượt năm ngày bằng `python3 -m chonoi.live --mode day --days 5`. Chọn **Chơi** để lần lượt qua buổi sáng, quán và cửa hàng. Dùng **P** hoặc **Esc** để tạm dừng, **Enter** để bỏ qua màn giới thiệu, và dùng các nút trong cửa hàng để nâng cấp hoặc sang ngày tiếp theo.
 
+Bật cả phần sáng tạo (đền Bà Thủy, Mãng Xà Vương, miếu Cá Ông; chỉ ở live, headless không đổi): `python3 -m chonoi.live --mode day --days 5 --creative`. Trên macOS có thể bấm đúp `tools/choi-game.command` (mở trình duyệt ở cổng 8800). Icon pixel cho launcher: `python3 tools/icon/make_icon.py`.
+
 Game cần chế độ **headless** theo Test Contract (`python3 -m chonoi.headless --mode gather|quan …`) để được chạy và chấm tự động. **Công nghệ không ràng buộc**: khung Python trong `chonoi/` chỉ là gợi ý, chi tiết ở [`docs/STARTER.md`](docs/STARTER.md).
 
 ## Tự do sáng tạo
