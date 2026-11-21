@@ -61,9 +61,9 @@ def main(argv=None) -> int:
         if len(set(paths)) != len(paths):
             raise BadInput("các đường dẫn đầu vào/đầu ra phải khác nhau")
         contract = load_contract()
-        phase_two = contract.get("contract_version") == "1.1"
+        phase_two = contract.get("contract_version") in ("1.1", "1.2")
         if a.mode == "day" and not phase_two:
-            raise BadInput("--mode day cần contract_version 1.1")
+            raise BadInput("--mode day cần contract_version 1.1 hoặc 1.2")
         tuning = contract["tuning"]
         scenario = load_scenario(a.scenario, a.mode, tuning)
         frames = load_frames(a.inputs, buttons=BUTTONS_V11 if phase_two else BUTTONS_V10)

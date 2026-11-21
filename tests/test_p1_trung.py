@@ -20,6 +20,12 @@ from chonoi.sim.quan_customers import (advance_timers, available_stock, init_cus
 from chonoi.sim.quan_validation import validate_quan_fixture, validate_quan_state
 
 TUNING = load_contract()["tuning"]
+# Đây là unit fixture P1 (1 bàn, 3 món/4 kind), không phải cấu hình runtime.
+# Giữ giả thiết "bàn duy nhất bận -> bỏ lượt" khi manifest P2 có 4 bàn.
+TUNING["quan"]["tables"] = TUNING["quan"]["tables"][:1]
+TUNING["quan"]["stoves"] = TUNING["quan"]["stoves"][:1]
+TUNING["menu"] = {key: TUNING["menu"][key] for key in
+                  ("ca_loc_nuong_trui", "goi_bong_sung", "lau_ca_linh_dien_dien")}
 Q = TUNING["quan"]
 PATIENCE = int(round(Q["patience_s"] * 60))
 EVERY = int(round(Q["customer_interval_s"] * 60))

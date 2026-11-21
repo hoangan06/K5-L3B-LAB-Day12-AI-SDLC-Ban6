@@ -27,6 +27,7 @@ from ..ids import sort_by_id
 from ..inventory import hold_to_items
 from ..errors import BadInput
 from .gather_actions import catch_fish, gather_node
+from .gather_fish import init_fish, snapshot_fish, update_fish
 from .gather_monsters import init_monsters, snapshot_monsters, update_monsters
 from .ramp import ramp_velocity
 
@@ -68,15 +69,18 @@ class GatherSim:
         src_nodes = scenario["nodes"] if "nodes" in scenario else t["nodes"]
         self.nodes = [{"id": n["id"], "kind": n["kind"], "pos": [float(c) for c in n["pos"]],
                        "regrow_ticks": n.get("regrow_ticks", 0)} for n in src_nodes]
-        if "fish" in scenario:
-            src_fish = scenario["fish"]
-        elif scenario.get("random_fish", True):
-            src_fish = t["fish_initial"]
+        self._moving_fish = isinstance(t["fish_initial"], int) and not isinstance(t["fish_initial"], bool)
+        if self._moving_fish:
+            init_fish(self, scenario)
         else:
-            src_fish = []
-        # Đàn cá đứng yên ở phase này. Cá bơi / sinh thêm là việc của phase sau.
-        self.fish = [{"id": f["id"], "kind": f["kind"], "pos": [float(c) for c in f["pos"]],
-                      "heading_deg": f.get("heading_deg", 0)} for f in src_fish]
+            if "fish" in scenario:
+                src_fish = scenario["fish"]
+            elif scenario.get("random_fish", True):
+                src_fish = t["fish_initial"]
+            else:
+                src_fish = []
+            self.fish = [{"id": f["id"], "kind": f["kind"], "pos": [float(c) for c in f["pos"]],
+                          "heading_deg": f.get("heading_deg", 0)} for f in src_fish]
         for coll in (self.nodes, self.fish):
             for e in coll:
                 ids.reserve(e["id"])
@@ -110,6 +114,8 @@ class GatherSim:
         }
         if "monsters" in self.t:
             result["monsters"] = snapshot_monsters(self)
+        if self._moving_fish:
+            result["fish"] = snapshot_fish(self)
         return result
 
     # --- một bước ---------------------------------------------------------------
@@ -148,6 +154,8 @@ class GatherSim:
         # 5. hết giờ
         if self.time_left_ticks <= 0:
             self._finish("time", events)
+        elif self._moving_fish:
+            update_fish(self, events)
         return events
 
     # --- tiện ích ---------------------------------------------------------------
