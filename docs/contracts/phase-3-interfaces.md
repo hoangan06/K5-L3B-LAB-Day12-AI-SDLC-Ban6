@@ -2,6 +2,8 @@
 
 [Phân công và chủ file](../PHAN-CONG-PHASE-3.md). Theo TICKET-03 đã đọc trên board. Các API bên dưới là mục tiêu cần triển khai, chưa phải code có sẵn. Chỉ làm lõi freshness, không current/reservations.
 
+**Điều phối mới nhất:** Trung đã nhận gói migration, Ân review/test gather và tag, Duy QA/smoke, Đức HUD/live theo `docs/plan-p3-p4.md`. Các nhãn người phụ trách trong bản thiết kế chi tiết bên dưới là lịch sử phân tích, không cấp quyền sửa chồng file. Schema, thứ tự xử lý và precision vẫn phải giữ; các chữ ký/module helper là đề xuất để đối chiếu API Trung thực sự bàn giao (`items.py`, `quan_fresh.py`), không bắt buộc tạo `freshness.py` trùng chức năng.
+
 ## 1. Schema và thứ tự
 
 ```json
