@@ -1,0 +1,1 @@
+{"quan":{"player":{"pos":[2,8]},"stock":{"ca_loc":1},"random_customers":false,"customers":[{"id":"C1","table_id":"T1","dish_id":"ca_loc_nuong_trui","order_tick":0,"state":"waiting","patience_ticks_left":3600,"eat_ticks_left":0,"order_status":"reserved","reserved":{"ca_loc":1}}]}}

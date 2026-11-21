@@ -32,6 +32,8 @@ Mọi người tạo bằng chứng riêng tại `docs/proof/phase-1/<an|duy|tru
 
 ## 3. Hợp đồng kỹ thuật chung
 
+**Chuẩn triển khai chi tiết:** đọc [Giao diện dùng chung Phase 1 — bản chốt 1.1](contracts/phase-1-interfaces.md). File đó chốt kiểu dữ liệu, tác động từng hàm, thứ tự constructor/step, RNG, event, dữ liệu mẫu và thứ tự merge. Chi tiết mục 3 dưới đây là tóm tắt; dùng bản 1.1 khi cần quy tắc đầy đủ. Bổ sung API Trung phụ trách: `validate_quan_fixture(scenario, tuning)` để kiểm raw fixture trước chuẩn hóa; Đức gọi trước khi dựng state. Các helper chưa được triển khai chỉ bằng việc có tài liệu này.
+
 ### 3.1. Dữ liệu và sự kiện
 
 - Giữ tên trường snapshot và payload event theo mục D/E/F của PRD, không dịch ID sang tiếng Việt có dấu.
