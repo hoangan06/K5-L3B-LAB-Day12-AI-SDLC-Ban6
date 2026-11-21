@@ -1,6 +1,7 @@
 """Đọc game.contract.json và kiểm dải hợp lệ của tuning P1 (PRD mục 13.2, Test Contract)."""
 
 import json
+import math
 import os
 
 from .errors import BadInput
@@ -9,7 +10,7 @@ DEFAULT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 
 
 def _num(v):
-    return isinstance(v, (int, float)) and not isinstance(v, bool)
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
 
 def _between(name, v, lo, hi):
@@ -82,19 +83,23 @@ def _validate_gather(g):
     if not isinstance(nodes, list) or not nodes:
         raise BadInput("tuning.gather.nodes phải là mảng không rỗng")
     seen, kinds = set(), set()
+    p2 = isinstance(g.get("fish_initial"), int) and not isinstance(g.get("fish_initial"), bool)
     for n in nodes:
         if not isinstance(n, dict) or not isinstance(n.get("id"), str) or n["id"] in seen:
             raise BadInput("tuning.gather.nodes: mỗi nút cần id duy nhất")
         seen.add(n["id"])
-        if n.get("kind") not in ("bong_dien_dien", "bong_sung"):
+        if n.get("kind") not in (("bong_dien_dien", "bong_sung", "keo_neo") if p2 else ("bong_dien_dien", "bong_sung")):
             raise BadInput(f"tuning.gather.nodes.{n['id']}: kind phải là bong_dien_dien hoặc bong_sung")
         kinds.add(n["kind"])
         _pos_in(f"gather.nodes.{n['id']}.pos", n.get("pos"), b, ("x", "d"))
         if n["pos"][1] != 0:
             raise BadInput(f"tuning.gather.nodes.{n['id']}: nút hái nằm ở mặt nước (d = 0)")
-    if kinds != {"bong_dien_dien", "bong_sung"}:
+    if kinds != ({"bong_dien_dien", "bong_sung", "keo_neo"} if p2 else {"bong_dien_dien", "bong_sung"}):
         raise BadInput("tuning.gather.nodes phải có ít nhất một nút mỗi loại (bong_dien_dien, bong_sung)")
     fish = g.get("fish_initial")
+    if p2:
+        _validate_p2_fish(g)
+        return
     if not isinstance(fish, list) or len(fish) != 6:
         raise BadInput("tuning.gather.fish_initial phải là danh sách đúng 6 đàn")
     seen = set()
@@ -107,6 +112,34 @@ def _validate_gather(g):
         _pos_in(f"gather.fish_initial.{f['id']}.pos", f.get("pos"), b, ("x", "d"))
         if f["pos"][1] <= g["surface_depth"]:
             raise BadInput(f"tuning.gather.fish_initial.{f['id']}: đàn cá phải ở dưới nước")
+
+
+def _validate_p2_fish(g):
+    kinds = {"ca_loc", "ca_linh", "ca_keo"}
+    if set(g["fish_yield"]) != kinds:
+        raise BadInput("fish_yield phải có ba loài")
+    for key in ("fish_initial", "fish_max", "fish_turn_ticks", "fish_spawn_ticks"):
+        _int_between("gather." + key, g.get(key), 1, 100000)
+    if g["fish_initial"] > g["fish_max"]:
+        raise BadInput("fish_initial vượt fish_max")
+    _between("gather.fish_speed", g.get("fish_speed"), 0.001, 100)
+    _between("gather.fish_spawn_clearance", g.get("fish_spawn_clearance"), 0, 100)
+    def interval(name, value, outer):
+        if not isinstance(value, list) or len(value) != 2 or not all(_num(x) for x in value) or not outer[0] <= value[0] < value[1] <= outer[1]:
+            raise BadInput(f"{name} không hợp lệ")
+    interval("fish_x", g.get("fish_x"), g["bounds"]["x"])
+    for field in ("fish_depths", "fish_spawn_depths", "fish_weights"):
+        if not isinstance(g.get(field), dict) or set(g[field]) != kinds:
+            raise BadInput(f"{field} phải có đúng ba loài")
+    for kind in kinds:
+        interval("fish_depths", g["fish_depths"][kind], g["bounds"]["d"])
+        depths = g["fish_spawn_depths"][kind]
+        if not isinstance(depths, list) or not depths or any(not _num(d) or not g["fish_depths"][kind][0] <= d <= g["fish_depths"][kind][1] for d in depths):
+            raise BadInput("fish_spawn_depths không hợp lệ")
+        _between("fish_weights", g["fish_weights"][kind], 0, 100000)
+    xs = g.get("fish_spawn_x")
+    if not isinstance(xs, list) or not xs or any(not _num(x) or not g["fish_x"][0] <= x <= g["fish_x"][1] for x in xs) or sum(g["fish_weights"].values()) <= 0:
+        raise BadInput("fish_spawn_x hoặc fish_weights không hợp lệ")
 
 
 def validate_tuning(t):
@@ -138,6 +171,30 @@ def validate_tuning(t):
         raise BadInput("burn_s phải là null ở Phase 1")
     # TODO(nhóm): bổ sung kiểm các khóa còn lại nếu muốn chặt hơn (bếp/bàn, uy tín, ...).
     for dish_id, d in menu.items():
+        if not isinstance(d, dict):
+            raise BadInput(f"menu.{dish_id} phải là object")
         price, cook = d.get("price"), d.get("cook_s")
         if isinstance(price, bool) or not isinstance(price, int) or price <= 0 or not _num(cook) or cook <= 0:
             raise BadInput(f"menu.{dish_id}: price (nguyên) và cook_s phải > 0")
+    if isinstance(g.get("fish_initial"), int) and not isinstance(g.get("fish_initial"), bool):
+        from .inventory import KINDS_P2
+        from .sim.day_plan import resolve_day_plans
+        for dish_id, dish in menu.items():
+            recipe = dish.get("recipe")
+            if not isinstance(recipe, dict) or not recipe or any(k not in KINDS_P2 or isinstance(v, bool) or not isinstance(v, int) or v <= 0 for k, v in recipe.items()):
+                raise BadInput(f"menu.{dish_id}.recipe không hợp lệ")
+        if not isinstance(t.get("day_plan"), list):
+            raise BadInput("thiếu tuning.day_plan")
+        resolve_day_plans(t)
+        shop = t.get("shop")
+        if not isinstance(shop, dict) or not isinstance(shop.get("upgrades"), dict) or set(shop["upgrades"]) != {"hp", "oxygen"}:
+            raise BadInput("tuning.shop.upgrades không hợp lệ")
+        _int_between("shop.max_ticks", shop.get("max_ticks"), 1, 100000)
+        for kind, levels in shop["upgrades"].items():
+            if not isinstance(levels, list) or len(levels) != 2:
+                raise BadInput("cần hai cấp nâng cấp")
+            for level, entry in enumerate(levels, 1):
+                if not isinstance(entry, dict) or entry.get("level") != level or isinstance(entry.get("level"), bool):
+                    raise BadInput("cấp nâng cấp không hợp lệ")
+                _int_between("shop.price", entry.get("price"), 1, 1000000)
+                _between("shop.cap", entry.get("hp_max" if kind == "hp" else "oxygen_max_s"), 1, 100000)
