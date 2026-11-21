@@ -4,5 +4,5 @@
   "node": "v24.22.3",
   "python_browser": "3.12 bundled",
   "benchmark": "1280x720; seed42; stationary dock; default effects; warmup3s; measure30s",
-  "source": "965de6f plus tools/bench.mjs fix; no Python gameplay change"
+  "source": "9d4b639 clean clone; final benchmark repeated from this clone"
 }

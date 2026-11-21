@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "source_commit": "9d4b639df3e507766b97de1490500bed485582ca",
+  "clean_before_launch": true,
+  "platform": "linux",
+  "python": "3.14.4",
+  "gui_http": true,
+  "day": 1,
+  "screen": "menu",
+  "user_commands": [
+    "git clone <repo>",
+    "cd <repo>",
+    "python3 -m chonoi.live --mode day --days 5"
+  ],
+  "scope": "Actual clean GitHub clone; Linux WSL backend; HTML canvas and menu HTTP checked"
+}

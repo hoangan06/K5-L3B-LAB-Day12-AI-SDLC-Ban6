@@ -37,8 +37,9 @@ Bench: `node tools/bench.mjs --seed 42 --duration 30 --out bench.json` — cần
 
 | Kiểm | Kết quả đo trên bản tích hợp |
 |---|---|
-| Regression | 278 test đạt trước bước chốt đóng gói; kết quả cuối và SHA nguồn xem `docs/proof/phase-4/release/` |
-| Bench | 1801frame / 30.0161s; avg60.00FPS, 1%low57.75FPS, load828.3ms; 1280×720, nóng3s, seed42, đứng ở bến |
+| Regression | 279/279test đạt, không skip, trên clone GitHub sạch9d4b639; final-tests.txt |
+| Clone/ZIP | Khởi động GUI/HTTP trên Linux WSL bằng lệnh README; ZIP kiểm import độc lập và hash đạt; clean-clone.json/package-check.json |
+| Bench | 3599frame / 30.0078s; avg119.94FPS, 1%low95.21FPS, load701.6ms; 1280×720, nóng3s, seed42, đứng ở bến; đo lại từ clone sạch9d4b639 |
 | Soak | 10/10ngày, 0crash; hai lần seed7 có gameplay giống nhau; đã đi qua hái/nấu/phục vụ/thu tiền |
 | UI | Cả3cảnh báo hiện ở tương phản cao, input browser thật trên fixture engine, không thay snapshot; console0exception |
 
