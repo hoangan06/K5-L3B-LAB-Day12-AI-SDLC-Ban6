@@ -1,4 +1,4 @@
-# Giao diện dùng chung Phase 1 — bản chốt 1.1
+# Giao diện dùng chung Phase 1 — bản chốt 1.2
 
 Áp dụng cho Ân, Duy, Trung, Đức. Đọc file này trước khi code. Tài liệu chốt cách chia module nội bộ dựa trên PRD-0/Test Contract v1.0 đã đọc trên lab board; không thay thế đề. **Các API mới bên dưới chưa được triển khai trong starter.** Không hiểu chữ “chốt” là game đã đáp ứng contract.
 
@@ -279,7 +279,7 @@ Nhịp bàn giao: Trung gửi init/validation/khách mẫu sớm; Đức gửi p
 
 ## 10. Chống xung đột Git và điều kiện tích hợp
 
-1. Cả bốn lấy cùng commit chứa **giao diện 1.1** trước khi code. Người đã bắt đầu nhánh cần cập nhật tài liệu mới và rà tên hàm, không ghi đè code đang làm để quay lại starter.
+1. Cả bốn lấy cùng commit chứa **giao diện 1.2** trước khi code. Người đã bắt đầu nhánh cần cập nhật tài liệu mới và rà tên hàm, không ghi đè code đang làm để quay lại starter.
 2. Chỉ chủ file sửa file sản phẩm theo mục 1. Muốn sửa file người khác: gửi patch hoặc mô tả cho chủ file tích hợp. Không chạy formatter toàn repo, đổi tên file hay sửa tuning trên nhánh tính năng.
 3. Test tách thành test_p1_an/duy/trung/duc.py, bằng chứng vào thư mục riêng. Không cùng thêm test vào test_smoke_p1.py hoặc sửa helpers.py. Test cần thêm fixture thì đặt trong thư mục riêng theo tên người, không sửa mẫu contract chung.
 4. TEAM/AGENTS/contract và khung chung: Ân giữ; verification: Duy; clarify và nhật ký AI chung: Trung; README/CREDITS/UI: Đức. Mỗi người gửi dòng nhật ký AI cho Trung và tự giữ bản ghi gốc trong proof riêng. Retro nhóm do Trung tập hợp khi đến mốc; members mỗi người một file.
@@ -290,4 +290,26 @@ Nhịp bàn giao: Trung gửi init/validation/khách mẫu sớm; Đức gửi p
 
 Không thể bảo đảm tuyệt đối không xung đột Git; các quy tắc trên loại phần sửa chồng chủ động và làm rõ phụ thuộc. Không còn yêu cầu phải chờ cả module khác xong mới bắt đầu viết/test helper riêng.
 
-Sau khi dùng file này, mỗi người chỉ cần báo: “Đã đọc giao diện 1.1; đang làm phần <tên>; thay đổi API cần báo trước”. Đây là trao đổi nội bộ nhóm tự thực hiện, tài liệu không tự gửi thông báo cho ai.
+## 11. Quyết định bổ sung cho câu hỏi của Trung — bản 1.2
+
+Mục này chốt cách triển khai nội bộ, không phải câu trả lời chính thức của giảng viên. Các điểm suy luận/PRD chưa rõ được đánh dấu; PO cần xác nhận điểm thiếu kho và cặp state/status nếu có kênh hỏi. Trong lúc chờ, code theo quyết định dưới đây, không để mỗi module chọn một cách.
+
+| # | Vấn đề | Quyết định dùng chung | Cơ sở / mức độ chắc chắn |
+|---|---|---|---|
+| 1 | ID khách tự sinh | Dùng C1, C2… qua sim.ids.new("C"). Reserve mọi ID khách fixture trước khi sinh; có C10 thì khách tự sinh tiếp là C11. Không tái dùng ID khi khách rời; không cấp ID cho lượt bỏ vì bàn bận/không món | Prefix C là quy ước nhóm; nối tiếp hậu tố lớn nhất là contract |
+| 2 | Giá/boa trên customer trước phục vụ | Không có khóa base_price/tip trong customer snapshot cho đến khi phục vụ. Không null, không mặc định 0. Đơn assigned vẫn có base_price đã chốt trong payload món bếp/tay, không có tip ở payload đó. Khi served/eating, customer có cả base_price và tip; tip=0 khi không được boa | Quy ước serialize, phù hợp vòng đời dữ liệu |
+| 3 | Khách eating lúc đóng ca | Chỉ paid, rồi xóa khách; không customer_left cho cùng khách. Timer ăn vừa về 0: reason=finished_eating; timer còn dương: reason=closing. Khách vừa được phục vụ trong bước đóng ca cũng paid/closing. quan_end phát sau mọi xử lý khách | Suy luận từ thứ tự luật F; tránh hai event rời cho một người |
+| 4 | Fixture reserved thiếu trường reserved và không đủ kho | BadInput → mã 2, trước output; không cấp một phần, không tự chuyển unfulfillable. Dựng các phần giữ khai rõ trước để biết tổng cam kết; suy phần thiếu theo (order_tick, id bàn), rồi kiểm tổng không vượt tồn. Nếu muốn dựng khách không thể phục vụ, fixture phải khai order_status=unfulfillable và reserved={} ngay | Chốt bảo thủ theo câu “giữ … quá tồn → mã 2”; thứ tự cấp chưa đủ để suy ra cơ chế tự đổi trạng thái. PRD chưa rõ, cần PO xác nhận |
+| 5 | Fixture waiting + served | Không hợp lệ: BadInput/mã 2. served đi cùng eating; eating phải có served. Không tự chuyển waiting thành eating hay đoán timer/giá/boa | Quy ước nhóm dựa trên vòng đời ở F; PRD chỉ ghi rõ một chiều nên cần PO xác nhận |
+| 6a | order_tick dương khi phase_tick=0 | Cho phép số nguyên không âm, không bool; chưa áp điều kiện order_tick <= phase_tick vì PRD không ghi trần này. Khách fixture đã hiện diện từ tick 0, order_tick dùng để xếp ưu tiên, không hẹn giờ sinh/không làm bước đầu chờ đến order_tick | Quy ước fixture theo miền đã nêu; gameplay tự sinh luôn ghi phase_tick hiện tại. Nếu PO yêu cầu cấm tương lai, sửa validator và test đồng bộ |
+| 6b | waiting có patience_ticks_left=0 | Cho phép tại fixture. Snapshot tick 0 giữ 0; bước đầu vẫn xử lý interact trước rời, phục vụ đúng đơn được tính, nếu không thì rời vì patience (hoặc closing nếu hết ca). Không đuổi/xử lý tiền ngay trong constructor | Phù hợp timer không âm và thứ tự F. eating vẫn cần eat_ticks_left dương lúc dựng |
+| 7 | Uy tín giảm do khách bỏ đi | Kẹp trong [reputation_min,reputation_max], giống đường cộng boa; customer_left.reputation là giá trị sau kẹp. closing không trừ. Ví dụ preset: uy tín 0.2 giảm 0.5 → 0 | Quy ước nhóm theo miền uy tín; PRD nêu kẹp tường minh ở boa |
+| 8 | Giá payload khác menu hoặc timer nấu lớn hơn thời gian chuẩn | Không bác fixture chỉ vì khác menu/timer chuẩn: base_price phải int dương, cook_ticks_left của cooking phải int dương, không bool. Món/đơn/liên kết phải khớp. Ready vẫn cook_ticks_left=0. Giữ giá payload khi phục vụ/thu tiền; không ép lại menu. Gameplay bắt đầu nấu luôn lấy giá/thời gian từ tuning | PRD không ghi ràng buộc bằng giá hiện tại hoặc trần timer nấu; không thêm điều kiện từ chối ngoài đề |
+
+Điểm 4 không có nghĩa chấp nhận reserved khai rõ khác recipe hoặc quá tồn: những trường hợp đó luôn mã 2 theo contract. Việc cấp theo thứ tự chỉ quy định thứ tự xử lý xác định; hiện không dùng thứ tự đó để tự hạ đơn sang unfulfillable.
+
+Các quy tắc này áp dụng cho cả validator của Trung lẫn serializer/thu tiền của Đức. Đức phải bỏ qua hoặc không serialize các trường giá/boa customer chưa phục vụ; fixture có giá payload khác menu vẫn dùng giá payload khi chuyển lên customer lúc phục vụ. Không sửa payload giá trong quá trình chuẩn hóa.
+
+Test liên module cần có: C10 → C11; assigned không có giá/boa trên customer nhưng món có giá; closing eating chỉ một paid; finished_eating ưu tiên closing khi timer vừa 0; thiếu kho suy giữ → mã 2 và chưa ghi output; waiting/served → mã 2; order_tick dương vẫn hiện ngay; patience=0 được phục vụ bước đầu; uy tín không âm; payload giá 75/menu 60 được thu theo 75; cooking timer lớn hơn chuẩn vẫn được nạp. Đây là danh sách test cần triển khai, không phải kết quả đã chạy.
+
+Sau khi dùng file này, mỗi người chỉ cần báo: “Đã đọc giao diện 1.2; đang làm phần <tên>; thay đổi API cần báo trước”. Đây là trao đổi nội bộ nhóm tự thực hiện, tài liệu không tự gửi thông báo cho ai.
