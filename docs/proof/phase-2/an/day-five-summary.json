@@ -1,0 +1,18 @@
+{
+  "elapsed_seconds": 3.153,
+  "end": {
+    "type": "end",
+    "ticks": 111000,
+    "sim_tick": 111000,
+    "mode": "day",
+    "state": "finished",
+    "reason": "days_complete",
+    "money": 0,
+    "earned": 0,
+    "reputation": 3.0,
+    "score": 300,
+    "days_completed": 5
+  },
+  "day_starts": 5,
+  "sha256": "26cb1d5dd2d84aaa6101b10fe860cdaaa16bd48c9fb185f54e5c342c1ad40ada"
+}

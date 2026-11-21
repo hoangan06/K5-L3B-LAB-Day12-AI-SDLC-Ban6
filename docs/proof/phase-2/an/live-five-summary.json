@@ -1,0 +1,153 @@
+{
+  "method": "real LiveGame/HTTP, accelerated _tick_once; no rule/timer overrides",
+  "elapsed_seconds": 4.425,
+  "end": {
+    "type": "end",
+    "ticks": 111000,
+    "sim_tick": 111000,
+    "mode": "day",
+    "state": "finished",
+    "reason": "days_complete",
+    "money": 0,
+    "earned": 0,
+    "reputation": 3.0,
+    "score": 300,
+    "days_completed": 5
+  },
+  "ui": {
+    "screen": "summary",
+    "days": [
+      {
+        "day": 1,
+        "served": 0,
+        "left": 0,
+        "paid": 0,
+        "revenue": 0,
+        "reputation_start": 3.0,
+        "reputation_change": 0.0
+      },
+      {
+        "day": 2,
+        "served": 0,
+        "left": 0,
+        "paid": 0,
+        "revenue": 0,
+        "reputation_start": 3.0,
+        "reputation_change": 0.0
+      },
+      {
+        "day": 3,
+        "served": 0,
+        "left": 0,
+        "paid": 0,
+        "revenue": 0,
+        "reputation_start": 3.0,
+        "reputation_change": 0.0
+      },
+      {
+        "day": 4,
+        "served": 0,
+        "left": 0,
+        "paid": 0,
+        "revenue": 0,
+        "reputation_start": 3.0,
+        "reputation_change": 0.0
+      },
+      {
+        "day": 5,
+        "served": 0,
+        "left": 0,
+        "paid": 0,
+        "revenue": 0,
+        "reputation_start": 3.0,
+        "reputation_change": 0.0
+      }
+    ]
+  },
+  "phase_transitions": [
+    [
+      1,
+      "gather",
+      1,
+      "quan"
+    ],
+    [
+      1,
+      "quan",
+      1,
+      "shop"
+    ],
+    [
+      1,
+      "shop",
+      2,
+      "gather"
+    ],
+    [
+      2,
+      "gather",
+      2,
+      "quan"
+    ],
+    [
+      2,
+      "quan",
+      2,
+      "shop"
+    ],
+    [
+      2,
+      "shop",
+      3,
+      "gather"
+    ],
+    [
+      3,
+      "gather",
+      3,
+      "quan"
+    ],
+    [
+      3,
+      "quan",
+      3,
+      "shop"
+    ],
+    [
+      3,
+      "shop",
+      4,
+      "gather"
+    ],
+    [
+      4,
+      "gather",
+      4,
+      "quan"
+    ],
+    [
+      4,
+      "quan",
+      4,
+      "shop"
+    ],
+    [
+      4,
+      "shop",
+      5,
+      "gather"
+    ],
+    [
+      5,
+      "gather",
+      5,
+      "quan"
+    ],
+    [
+      5,
+      "quan",
+      5,
+      "shop"
+    ]
+  ]
+}
