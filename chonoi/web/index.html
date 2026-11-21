@@ -65,6 +65,16 @@
   .freshness-hud li { padding: 2px 0; }
   .freshness-hud .reserved { color: #ffd88e; }
   .freshness-hud .spoiled { color: #ffaba6; }
+  /* P4 của Đức (p4/duc): ba cảnh báo + chế độ tương phản cao, đặt lại vị trí cho khớp HUD pixel */
+  .warnings { white-space: pre-line; position: absolute; z-index: 3; left: 14px; top: 76px; max-width: calc(100% - 28px); padding: 4px 14px; border: 3px solid #f5de95; border-radius: 8px; background: #10161cee; color: #fff; font-size: 18px; font-weight: 700; pointer-events: none; }
+  .warnings:empty { padding: 0; border: 0; }
+  #contrast-toggle { position: absolute; z-index: 3; right: 14px; top: 76px; padding: 8px 14px; border: 1px solid #83b9ad; border-radius: 8px; background: #25483f; color: #fff; font: inherit; font-size: 16px; cursor: pointer; }
+  #contrast-toggle:focus-visible { outline: 3px solid #ffe4a1; }
+  .high-contrast canvas { filter: contrast(1.45); }
+  .high-contrast :is(.hud, .foot, .day-hud, .day-card, .warnings, .freshness-hud, .lore-card, .intro-card, button) { background: #000; color: #fff; border-color: #fff; }
+  .high-contrast .day-overlay { background: #000c; }
+  .high-contrast .warnings { border-color: #ffef00; }
+  .high-contrast #contrast-toggle[aria-pressed="true"] { background: #ffef00; color: #000; }
 </style>
 </head>
 <body>
@@ -81,6 +91,8 @@
 <div class="banner" id="banner" hidden></div>
 <div class="end" id="end" hidden></div>
 <footer class="foot" id="foot" hidden></footer>
+<aside class="warnings" id="warnings" role="status" aria-atomic="true"></aside>
+<button id="contrast-toggle" type="button" aria-pressed="false">Tương phản cao</button>
 <div class="day-overlay" id="day-overlay" hidden><section class="day-card" id="day-card"></section></div>
 <div class="lore" id="lore" hidden><section class="lore-card" id="lore-card"></section></div>
 <div class="intro" id="intro" hidden><section class="intro-card">
@@ -120,6 +132,46 @@
 const cv = document.getElementById("c");
 const ctx = cv.getContext("2d");
 let snap = null, offline = false;
+const warnings = document.getElementById("warnings");
+const contrastToggle = document.getElementById("contrast-toggle");
+const LOW_RESOURCE_RATIO = 0.25;
+
+contrastToggle.addEventListener("click", () => {
+  const enabled = document.body.classList.toggle("high-contrast");
+  contrastToggle.setAttribute("aria-pressed", String(enabled));
+});
+
+function lowOxygen(player) {
+  return player?.oxygen_max_ticks > 0 && player.oxygen_ticks < player.oxygen_max_ticks * LOW_RESOURCE_RATIO;
+}
+
+function monsterNear(monster, player, species) {
+  const rule = species?.[monster.kind];
+  if (!rule || !player?.pos || player.pos[1] < rule.depths[0]) return false;
+  const radius = monster.state === "chase" ? rule.exit_radius : rule.detect_radius;
+  return Math.hypot(player.pos[0] - monster.pos[0], player.pos[1] - monster.pos[1]) <= radius;
+}
+
+function renderWarnings() {
+  const active = [];
+  if (!offline && !snap.finished && !snap.ui?.screen && snap.state !== "paused") {
+    const phase = snap.phase || snap.mode;
+    if (phase === "gather") {
+      if (snap.monsters?.some(monster => monsterNear(monster, snap.player, snap.meta?.monsters?.species))) {
+        active.push("⚠ Thủy quái ở gần");
+      }
+      if (lowOxygen(snap.player)) active.push("⚠ Oxy sắp hết");
+    } else if (phase === "quan") {
+      const threshold = snap.meta?.patience_s * 60 * LOW_RESOURCE_RATIO;
+      if (snap.customers?.some(customer => customer.state === "waiting" && customer.patience_ticks_left <= threshold)) {
+        active.push("⚠ Khách sắp giận");
+      }
+    }
+  }
+  const text = active.join("\n");
+  if (warnings.textContent !== text) warnings.textContent = text;
+}
+
 const QS = new URLSearchParams(location.search);
 const DEBUG = QS.get("debug") === "1";
 
@@ -1110,7 +1162,7 @@ function updateDom() {
     const p = snap.player;
     if (phase === "gather") {
       if (p && p.oxygen_ticks !== undefined && p.oxygen_max_ticks) {
-        const low = p.oxygen_ticks < p.oxygen_max_ticks * 0.25;
+        const low = lowOxygen(p);
         nodes.push(barChip("Oxy " + Math.ceil(p.oxygen_ticks / 60) + "s", p.oxygen_ticks / p.oxygen_max_ticks, low ? "#ef5350" : "#4fc3f7")); sig.push(p.oxygen_ticks);
       }
       if (p && p.hp !== undefined && p.hp_max) {
@@ -1335,7 +1387,8 @@ function frame() {
   renderDayUI();
   updateDom();
   renderFreshness();
-  if (introOpen) { hudEl.hidden = true; footEl.hidden = true; dayHud.hidden = true; dayOverlay.hidden = true; bannerEl.hidden = true; endEl.hidden = true; }
+  renderWarnings();
+  if (introOpen) { hudEl.hidden = true; footEl.hidden = true; dayHud.hidden = true; dayOverlay.hidden = true; bannerEl.hidden = true; endEl.hidden = true; warnings.textContent = ""; }
   const topCss = visibleTop(), botCss = footEl.hidden ? 0 : footEl.offsetHeight;
   layout(w, h);
   labels = [];
