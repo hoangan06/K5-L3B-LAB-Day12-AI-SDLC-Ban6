@@ -45,7 +45,8 @@ def _dish_shape(name, dish, menu):
     _keys(name, dish, DISH_KEYS)
     if set(dish) != DISH_KEYS:
         raise BadInput(f"{name}: món phải có đủ order_id, dish_id, base_price")
-    if not isinstance(dish["order_id"], str) or dish["dish_id"] not in menu:
+    dish_id = dish["dish_id"]
+    if not isinstance(dish["order_id"], str) or not isinstance(dish_id, str) or dish_id not in menu:
         raise BadInput(f"{name}: order_id phải là chuỗi, dish_id phải thuộc thực đơn")
     _int(f"{name}.base_price", dish["base_price"], 1)  # giá nguyên dương (chốt nhóm Q8)
 
@@ -80,7 +81,8 @@ def validate_quan_fixture(scenario, tuning):
     for c in scenario.get("customers", []):
         name = f"customers.{c['id']}"
         _keys(name, c, CUSTOMER_KEYS)
-        if c.get("dish_id") not in menu:
+        dish_id = c.get("dish_id")
+        if not isinstance(dish_id, str) or dish_id not in menu:
             raise BadInput(f"{name}: dish_id thiếu hoặc ngoài thực đơn")
         if "state" in c and c["state"] not in STATES:
             raise BadInput(f"{name}: state phải là một trong {STATES}")

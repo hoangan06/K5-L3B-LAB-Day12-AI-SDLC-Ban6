@@ -9,6 +9,8 @@ from chonoi.runner import Session
 from chonoi.scenario import load_scenario
 from chonoi.sim.quan_kitchen import discard_order, finish_cooking, interact, pay_customer
 
+from helpers import Workdir, run_headless, write_json
+
 
 FIXTURES = Path(__file__).resolve().parents[1] / "docs" / "contracts" / "phase-1-fixtures"
 
@@ -305,3 +307,22 @@ class QuanIntegrationTests(unittest.TestCase):
         self.assertEqual([e["name"] for e in events], ["paid", "quan_end"])
         self.assertEqual(events[0]["data"]["reason"], "finished_eating")
         self.assertEqual(session.end_row()["money"], 92)
+
+    def test_non_string_dish_id_is_rejected_before_output(self):
+        customer_fixture = self.scenario("reserved")
+        customer_fixture["customers"][0]["dish_id"] = []
+        stove_fixture = self.scenario("ready")
+        stove_fixture["stoves"][0]["dish"]["dish_id"] = []
+
+        for location, scenario in (("customer", customer_fixture), ("stove", stove_fixture)):
+            with self.subTest(location=location), Workdir() as work:
+                scenario_path = write_json(work.path("scenario.json"), {"quan": scenario})
+                output_path = Path(work.path("output.jsonl"))
+
+                code, stderr = run_headless(
+                    "--mode", "quan", "--seed", "1", "--ticks", "1",
+                    "--scenario", scenario_path, "--out", str(output_path),
+                )
+
+                self.assertEqual(code, 2, stderr)
+                self.assertFalse(output_path.exists())
