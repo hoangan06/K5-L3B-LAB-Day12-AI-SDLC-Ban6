@@ -1,0 +1,5 @@
+PASS: real runner + P2 sample tuning; monster hit -> faint -> empty inventory; repeated bytes equal
+JSONL SHA256=217ac587c5cef951da1a4f61c7863443425370b78c441c58c4975ff20ab1e36f
+{"type": "event", "tick": 1, "phase": "gather", "name": "monster_hit", "data": {"monster_id": "M1", "hp": 0, "lost": ["ca_linh"], "pos": [60.0, 24.0]}}
+{"type": "event", "tick": 1, "phase": "gather", "name": "faint", "data": {"cause": "monster", "lost": ["bong_sung", "ca_loc"], "hp": 0}}
+{"type": "event", "tick": 1, "phase": "gather", "name": "gather_end", "data": {"reason": "fainted", "inventory": {"items": {}}}}
