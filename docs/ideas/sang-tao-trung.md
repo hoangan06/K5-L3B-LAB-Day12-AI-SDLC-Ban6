@@ -53,6 +53,28 @@
 
 Đã bỏ vì không có nguồn: giai thoại "lộc trời" của lẩu mắm, lịch sử cháo lá dứa, ma da (nguồn yếu).
 
+## 3b. Thẻ lore thêm (chỉ chữ, chỉ live, không gắn luật)
+
+Subagent đã mở và đọc nguồn gốc của từng mục dưới đây. Mục nào nguồn yếu hoặc chỉ có một blog thì đã bỏ phần đó.
+
+| Thẻ | Nội dung (diễn đạt lại) | Gắn ở đâu |
+|---|---|---|
+| **Cây bẹo** | Ghe chợ nổi cắm sào trước mũi, treo gì bán nấy; treo tàu lá/tấm lợp là muốn bán chính chiếc ghe [18][19][20] | Ghe trang trí ngoài bè |
+| **Kiêng kỵ thương hồ** | Kiêng nói "úp, lật, rớt"; mong "người mở hàng có duyên" buổi sáng [20] | Khi Út Sen mở quán; không thưởng/phạt |
+| **Tên Cái Răng** | Một giả thuyết (Vương Hồng Sển, ĐH Cần Thơ dẫn): từ "karan", lò cà ràng người Khmer chở ghe xuống bán [21] | Lò cà ràng trang trí ở bếp (vẫn một bếp) |
+| **Cá linh** | Có nhiều chuyện kể về tên cá: điềm báo cho Nguyễn Ánh, hoặc cá "có tánh linh". Ghi rõ là truyện truyền miệng [22][23] | Mùa nước nổi, khi bắt cá linh |
+| **Sông Cổ Chiên** | Truyền thuyết trống chiêng rớt xuống sông giữa bão; nhà sử học cho rằng tên có thể từ "Koh Chin" [24] | Đêm sương nghe tiếng chiêng xa; không phải quái |
+| **Cửu Long** | Chín cửa sông ví như chín rồng; là cách giải thích của nhà nghiên cứu, không phải truyện dân gian [25] | Một dòng ở màn hình tải |
+| **Ok Om Bok** | Lễ cúng trăng của người Khmer, rằm tháng 10 âm lịch, di sản phi vật thể quốc gia 2014; thả đèn nước, đua ghe ngo [26] | Đèn nước trôi ban đêm, thẻ viết tôn kính; không thưởng, không đua |
+| **Bác Ba Phi** | Nghệ nhân kể chuyện có thật ở U Minh; truyện là chuyện tiếu lâm, "thằng Đậu" do nhà văn Anh Động nghĩ ra [27] | Thẻ hài cạnh cá lóc, ghi "truyện kể vui" |
+
+**Cách hiện thẻ (ý của Trung):** mỗi vật phẩm, món, đền hay quái có truyền thuyết thì có một dấu **?** nhỏ phía trên. Bấm vào **?** để mở thẻ truyền thuyết (tên, chuyện kể ngắn, nhãn "truyền thuyết / giả thuyết / truyện kể vui", nguồn). Bấm ra ngoài hoặc Esc để đóng. Thẻ "ngạt vì…" khi chết vẫn tự hiện như mục 1.
+- Chỉ ở client live (`chonoi/web/`). Cú bấm chuột là việc của giao diện, không đi vào `inputs` của sim, nên headless và JSONL không đổi.
+- Dữ liệu thẻ để riêng một file (ví dụ `chonoi/web/lore.json`: id vật → nội dung + nguồn), không trộn vào `game.contract.json`.
+- Có thể game tạm dừng khi thẻ mở: UNKNOWN, cần hỏi nhóm vì live chạy theo tick thật.
+
+Đã bỏ: điên điển cứu đói (không nguồn gốc), mốc thời gian hủ tiếu Mỹ Tho (các nguồn mâu thuẫn), "bốn quy ước" cây bẹo (chỉ một blog), cá sấu đặt tên Cái Răng, bánh xèo, cơm tấm, mắm Châu Đốc, ma da.
+
 ## 4. Thứ tự làm đề xuất
 
 1. **Gói 1 (nhỏ, không đổi luật lõi):** Ông Năm Chèo + đền Bà Thủy + bảng "ngạt vì…". Dùng lại oxy/ngạt có sẵn, không đụng tiền và uy tín. Cần một cờ `creative` trong live, một luồng RNG riêng và một khung hiển thị.
@@ -63,7 +85,7 @@ Mỗi gói cần có bằng chứng "lõi vẫn đúng": test headless chạy gi
 
 ## Nguồn
 
-AI mới đọc phần trích trong kết quả tìm kiếm, chưa mở toàn văn từng bài. Trước khi đưa câu chữ vào game, cần mở link kiểm lại.
+Nguồn 1–17: AI mới đọc phần trích trong kết quả tìm kiếm, chưa mở toàn văn từng bài. Nguồn 18–27: subagent đã mở và đọc trang. Trước khi đưa câu chữ vào game, cần mở link kiểm lại.
 
 1. VTC News — Thủy quái Vàm Nao và giai thoại cá sấu 5 chân: https://vtcnews.vn/thuy-quai-vam-nao-va-giai-thoai-thu-vi-ve-ca-sau-5-chan-thanh-tinh-ar400798.html
 2. Tuổi Trẻ — Huyền thoại đánh bắt "quái ngư" Vàm Nao: https://tuoitre.vn/huyen-thoai-danh-bat-quai-ngu-vam-nao-20180530140302313.htm
@@ -82,3 +104,13 @@ AI mới đọc phần trích trong kết quả tìm kiếm, chưa mở toàn v�
 15. Người Việt — Bún nước lèo Sóc Trăng hay Trà Vinh là chính gốc?: https://www.nguoi-viet.com/doi-song/bun-nuoc-leo-soc-trang-hay-tra-vinh-la-chinh-goc/
 16. VnExpress — Lẩu mắm, "bản hòa tấu" của rau: https://vnexpress.net/lau-mam-ban-hoa-tau-cua-rau-2342858.html
 17. VnExpress — Cháo buffet bình dân ở miền Tây: https://vnexpress.net/chao-buffet-binh-dan-o-mien-tay-4175916.html
+18. mia.vn — Tìm hiểu cây bẹo miền Tây: https://mia.vn/cam-nang-du-lich/tim-hieu-cay-beo-mien-tay-21138
+19. Tạp chí Công Thương — Chợ nổi, nét duyên miền sông nước: https://tapchicongthuong.vn/cho-noi-net-duyen-mien-song-nuoc-62931.htm
+20. Võ Văn Sơn, Tạp chí Khoa học Yersin (2016) — Chợ nổi Tây Nam Bộ: https://hcmussh.edu.vn/static/document/ChonoiTayNamBo.pdf
+21. Tạp chí Khoa học ĐH Cần Thơ (2011): https://sss.ctu.edu.vn/images/upload/NCKH/dulich/2011_19_.pdf
+22. Tiền Phong — Mùa bông điên điển, cá linh: https://tienphong.vn/Van-Hoa/564273/Mua-bong-dien-dien-ca-linh-tpp.html
+23. VOH — Cá linh, món quà từ mùa nước nổi: https://voh.com.vn/am-thuc/ca-linh-mon-qua-tu-mua-nuoc-noi-449103.html
+24. Tuổi Trẻ — Cổ Chiên, tên lạ của Trường Giang: https://tuoitre.vn/co-chien-ten-la-cua-truong-giang-20230905002512204.htm
+25. VTC News — Vì sao gọi là sông Cửu Long: https://vtcnews.vn/vi-sao-goi-la-song-cuu-long-ar1031692.html
+26. VietnamPlus — Lễ hội Ok Om Bok: https://www.vietnamplus.vn/le-hoi-ok-om-bok-khi-con-nguoi-hoa-minh-voi-thien-nhien-post1145360.vnp
+27. Tuổi Trẻ — Bác Ba Phi, giai thoại và sự thật: https://tuoitre.vn/bac-ba-phi-giai-thoai-su-that-thang-dau-la-ai-642745.htm
